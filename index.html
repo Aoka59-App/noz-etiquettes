@@ -126,10 +126,17 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 .btn-secondary:active { background: #f0ede8; }
 .btn-secondary:disabled { opacity: .4; }
 
-.btn-danger {
-  width: 100%; height: 38px; background: #fff; color: #999;
-  border: 1px solid #ddd; border-radius: 10px; font-size: 13px; cursor: pointer;
+.btn-chaine {
+  width: 100%; height: 46px;
+  background: #1a2d5a;
+  color: #c8a96e;
+  border: none; border-radius: 10px;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; letter-spacing: .3px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
 }
+.btn-chaine:disabled { background: #ccc; color: #999; cursor: not-allowed; }
+.btn-chaine:active { opacity: .85; }
 
 /* ── PAGE APERÇU ── */
 .preview-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
@@ -343,23 +350,33 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
       <div class="card" style="margin-bottom:12px;">
         <div class="card-title">Page 1 — Étiquettes articles</div>
 
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <button class="btn-primary" id="btn-png-normal" onclick="generatePNG('normal')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
-            Générer PNG
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button class="btn-primary" id="btn-png-normal" onclick="generatePNG('normal')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
+            PNG grille
           </button>
-          <button class="btn-secondary" id="btn-print-normal" onclick="printDirect('normal')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
+          <button class="btn-secondary" id="btn-print-normal" onclick="printDirect('normal')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
             Imprimer
           </button>
         </div>
+        <button class="btn-chaine" id="btn-chaine-normal" onclick="imprimerChaine('normal')" disabled>
+          Imprimer à la chaîne — 1 étiquette à la fois
+        </button>
+        <div id="chaine-progress-normal" style="display:none;margin-top:8px;background:#f0ede8;border-radius:8px;padding:10px 12px;">
+          <div style="font-size:12px;color:var(--marine);font-weight:600;margin-bottom:6px;" id="chaine-txt-normal">Préparation…</div>
+          <div style="background:#ddd;border-radius:4px;height:6px;overflow:hidden;">
+            <div id="chaine-bar-normal" style="height:6px;background:var(--marine);border-radius:4px;width:0%;transition:width .3s;"></div>
+          </div>
+          <button onclick="stopChaine('normal')" style="margin-top:8px;background:none;border:none;color:#c0392b;font-size:12px;font-weight:600;cursor:pointer;">Arrêter</button>
+        </div>
 
-        <div id="img-wrap-normal" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;">
+        <div id="img-wrap-normal" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;margin-top:8px;">
           <div style="font-size:10px;color:#555;margin-bottom:6px;font-weight:600;">IMAGE PNG · 300 DPI · Étiquettes articles</div>
           <img id="img-out-normal" src="" alt="Étiquettes" style="width:100%;height:auto;border:1px solid #eee;border-radius:4px;"/>
           <div style="margin-top:6px;font-size:10px;color:#888;" id="img-info-normal"></div>
           <button class="btn-primary" id="img-dl-normal" style="margin-top:8px;margin-bottom:0;height:38px;font-size:13px;">↓ Enregistrer</button>
         </div>
 
-        <div class="preview-grid" id="preview-normal">
+        <div class="preview-grid" id="preview-normal" style="margin-top:8px;">
           <p class="empty-state" style="font-size:12px;">Aucune étiquette article</p>
         </div>
       </div>
@@ -368,23 +385,33 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
       <div class="card">
         <div class="card-title">Page 2 — Série chaussures</div>
 
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <button class="btn-primary" id="btn-png-serie" onclick="generatePNG('serie')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
-            Générer PNG
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <button class="btn-primary" id="btn-png-serie" onclick="generatePNG('serie')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
+            PNG grille
           </button>
-          <button class="btn-secondary" id="btn-print-serie" onclick="printDirect('serie')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
+          <button class="btn-secondary" id="btn-print-serie" onclick="printDirect('serie')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
             Imprimer
           </button>
         </div>
+        <button class="btn-chaine" id="btn-chaine-serie" onclick="imprimerChaine('serie')" disabled>
+          Imprimer à la chaîne — 1 étiquette à la fois
+        </button>
+        <div id="chaine-progress-serie" style="display:none;margin-top:8px;background:#f0ede8;border-radius:8px;padding:10px 12px;">
+          <div style="font-size:12px;color:var(--marine);font-weight:600;margin-bottom:6px;" id="chaine-txt-serie">Préparation…</div>
+          <div style="background:#ddd;border-radius:4px;height:6px;overflow:hidden;">
+            <div id="chaine-bar-serie" style="height:6px;background:var(--marine);border-radius:4px;width:0%;transition:width .3s;"></div>
+          </div>
+          <button onclick="stopChaine('serie')" style="margin-top:8px;background:none;border:none;color:#c0392b;font-size:12px;font-weight:600;cursor:pointer;">Arrêter</button>
+        </div>
 
-        <div id="img-wrap-serie" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;">
+        <div id="img-wrap-serie" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;margin-top:8px;">
           <div style="font-size:10px;color:#555;margin-bottom:6px;font-weight:600;">IMAGE PNG · 300 DPI · Série chaussures</div>
           <img id="img-out-serie" src="" alt="Série" style="width:100%;height:auto;border:1px solid #eee;border-radius:4px;"/>
           <div style="margin-top:6px;font-size:10px;color:#888;" id="img-info-serie"></div>
           <button class="btn-primary" id="img-dl-serie" style="margin-top:8px;margin-bottom:0;height:38px;font-size:13px;">↓ Enregistrer</button>
         </div>
 
-        <div class="preview-grid" id="preview-serie">
+        <div class="preview-grid" id="preview-serie" style="margin-top:8px;">
           <p class="empty-state" style="font-size:12px;">Aucune étiquette série — utilise l'onglet Série</p>
         </div>
       </div>
@@ -655,10 +682,14 @@ function renderAll() {
   const bPS=document.getElementById('btn-png-serie');
   const bPrN=document.getElementById('btn-print-normal');
   const bPrS=document.getElementById('btn-print-serie');
+  const bCN=document.getElementById('btn-chaine-normal');
+  const bCS=document.getElementById('btn-chaine-serie');
   if(bPN)  bPN.disabled=!hasNormal;
   if(bPS)  bPS.disabled=!hasSerie;
   if(bPrN) bPrN.disabled=!hasNormal;
   if(bPrS) bPrS.disabled=!hasSerie;
+  if(bCN)  bCN.disabled=!hasNormal;
+  if(bCS)  bCS.disabled=!hasSerie;
 
   // Liste
   const list=document.getElementById('article-list');
@@ -973,7 +1004,114 @@ function showImgOverlay(dataURL) {
   document.body.appendChild(overlay);
 }
 
-function fmt(p){ return p.toFixed(2).replace('.',',')+' €'; }
+// ── Impression à la chaîne ──
+let chaineTimers = { normal: [], serie: [] };
+let chaineRunning = { normal: false, serie: false };
+
+async function renderSingleLabel(a) {
+  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);
+  const canvas=document.getElementById('render-canvas');
+  canvas.width=LW; canvas.height=LH;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,LW,LH);
+
+  const bcImg = await barcodeToImg(a.ref);
+
+  const BRD=Math.round(.35*PX), PL=Math.round(2.5*PX), PR=Math.round(2.5*PX);
+  ctx.strokeStyle='#222'; ctx.lineWidth=BRD;
+  ctx.strokeRect(BRD/2,BRD/2,LW-BRD,LH-BRD);
+
+  if(a.isSerie){
+    const NUM_H=Math.round(LH*.20), BC_H=LH-NUM_H;
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
+    ctx.beginPath(); ctx.moveTo(2,NUM_H); ctx.lineTo(LW-2,NUM_H); ctx.stroke();
+    let fsN=Math.round(5*PX);
+    ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
+    while(ctx.measureText(a.ref).width>LW-2*PL && fsN>Math.round(2*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
+    ctx.fillText(a.ref, LW-PR, NUM_H/2);
+    if(bcImg){ const pV=Math.round(1.5*PX), pH=Math.round(2.5*PX); ctx.drawImage(bcImg, pH, NUM_H+pV, LW-2*pH, BC_H-2*pV); }
+  } else {
+    const Z1H=Math.round(LH*.10), Z2H=Math.round(LH*.42), Z3H=Math.round(LH*.30), Z4H=LH-Z1H-Z2H-Z3H;
+    const yZ1=0, yZ2=Z1H, yZ3=Z1H+Z2H, yZ4=Z1H+Z2H+Z3H;
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
+    [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(2,yy); ctx.lineTo(LW-2,yy); ctx.stroke(); });
+    // Z1
+    const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
+    if(a.code1) ctx.fillText(a.code1, PL, yZ1+Math.round(.5*PX));
+    if(a.code2) ctx.fillText(a.code2, PL, yZ1+Math.round(.5*PX)+fsS+Math.round(.3*PX));
+    let fsN=Math.round(Z1H*.85); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
+    while(ctx.measureText(a.ref).width>LW*.72&&fsN>Math.round(1.5*PX)){ fsN-=Math.round(.3*PX); ctx.font=`bold ${fsN}px Arial`; }
+    ctx.fillText(a.ref, LW-PR, yZ1+Z1H/2);
+    // Z2
+    if(bcImg){ const pV=Math.round(1.2*PX), pH=Math.round(2.5*PX), qW=a.qprod?Math.round(6*PX):0; ctx.drawImage(bcImg, pH, yZ2+pV, LW-2*pH-qW, Z2H-2*pV); }
+    if(a.qprod){ const fQ=Math.round(2.6*PX); ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod, LW-Math.round(1.5*PX), yZ2+Z2H-Math.round(1*PX)); }
+    // Z3
+    const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.82);
+    ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
+    while((ctx.measureText(ps).width+Math.round(2*PX)+ctx.measureText('EUR').width)>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
+    ctx.fillText(ps, PL, yZ3+Z3H/2); ctx.textAlign='right'; ctx.fillText('EUR', LW-PR, yZ3+Z3H/2);
+    // Z4
+    if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`, fsU=Math.round(Z4H*.58); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(uS, LW/2, yZ4+Z4H/2); }
+    else { const fsM=Math.round(Z4H*.42); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText('NOZ P854 · Louvroil', LW-PR, yZ4+Z4H/2); }
+  }
+  return canvas.toDataURL('image/png');
+}
+
+async function imprimerChaine(type) {
+  if(chaineRunning[type]) return;
+  const source = type==='serie' ? articles.filter(a=>a.isSerie) : articles.filter(a=>!a.isSerie);
+  const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+  if(!labels.length) return;
+
+  chaineRunning[type]=true;
+  const btn=document.getElementById(`btn-chaine-${type}`);
+  const prog=document.getElementById(`chaine-progress-${type}`);
+  const txt=document.getElementById(`chaine-txt-${type}`);
+  const bar=document.getElementById(`chaine-bar-${type}`);
+  btn.disabled=true; prog.style.display='block';
+
+  for(let i=0; i<labels.length; i++){
+    if(!chaineRunning[type]) break;
+    const a=labels[i];
+    txt.textContent=`Étiquette ${i+1} / ${labels.length} — ${a.ref}`;
+    bar.style.width=`${Math.round(((i+1)/labels.length)*100)}%`;
+
+    const dataURL = await renderSingleLabel(a);
+
+    // Ouvrir une fenêtre d'impression pour chaque étiquette
+    const win=window.open('','_blank','width=400,height=400');
+    if(win){
+      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>*{margin:0;padding:0;}body{background:#fff;}
+        @page{size:51mm 51mm;margin:0;}
+        img{width:51mm;height:51mm;display:block;}
+        </style></head><body>
+        <img src="${dataURL}"/>
+        <script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script>
+        </body></html>`);
+      win.document.close();
+    }
+
+    // Attendre 1.5 secondes entre chaque étiquette pour laisser l'impression se faire
+    await new Promise(r=>setTimeout(r, 1500));
+  }
+
+  if(chaineRunning[type]){
+    txt.textContent=`✔ ${labels.length} étiquette${labels.length>1?'s':''} envoyée${labels.length>1?'s':''} à l'impression !`;
+    bar.style.width='100%'; bar.style.background='#2e7d32';
+    setTimeout(()=>{ prog.style.display='none'; bar.style.background='var(--marine)'; btn.disabled=false; }, 3000);
+  } else {
+    prog.style.display='none'; btn.disabled=false;
+  }
+  chaineRunning[type]=false;
+}
+
+function stopChaine(type){
+  chaineRunning[type]=false;
+  document.getElementById(`chaine-progress-${type}`).style.display='none';
+  document.getElementById(`btn-chaine-${type}`).disabled=false;
+  showToast('Impression arrêtée');
+}
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
 
