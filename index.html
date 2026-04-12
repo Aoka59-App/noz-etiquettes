@@ -133,7 +133,7 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 
 /* ── PAGE APERÇU ── */
 .preview-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.lbl { background: #fff; border: 1.5px solid #222; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; font-family: Arial,sans-serif; width: 160px; }
+.lbl { background: #fff; border: 1.5px solid #222; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; font-family: Arial,sans-serif; width: 160px; height: 160px; }
 .lbl-z1 { display:flex; align-items:flex-start; justify-content:space-between; padding:2px 4px 2px; border-bottom:.5px solid #bbb; }
 .lbl-z1l { display:flex; flex-direction:column; }
 .lbl-z1s { font-size:6px; color:#333; line-height:1.3; }
@@ -727,7 +727,7 @@ function renderPreview() {
     serie.forEach(a=>{
       for(let i=0;i<a.qty;i++){
         const lbl=document.createElement('div');
-        lbl.style.cssText='width:160px;background:#fff;border:1.5px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
+        lbl.style.cssText='width:160px;height:160px;background:#fff;border:1.5px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
         const zNum=document.createElement('div');
         zNum.style.cssText='padding:4px 6px 2px;text-align:right;border-bottom:.5px solid #bbb;';
         const numEl=document.createElement('span');
@@ -758,7 +758,7 @@ async function generatePNG(type) {
 
   if(!labels.length){ btn.disabled=false; btn.innerHTML='Générer PNG'; return; }
 
-  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(32*PX);
+  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);  // carré 51×51mm
   const COLS=Math.min(4,labels.length), ROWS=Math.ceil(labels.length/COLS);
   const MARGIN=Math.round(3*PX), GAP=Math.round(2*PX);
   const W=COLS*LW+(COLS-1)*GAP+2*MARGIN, H=ROWS*LH+(ROWS-1)*GAP+2*MARGIN;
@@ -772,7 +772,9 @@ async function generatePNG(type) {
   const bcMap={};
   await Promise.all(refs.map(async r=>{ bcMap[r]=await barcodeToImg(r); }));
 
-  const Z1H=Math.round(LH*.13), Z2H=Math.round(LH*.46), Z3H=Math.round(LH*.28), Z4H=LH-Math.round(LH*.13)-Math.round(LH*.46)-Math.round(LH*.28);
+  // Zones proportionnées pour format carré 51×51mm
+  // Z1 codes ~12%, Z2 barcode ~44%, Z3 prix ~28%, Z4 prix unitaire ~16%
+  const Z1H=Math.round(LH*.12), Z2H=Math.round(LH*.44), Z3H=Math.round(LH*.28), Z4H=LH-Math.round(LH*.12)-Math.round(LH*.44)-Math.round(LH*.28);
   const BRD=Math.round(.35*PX), PL=Math.round(2.5*PX), PR=Math.round(2.5*PX);
 
   for(let i=0;i<labels.length;i++){
@@ -909,7 +911,7 @@ async function generatePNG(type) {
 
   document.getElementById(imgOutId).src=dataURL;
   document.getElementById(imgWrapId).style.display='block';
-  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×32 mm`;
+  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×51 mm (carré)`;
 
   const dlBtn=document.getElementById(dlBtnId);
   const ds=new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
@@ -940,7 +942,7 @@ function printDirect(type) {
   source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   const win=window.open('','_blank');
   let body=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes NOZ</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:A4 portrait;margin:5mm;}.grid{display:flex;flex-wrap:wrap;gap:2mm;}.etq{width:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:flex-start;justify-content:space-between;padding:.6mm 1.5mm .5mm;border-bottom:.2mm solid #bbb;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.6mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:2.8mm;font-weight:700;color:#000;align-self:center;}.z2{display:flex;align-items:center;padding:.6mm 2mm .4mm;border-bottom:.2mm solid #bbb;gap:1mm;}.z2 svg{flex:1;height:auto;max-height:12mm;}.z2q{font-family:Arial;font-size:2.2mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:baseline;padding:.4mm 1.5mm .2mm;}.z3p{font-family:Arial;font-size:6mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;margin-left:.8mm;}.z4{display:flex;align-items:center;justify-content:space-between;padding:0 1.5mm .6mm;}.z4u{font-family:Arial;font-size:1.9mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.6mm;color:#888;}</style></head><body><div class="grid">`;
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:A4 portrait;margin:5mm;}.grid{display:flex;flex-wrap:wrap;gap:2mm;}.etq{width:51mm;height:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:flex-start;justify-content:space-between;padding:.6mm 1.5mm .5mm;border-bottom:.2mm solid #bbb;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.8mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:3.5mm;font-weight:700;color:#000;align-self:center;}.z2{display:flex;align-items:center;padding:.6mm 2mm .4mm;border-bottom:.2mm solid #bbb;gap:1mm;flex:1;}.z2 svg{flex:1;height:auto;max-height:18mm;}.z2q{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:center;justify-content:space-between;padding:.5mm 1.5mm .3mm;border-bottom:.2mm solid #bbb;}.z3p{font-family:Arial;font-size:7.5mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:7.5mm;font-weight:700;color:#000;}.z4{display:flex;align-items:center;justify-content:center;padding:.3mm 1.5mm .5mm;}.z4u{font-family:Arial;font-size:2.4mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.8mm;color:#888;}</style></head><body><div class="grid">`;
   labels.forEach(a=>{
     const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg'); svgEl.setAttribute('xmlns','http://www.w3.org/2000/svg');
     try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:2,height:70,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
