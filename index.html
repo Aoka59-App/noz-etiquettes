@@ -212,6 +212,7 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
     <button class="tab" onclick="showTab('serie',this)">Série</button>
     <button class="tab" onclick="showTab('liste',this)">Articles</button>
     <button class="tab" onclick="showTab('apercu',this)">Aperçu</button>
+    <button class="tab" onclick="showTab('comptage',this)">Comptage</button>
     <button class="tab" onclick="showTab('install',this)">Installer</button>
   </div>
 
@@ -386,6 +387,43 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
         <div class="preview-grid" id="preview-serie">
           <p class="empty-state" style="font-size:12px;">Aucune étiquette série — utilise l'onglet Série</p>
         </div>
+      </div>
+
+    </div>
+
+    <!-- ══ ONGLET COMPTAGE ══ -->
+    <div class="page" id="page-comptage">
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Ajouter une ligne</div>
+        <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:10px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Qté</label>
+            <input id="cpt-qty" type="number" placeholder="6" min="1" inputmode="numeric"
+              style="text-align:center;font-size:18px;font-weight:700;"/>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Prix unitaire (€)</label>
+            <input id="cpt-price" type="number" placeholder="9,99" step="0.01" min="0" inputmode="decimal"
+              style="font-size:18px;font-weight:700;"/>
+          </div>
+        </div>
+        <button class="btn-add" onclick="cptAdd()">+ Ajouter la ligne</button>
+      </div>
+
+      <!-- Lignes saisies -->
+      <div id="cpt-lines" style="margin-bottom:12px;"></div>
+
+      <!-- Total global -->
+      <div id="cpt-total-wrap" style="display:none;">
+        <div style="background:var(--marine);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div>
+            <div style="font-size:11px;color:#7a8fbb;margin-bottom:2px;">TOTAL GLOBAL</div>
+            <div style="font-size:13px;color:#7a8fbb;" id="cpt-total-detail"></div>
+          </div>
+          <div style="font-size:28px;font-weight:700;color:var(--or);" id="cpt-total-val">0,00 €</div>
+        </div>
+        <button class="btn-danger" onclick="cptClear()">Tout effacer</button>
       </div>
 
     </div>
@@ -936,6 +974,79 @@ function showImgOverlay(dataURL) {
 function fmt(p){ return p.toFixed(2).replace('.',',')+' €'; }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+
+// ══ COMPTAGE ══
+let cptData = JSON.parse(localStorage.getItem('noz-comptage') || '[]');
+cptRender();
+
+function cptSave(){ localStorage.setItem('noz-comptage', JSON.stringify(cptData)); }
+
+function cptAdd(){
+  const qty   = parseInt(document.getElementById('cpt-qty').value);
+  const price = parseFloat(document.getElementById('cpt-price').value);
+  if(!qty || qty < 1)         { showToast('Merci de saisir une quantité.'); return; }
+  if(isNaN(price)||price < 0) { showToast('Prix invalide.'); return; }
+  cptData.push({ qty, price });
+  cptSave(); cptRender();
+  document.getElementById('cpt-qty').value   = '';
+  document.getElementById('cpt-price').value = '';
+  document.getElementById('cpt-qty').focus();
+  showToast('Ligne ajoutée !');
+}
+
+function cptRemove(i){
+  cptData.splice(i,1); cptSave(); cptRender();
+}
+
+function cptRender(){
+  const container = document.getElementById('cpt-lines');
+  const totalWrap = document.getElementById('cpt-total-wrap');
+  const totalVal  = document.getElementById('cpt-total-val');
+  const totalDetail = document.getElementById('cpt-total-detail');
+
+  if(!cptData.length){
+    container.innerHTML = '<p class="empty-state">Aucune ligne saisie</p>';
+    totalWrap.style.display = 'none';
+    return;
+  }
+
+  let totalMontant = 0;
+  let totalArticles = 0;
+
+  container.innerHTML = cptData.map((l,i) => {
+    const sous = l.qty * l.price;
+    totalMontant  += sous;
+    totalArticles += l.qty;
+    return `
+    <div style="background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+      <div style="background:var(--marine);color:var(--or);border-radius:8px;padding:4px 10px;font-size:15px;font-weight:700;flex-shrink:0;">
+        ×${l.qty}
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;color:#000;">${l.price.toFixed(2).replace('.',',')} €</div>
+        <div style="font-size:12px;color:#888;margin-top:1px;">= ${sous.toFixed(2).replace('.',',')} €</div>
+      </div>
+      <div style="font-size:17px;font-weight:700;color:#2e7d32;min-width:80px;text-align:right;">
+        ${sous.toFixed(2).replace('.',',')} €
+      </div>
+      <button onclick="cptRemove(${i})" style="background:none;border:none;color:#bbb;font-size:20px;cursor:pointer;padding:0 2px;">×</button>
+    </div>`;
+  }).join('');
+
+  totalWrap.style.display = 'block';
+  totalVal.textContent = totalMontant.toFixed(2).replace('.',',') + ' €';
+  totalDetail.textContent = `${totalArticles} article${totalArticles>1?'s':''} · ${cptData.length} ligne${cptData.length>1?'s':''}`;
+}
+
+function cptClear(){
+  if(!cptData.length) return;
+  if(!confirm('Effacer tout le comptage ?')) return;
+  cptData = []; cptSave(); cptRender();
+}
+
+// Raccourci Enter sur les champs comptage
+document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('cpt-price').focus(); });
+document.getElementById('cpt-price').addEventListener('keydown', e=>{ if(e.key==='Enter') cptAdd(); });
 </script>
 
 <script>
