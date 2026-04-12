@@ -338,26 +338,53 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
     <!-- ══ ONGLET APERÇU ══ -->
     <div class="page" id="page-apercu">
 
-      <button class="btn-primary" id="btn-png" onclick="generatePNG()" disabled>
-        Générer l'image PNG
-      </button>
-      <button class="btn-secondary" id="btn-print" onclick="printDirect()" disabled>
-        Imprimer (Ctrl+P)
-      </button>
+      <!-- PAGE 1 : Étiquettes normales -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Page 1 — Étiquettes articles</div>
 
-      <div id="img-wrap" style="display:none; background:#fff; border-radius:12px; padding:12px; margin-bottom:12px;">
-        <div style="font-size:11px;color:#555;margin-bottom:8px;font-weight:600;">IMAGE GÉNÉRÉE · 300 DPI</div>
-        <img id="img-out" src="" alt="Étiquettes" style="width:100%;height:auto;border:1px solid #eee;border-radius:6px;"/>
-        <div style="margin-top:8px;font-size:11px;color:#888;" id="img-info"></div>
-        <button class="btn-primary" id="img-dl-btn" style="margin-top:10px;margin-bottom:0;">
-          ↓ Enregistrer le PNG
-        </button>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button class="btn-primary" id="btn-png-normal" onclick="generatePNG('normal')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
+            Générer PNG
+          </button>
+          <button class="btn-secondary" id="btn-print-normal" onclick="printDirect('normal')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
+            Imprimer
+          </button>
+        </div>
+
+        <div id="img-wrap-normal" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;">
+          <div style="font-size:10px;color:#555;margin-bottom:6px;font-weight:600;">IMAGE PNG · 300 DPI · Étiquettes articles</div>
+          <img id="img-out-normal" src="" alt="Étiquettes" style="width:100%;height:auto;border:1px solid #eee;border-radius:4px;"/>
+          <div style="margin-top:6px;font-size:10px;color:#888;" id="img-info-normal"></div>
+          <button class="btn-primary" id="img-dl-normal" style="margin-top:8px;margin-bottom:0;height:38px;font-size:13px;">↓ Enregistrer</button>
+        </div>
+
+        <div class="preview-grid" id="preview-normal">
+          <p class="empty-state" style="font-size:12px;">Aucune étiquette article</p>
+        </div>
       </div>
 
+      <!-- PAGE 2 : Série chaussures -->
       <div class="card">
-        <div class="card-title">Prévisualisation</div>
-        <div class="preview-grid" id="preview-grid">
-          <p class="empty-state">Ajoutez des articles dans l'onglet Saisie</p>
+        <div class="card-title">Page 2 — Série chaussures</div>
+
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button class="btn-primary" id="btn-png-serie" onclick="generatePNG('serie')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
+            Générer PNG
+          </button>
+          <button class="btn-secondary" id="btn-print-serie" onclick="printDirect('serie')" disabled style="margin-bottom:0;font-size:13px;height:42px;">
+            Imprimer
+          </button>
+        </div>
+
+        <div id="img-wrap-serie" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;">
+          <div style="font-size:10px;color:#555;margin-bottom:6px;font-weight:600;">IMAGE PNG · 300 DPI · Série chaussures</div>
+          <img id="img-out-serie" src="" alt="Série" style="width:100%;height:auto;border:1px solid #eee;border-radius:4px;"/>
+          <div style="margin-top:6px;font-size:10px;color:#888;" id="img-info-serie"></div>
+          <button class="btn-primary" id="img-dl-serie" style="margin-top:8px;margin-bottom:0;height:38px;font-size:13px;">↓ Enregistrer</button>
+        </div>
+
+        <div class="preview-grid" id="preview-serie">
+          <p class="empty-state" style="font-size:12px;">Aucune étiquette série — utilise l'onglet Série</p>
         </div>
       </div>
 
@@ -579,12 +606,21 @@ function clearAll() {
 function renderAll() {
   const total = articles.reduce((s,a)=>s+a.qty,0);
   const has   = articles.length>0;
+  const hasNormal = articles.some(a=>!a.isSerie);
+  const hasSerie  = articles.some(a=>a.isSerie);
+
   document.getElementById('totals-text').textContent=`${articles.length} article${articles.length>1?'s':''} · ${total} étiquette${total>1?'s':''}`;
   document.getElementById('totals-count').textContent=total;
-  const btnPng=document.getElementById('btn-png');
-  const btnPrt=document.getElementById('btn-print');
-  if(btnPng) btnPng.disabled=!has;
-  if(btnPrt) btnPrt.disabled=!has;
+
+  // Boutons aperçu
+  const bPN=document.getElementById('btn-png-normal');
+  const bPS=document.getElementById('btn-png-serie');
+  const bPrN=document.getElementById('btn-print-normal');
+  const bPrS=document.getElementById('btn-print-serie');
+  if(bPN)  bPN.disabled=!hasNormal;
+  if(bPS)  bPS.disabled=!hasSerie;
+  if(bPrN) bPrN.disabled=!hasNormal;
+  if(bPrS) bPrS.disabled=!hasSerie;
 
   // Liste
   const list=document.getElementById('article-list');
@@ -592,13 +628,13 @@ function renderAll() {
   list.innerHTML=articles.map((a,i)=>`
     <div class="article-item">
       <div style="flex:1;">
-        <div class="art-ref">${esc(a.ref)}</div>
+        <div class="art-ref">${esc(a.ref)} ${a.isSerie?'<span style="font-size:10px;color:#c8a96e;background:#1a2d5a;padding:1px 6px;border-radius:8px;margin-left:4px;">série</span>':''}</div>
         <div style="font-size:11px;color:#888;margin-top:2px;">
           ${a.code1?`${esc(a.code1)} `:''} ${a.code2?esc(a.code2):''}
           ${a.unitPrice?` · ${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`:''}
         </div>
       </div>
-      <span class="art-price">${fmt(a.price)}</span>
+      <span class="art-price">${a.isSerie ? '—' : fmt(a.price)}</span>
       <span class="art-qty">×${a.qty}</span>
       <button class="art-del" onclick="removeArticle(${i})">×</button>
     </div>`).join('');
@@ -606,69 +642,86 @@ function renderAll() {
 
 // ── Prévisualisation étiquettes ──
 function renderPreview() {
-  const grid=document.getElementById('preview-grid');
-  if(!articles.length){ grid.innerHTML='<p class="empty-state">Ajoutez des articles dans l\'onglet Saisie</p>'; return; }
-  grid.innerHTML='';
-  articles.forEach(a=>{
-    for(let i=0;i<a.qty;i++){
-      const lbl=document.createElement('div'); lbl.className='lbl';
+  const gridN=document.getElementById('preview-normal');
+  const gridS=document.getElementById('preview-serie');
 
-      if(a.isSerie){
-        // ── Étiquette série : numéro en haut + barcode uniquement ──
-        lbl.style.cssText='width:160px;background:#fff;border:1.5px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
-        // Numéro en grand
-        const zNum=document.createElement('div');
-        zNum.style.cssText='padding:4px 6px 2px;text-align:right;border-bottom:.5px solid #bbb;';
-        const numEl=document.createElement('span');
-        numEl.style.cssText='font-size:12px;font-weight:700;color:#000;';
-        numEl.textContent=a.ref;
-        zNum.appendChild(numEl);
-        // Barcode grand
-        const zBc=document.createElement('div');
-        zBc.style.cssText='padding:4px 4px 4px;display:flex;align-items:center;justify-content:center;';
-        zBc.appendChild(makeBcSVG(a.ref));
-        lbl.appendChild(zNum); lbl.appendChild(zBc);
-      } else {
-        // Z1
+  const normaux = articles.filter(a=>!a.isSerie);
+  const serie   = articles.filter(a=>a.isSerie);
+
+  // Grille normale
+  if(!normaux.length){
+    gridN.innerHTML='<p class="empty-state" style="font-size:12px;">Aucune étiquette article</p>';
+  } else {
+    gridN.innerHTML='';
+    normaux.forEach(a=>{
+      for(let i=0;i<a.qty;i++){
+        const lbl=document.createElement('div'); lbl.className='lbl';
         const z1=document.createElement('div'); z1.className='lbl-z1';
         const z1l=document.createElement('div'); z1l.className='lbl-z1l';
         if(a.code1){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code1; z1l.appendChild(e); }
         if(a.code2){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code2; z1l.appendChild(e); }
         const z1r=document.createElement('span'); z1r.className='lbl-z1r'; z1r.textContent=a.ref;
         z1.appendChild(z1l); z1.appendChild(z1r);
-        // Z2
         const z2=document.createElement('div'); z2.className='lbl-z2';
         z2.appendChild(makeBcSVG(a.ref));
         if(a.qprod){ const q=document.createElement('span'); q.className='lbl-z2q'; q.textContent=a.qprod; z2.appendChild(q); }
-      // Z3
-      const z3=document.createElement('div'); z3.className='lbl-z3';
-      const [eu,ct]=a.price.toFixed(2).split('.');
-      const pEl=document.createElement('span'); pEl.className='lbl-price'; pEl.textContent=`${eu},${ct}`;
-      const eEl=document.createElement('span'); eEl.className='lbl-eur'; eEl.textContent='EUR';
-      z3.appendChild(pEl); z3.appendChild(eEl);
-      // Z4
-      const z4=document.createElement('div'); z4.className='lbl-z4';
-      const uEl=document.createElement('span'); uEl.className='lbl-unit';
-      if(a.unitPrice) uEl.textContent=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
-      const sEl=document.createElement('span'); sEl.className='lbl-store'; sEl.textContent='NOZ P854 · Louvroil';
-      z4.appendChild(uEl); z4.appendChild(sEl);
-      lbl.appendChild(z1); lbl.appendChild(z2); lbl.appendChild(z3); lbl.appendChild(z4);
-      } // fin else
-      grid.appendChild(lbl);
-    }
-  });
+        const z3=document.createElement('div'); z3.className='lbl-z3';
+        const [eu,ct]=a.price.toFixed(2).split('.');
+        const pEl=document.createElement('span'); pEl.className='lbl-price'; pEl.textContent=`${eu},${ct}`;
+        const eEl=document.createElement('span'); eEl.className='lbl-eur'; eEl.textContent='EUR';
+        z3.appendChild(pEl); z3.appendChild(eEl);
+        const z4=document.createElement('div'); z4.className='lbl-z4';
+        const uEl=document.createElement('span'); uEl.className='lbl-unit';
+        if(a.unitPrice) uEl.textContent=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
+        const sEl=document.createElement('span'); sEl.className='lbl-store'; sEl.textContent='NOZ P854 · Louvroil';
+        z4.appendChild(uEl); z4.appendChild(sEl);
+        lbl.appendChild(z1); lbl.appendChild(z2); lbl.appendChild(z3); lbl.appendChild(z4);
+        gridN.appendChild(lbl);
+      }
+    });
+  }
+
+  // Grille série
+  if(!serie.length){
+    gridS.innerHTML='<p class="empty-state" style="font-size:12px;">Aucune étiquette série — utilise l\'onglet Série</p>';
+  } else {
+    gridS.innerHTML='';
+    serie.forEach(a=>{
+      for(let i=0;i<a.qty;i++){
+        const lbl=document.createElement('div');
+        lbl.style.cssText='width:160px;background:#fff;border:1.5px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
+        const zNum=document.createElement('div');
+        zNum.style.cssText='padding:4px 6px 2px;text-align:right;border-bottom:.5px solid #bbb;';
+        const numEl=document.createElement('span');
+        numEl.style.cssText='font-size:12px;font-weight:700;color:#000;';
+        numEl.textContent=a.ref; zNum.appendChild(numEl);
+        const zBc=document.createElement('div');
+        zBc.style.cssText='padding:4px;display:flex;align-items:center;justify-content:center;';
+        zBc.appendChild(makeBcSVG(a.ref));
+        lbl.appendChild(zNum); lbl.appendChild(zBc);
+        gridS.appendChild(lbl);
+      }
+    });
+  }
 }
 
 // ── Génération PNG ──
-async function generatePNG() {
-  const btn=document.getElementById('btn-png');
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Génération…';
+async function generatePNG(type) {
+  const btnId  = type==='serie' ? 'btn-png-serie' : 'btn-png-normal';
+  const btn    = document.getElementById(btnId);
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>…';
+
+  const source = type==='serie'
+    ? articles.filter(a=>a.isSerie)
+    : articles.filter(a=>!a.isSerie);
 
   const labels=[];
-  articles.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+  source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+
+  if(!labels.length){ btn.disabled=false; btn.innerHTML='Générer PNG'; return; }
 
   const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(32*PX);
-  const COLS=Math.min(4, labels.length), ROWS=Math.ceil(labels.length/COLS);
+  const COLS=Math.min(4,labels.length), ROWS=Math.ceil(labels.length/COLS);
   const MARGIN=Math.round(3*PX), GAP=Math.round(2*PX);
   const W=COLS*LW+(COLS-1)*GAP+2*MARGIN, H=ROWS*LH+(ROWS-1)*GAP+2*MARGIN;
 
@@ -809,13 +862,20 @@ async function generatePNG() {
   }
 
   const dataURL=canvas.toDataURL('image/png');
-  document.getElementById('img-out').src=dataURL;
-  document.getElementById('img-wrap').style.display='block';
-  document.getElementById('img-info').textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×32 mm`;
 
-  const dlBtn=document.getElementById('img-dl-btn');
+  const imgOutId = type==='serie' ? 'img-out-serie'  : 'img-out-normal';
+  const imgWrapId= type==='serie' ? 'img-wrap-serie' : 'img-wrap-normal';
+  const imgInfoId= type==='serie' ? 'img-info-serie' : 'img-info-normal';
+  const dlBtnId  = type==='serie' ? 'img-dl-serie'   : 'img-dl-normal';
+  const nomFich  = type==='serie' ? 'Serie_Chaussures' : 'Etiquettes_Articles';
+
+  document.getElementById(imgOutId).src=dataURL;
+  document.getElementById(imgWrapId).style.display='block';
+  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×32 mm`;
+
+  const dlBtn=document.getElementById(dlBtnId);
   const ds=new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
-  const fname=`Etiquettes_NOZ_P854_${ds}.png`;
+  const fname=`${nomFich}_NOZ_P854_${ds}.png`;
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   dlBtn.onclick=()=>{
@@ -830,13 +890,16 @@ async function generatePNG() {
   if(isIOS){ showImgOverlay(dataURL); }
   else { dlBtn.click(); }
   showToast('Image générée !');
-  btn.disabled=false; btn.innerHTML='Générer l\'image PNG';
+  btn.disabled=false; btn.innerHTML='Générer PNG';
 }
 
 // ── Impression ──
-function printDirect() {
+function printDirect(type) {
+  const source = type==='serie'
+    ? articles.filter(a=>a.isSerie)
+    : articles.filter(a=>!a.isSerie);
   const labels=[];
-  articles.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+  source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   const win=window.open('','_blank');
   let body=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes NOZ</title>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:A4 portrait;margin:5mm;}.grid{display:flex;flex-wrap:wrap;gap:2mm;}.etq{width:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:flex-start;justify-content:space-between;padding:.6mm 1.5mm .5mm;border-bottom:.2mm solid #bbb;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.6mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:2.8mm;font-weight:700;color:#000;align-self:center;}.z2{display:flex;align-items:center;padding:.6mm 2mm .4mm;border-bottom:.2mm solid #bbb;gap:1mm;}.z2 svg{flex:1;height:auto;max-height:12mm;}.z2q{font-family:Arial;font-size:2.2mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:baseline;padding:.4mm 1.5mm .2mm;}.z3p{font-family:Arial;font-size:6mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;margin-left:.8mm;}.z4{display:flex;align-items:center;justify-content:space-between;padding:0 1.5mm .6mm;}.z4u{font-family:Arial;font-size:1.9mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.6mm;color:#888;}</style></head><body><div class="grid">`;
