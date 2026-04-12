@@ -657,5 +657,19 @@ function fmt(p){ return p.toFixed(2).replace('.',',')+' €'; }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
 </script>
+
+<script>
+// Fix iOS PWA : redirige vers index.html si lancé depuis l'écran d'accueil
+(function(){
+  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isStandalone = window.navigator.standalone === true;
+  if(isIOS && isStandalone){
+    var path = window.location.pathname;
+    if(path === '/noz-etiquettes/' || path === '/noz-etiquettes'){
+      window.location.replace('/noz-etiquettes/index.html');
+    }
+  }
+})();
+</script>
 </body>
 </html>

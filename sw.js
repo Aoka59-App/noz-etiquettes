@@ -13,6 +13,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Laisser passer toutes les requêtes normalement
+  // Juste mettre en cache pour le mode offline
   e.respondWith(
     caches.open(CACHE).then(cache =>
       cache.match(e.request).then(cached => {
