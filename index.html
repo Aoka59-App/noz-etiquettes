@@ -716,35 +716,95 @@ async function generatePNG() {
       }
 
     } else {
-      // ══ ÉTIQUETTE NORMALE ══
-      const yZ1=y, yZ2=y+Z1H, yZ3=y+Z1H+Z2H, yZ4=y+Z1H+Z2H+Z3H;
+      // ══ ÉTIQUETTE NORMALE — disposition exacte photo NOZ ══
+      /*
+        Photo NOZ analyse :
+        Z1 (~18% H) : codes petits gauche + numéro TRÈS GRAND droite (remplit la hauteur)
+        Z2 (~42% H) : barcode pleine largeur + IFLS en bas droite
+        Z3 (~26% H) : prix GROS gauche + EUR GROS droite — même ligne, même taille
+        Z4 (~14% H) : prix unitaire centré seul (pas de magasin si prix unitaire)
+      */
+      const yZ1=y,  Z1h=Math.round(LH*.18);
+      const yZ2=y+Z1h, Z2h=Math.round(LH*.42);
+      const yZ3=y+Z1h+Z2h, Z3h=Math.round(LH*.26);
+      const yZ4=y+Z1h+Z2h+Z3h, Z4h=LH-Z1h-Z2h-Z3h;
+
+      // Séparatrices
       ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
       [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(x+2,yy); ctx.lineTo(x+LW-2,yy); ctx.stroke(); });
 
-      // Z1
-      const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
-      if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+Math.round(.6*PX));
-      if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+Math.round(.6*PX)+fsS+Math.round(.3*PX));
-      let fsN=Math.round(3.4*PX); ctx.font=`bold ${fsN}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='middle';
-      while(ctx.measureText(a.ref).width>LW*.65&&fsN>Math.round(1.8*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
-      ctx.fillText(a.ref, x+LW-PR, yZ1+Z1H/2);
+      // ── Z1 : codes petits gauche + numéro grand droite ──
+      // Codes petits en colonne à gauche
+      const fsS=Math.round(1.9*PX);
+      ctx.fillStyle='#333'; ctx.font=`${fsS}px Arial`;
+      ctx.textAlign='left'; ctx.textBaseline='top';
+      const topPad=Math.round(.5*PX);
+      if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+topPad);
+      if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+topPad+fsS+Math.round(.3*PX));
 
-      // Z2
-      if(bcMap[a.ref]){ const bc=bcMap[a.ref], pV=Math.round(1.2*PX), pH=Math.round(2.5*PX), qW=a.qprod?Math.round(5*PX):0; ctx.drawImage(bc,x+pH,yZ2+pV,LW-2*pH-qW,Z2H-2*pV); }
-      if(a.qprod){ const fQ=Math.round(2.8*PX); ctx.font=`bold ${fQ}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod,x+LW-Math.round(1.5*PX),yZ2+Z2H-Math.round(1*PX)); }
+      // Numéro très grand — remplit toute la hauteur Z1, aligné à droite
+      let fsN=Math.round(Z1h*.85);
+      ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`;
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      const refMaxW = LW * 0.72;
+      while(ctx.measureText(a.ref).width > refMaxW && fsN > Math.round(1.5*PX)){
+        fsN -= Math.round(.3*PX); ctx.font=`bold ${fsN}px Arial`;
+      }
+      ctx.fillText(a.ref, x+LW-PR, yZ1+Z1h/2);
 
-      // Z3
-      const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.80);
-      ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
-      while(ctx.measureText(ps+' EUR').width>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
-      ctx.fillText(ps, x+PL, yZ3+Z3H/2);
-      const pW=ctx.measureText(ps).width, fsE=Math.round(fsP*.38);
-      ctx.font=`bold ${fsE}px Arial`; ctx.fillText(' EUR',x+PL+pW,yZ3+Z3H/2);
+      // ── Z2 : barcode pleine largeur + IFLS bas droite ──
+      if(bcMap[a.ref]){
+        const bc=bcMap[a.ref];
+        const pV=Math.round(1.2*PX), pH=Math.round(2.5*PX);
+        const qW=a.qprod ? Math.round(6*PX) : 0;
+        ctx.drawImage(bc, x+pH, yZ2+pV, LW-2*pH-qW, Z2h-2*pV);
+      }
+      if(a.qprod){
+        const fQ=Math.round(2.6*PX);
+        ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`;
+        ctx.textAlign='right'; ctx.textBaseline='bottom';
+        ctx.fillText(a.qprod, x+LW-Math.round(1.5*PX), yZ2+Z2h-Math.round(1*PX));
+      }
 
-      // Z4
-      const midZ4=yZ4+Z4H/2; ctx.textBaseline='middle';
-      if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`, fsU=Math.round(Z4H*.52); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='left'; ctx.fillText(uS,x+PL,midZ4); }
-      const fsM=Math.round(Z4H*.38); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.fillText('NOZ P854 · Louvroil',x+LW-PR,midZ4);
+      // ── Z3 : prix ET EUR sur même ligne, même taille, très gros ──
+      // Sur la photo : "3,99" à gauche et "EUR" à droite, même ligne, taille identique
+      const ps = a.price.toFixed(2).replace('.',',');
+      const eurStr = 'EUR';
+
+      // Trouver la taille qui fait rentrer "3,99   EUR" sur toute la largeur
+      let fsP = Math.round(Z3h * 0.82);
+      ctx.font=`bold ${fsP}px Arial`;
+      const gap = Math.round(2*PX);
+      while((ctx.measureText(ps).width + gap + ctx.measureText(eurStr).width) > LW-2*PL && fsP > Math.round(Z3h*.3)){
+        fsP -= 2; ctx.font=`bold ${fsP}px Arial`;
+      }
+      const midZ3 = yZ3 + Z3h/2;
+      ctx.fillStyle='#000'; ctx.textBaseline='middle';
+
+      // Prix à gauche
+      ctx.textAlign='left';
+      ctx.fillText(ps, x+PL, midZ3);
+
+      // EUR à droite — même taille, même baseline
+      ctx.textAlign='right';
+      ctx.fillText(eurStr, x+LW-PR, midZ3);
+
+      // ── Z4 : prix unitaire centré ──
+      ctx.textBaseline='middle';
+      const midZ4 = yZ4 + Z4h/2;
+      if(a.unitPrice){
+        const uS  = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
+        const fsU = Math.round(Z4h * 0.58);
+        ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`;
+        ctx.textAlign='center';
+        ctx.fillText(uS, x+LW/2, midZ4);
+      } else {
+        // Pas de prix unitaire : magasin en petit
+        const fsM=Math.round(Z4h*.42);
+        ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`;
+        ctx.textAlign='right';
+        ctx.fillText('NOZ P854 · Louvroil', x+LW-PR, midZ4);
+      }
     }
   }
 
