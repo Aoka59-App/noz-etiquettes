@@ -234,34 +234,9 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
           </div>
         </div>
 
-        <div class="grid2" style="margin-bottom:10px;">
-          <div class="field" style="margin-bottom:0;">
-            <label>Prix (€)</label>
-            <input id="ser-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"/>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Exemplaires par paire</label>
-            <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
-          </div>
-        </div>
-
         <div class="field" style="margin-bottom:10px;">
-          <label>Prix unitaire (optionnel — ex : 5,32 EUR/kg)</label>
-          <div class="uprice-row">
-            <input id="ser-uprice" type="number" placeholder="5,32" step="0.01" min="0" inputmode="decimal"/>
-            <select id="ser-uunit">
-              <option value="EUR/kg">€ / kg</option>
-              <option value="EUR/L">€ / L</option>
-              <option value="EUR/100g">€ / 100g</option>
-              <option value="EUR/100mL">€ / 100 mL</option>
-              <option value="EUR/pce">€ / pièce</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field" style="margin-bottom:10px;">
-          <label>Rang IFLS (optionnel)</label>
-          <input id="ser-ifls" type="text" placeholder="ex : 2" maxlength="6"/>
+          <label>Exemplaires par paire</label>
+          <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
         </div>
 
         <!-- Aperçu du format généré -->
@@ -505,36 +480,26 @@ function updateSerPreview() {
 function genererSerie() {
   const sem    = document.getElementById('ser-semaine').value.trim();
   const nb     = parseInt(document.getElementById('ser-nb').value);
-  const price  = parseFloat(document.getElementById('ser-price').value);
   const qty    = Math.max(1, parseInt(document.getElementById('ser-qty').value)||2);
-  const uprice = parseFloat(document.getElementById('ser-uprice').value);
-  const uunit  = document.getElementById('ser-uunit').value;
-  const ifls   = document.getElementById('ser-ifls').value.trim();
 
-  if(!sem)               { showToast('Merci de saisir un numéro de semaine.'); return; }
-  if(!nb || nb < 1)      { showToast('Merci de saisir le nombre de paires.'); return; }
-  if(isNaN(price)||price<0) { showToast('Prix invalide.'); return; }
+  if(!sem)           { showToast('Merci de saisir un numéro de semaine.'); return; }
+  if(!nb || nb < 1)  { showToast('Merci de saisir le nombre de paires.'); return; }
 
-  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
-
-  // Supprimer les anciens articles de série si il y en a
   articles = articles.filter(a => !a.isSerie);
 
-  // Générer les articles
   for(let i=1; i<=nb; i++){
     const num = String(i).padStart(2,'0');
     const ref = sem + num;
     articles.push({
-      ref, price, qty,
+      ref, price: 0, qty,
       code1: '', code2: '',
-      unitPrice, qprod: ifls,
+      unitPrice: null, qprod: '',
       isSerie: true
     });
   }
 
   save(); renderAll();
 
-  // Afficher résumé
   const first = sem+'01';
   const last  = sem+String(nb).padStart(2,'0');
   const total = nb*qty;
@@ -543,8 +508,7 @@ function genererSerie() {
   resTxt.innerHTML =
     `Semaine <strong>${sem}</strong> · <strong>${nb}</strong> paires<br>` +
     `Codes : <strong>${first}</strong> → <strong>${last}</strong><br>` +
-    `Prix : <strong>${price.toFixed(2).replace('.',',')} €</strong> · ×${qty} exemplaires<br>` +
-    `Total : <strong>${total} étiquettes</strong> générées`;
+    `×${qty} exemplaires · <strong>${total} étiquettes</strong> générées`;
   res.style.display='block';
   showToast(`${total} étiquettes générées !`);
 }
