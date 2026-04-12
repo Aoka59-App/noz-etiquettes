@@ -134,17 +134,17 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 /* ── PAGE APERÇU ── */
 .preview-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .lbl { background: #fff; border: 1.5px solid #222; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; font-family: Arial,sans-serif; width: 160px; height: 160px; }
-.lbl-z1 { display:flex; align-items:flex-start; justify-content:space-between; padding:2px 4px 2px; border-bottom:.5px solid #bbb; }
+.lbl-z1 { display:flex; align-items:center; justify-content:space-between; padding:2px 5px; border-bottom:.5px solid #bbb; flex-shrink:0; height:16px; }
 .lbl-z1l { display:flex; flex-direction:column; }
-.lbl-z1s { font-size:6px; color:#333; line-height:1.3; }
-.lbl-z1r { font-size:8px; font-weight:700; color:#000; align-self:center; }
-.lbl-z2 { display:flex; align-items:center; padding:2px 3px; border-bottom:.5px solid #bbb; gap:2px; }
-.lbl-z2 svg { flex:1; height:auto; max-height:42px; }
-.lbl-z2q { font-size:7px; font-weight:700; color:#000; flex-shrink:0; align-self:flex-end; }
-.lbl-z3 { display:flex; align-items:baseline; padding:2px 4px 0; }
-.lbl-price { font-size:20px; font-weight:700; color:#000; line-height:1; }
-.lbl-eur   { font-size:10px; font-weight:700; color:#000; margin-left:3px; }
-.lbl-z4 { display:flex; align-items:center; justify-content:space-between; padding:1px 4px 3px; }
+.lbl-z1s { font-size:5.5px; color:#333; line-height:1.3; }
+.lbl-z1r { font-size:9px; font-weight:700; color:#000; }
+.lbl-z2 { flex:1; display:flex; align-items:center; padding:3px 4px; border-bottom:.5px solid #bbb; gap:2px; min-height:0; overflow:hidden; }
+.lbl-z2 svg { flex:1; width:100%; height:100%; max-height:none; }
+.lbl-z2q { font-size:7px; font-weight:700; color:#000; flex-shrink:0; align-self:flex-end; padding-bottom:2px; }
+.lbl-z3 { display:flex; align-items:center; justify-content:space-between; padding:3px 5px 2px; border-bottom:.5px solid #bbb; flex-shrink:0; height:48px; }
+.lbl-price { font-size:26px; font-weight:700; color:#000; line-height:1; }
+.lbl-eur   { font-size:18px; font-weight:700; color:#000; }
+.lbl-z4 { display:flex; align-items:center; justify-content:space-between; padding:2px 5px 3px; flex-shrink:0; }
 .lbl-unit  { font-size:6.5px; font-weight:700; color:#222; }
 .lbl-store { font-size:5.5px; color:#888; }
 
@@ -772,9 +772,9 @@ async function generatePNG(type) {
   const bcMap={};
   await Promise.all(refs.map(async r=>{ bcMap[r]=await barcodeToImg(r); }));
 
-  // Zones proportionnées pour format carré 51×51mm
-  // Z1 codes ~12%, Z2 barcode ~44%, Z3 prix ~28%, Z4 prix unitaire ~16%
-  const Z1H=Math.round(LH*.12), Z2H=Math.round(LH*.44), Z3H=Math.round(LH*.28), Z4H=LH-Math.round(LH*.12)-Math.round(LH*.44)-Math.round(LH*.28);
+  // Zones calées sur l'aperçu photo :
+  // Z1 codes : ~10%, Z2 barcode : ~42%, Z3 prix+EUR : ~30%, Z4 prix/kg+magasin : ~18%
+  const Z1H=Math.round(LH*.10), Z2H=Math.round(LH*.42), Z3H=Math.round(LH*.30), Z4H=LH-Math.round(LH*.10)-Math.round(LH*.42)-Math.round(LH*.30);
   const BRD=Math.round(.35*PX), PL=Math.round(2.5*PX), PR=Math.round(2.5*PX);
 
   for(let i=0;i<labels.length;i++){
