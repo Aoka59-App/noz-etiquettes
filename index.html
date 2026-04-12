@@ -998,6 +998,18 @@ function cptRemove(i){
   cptData.splice(i,1); cptSave(); cptRender();
 }
 
+function cptChangeQty(i, delta){
+  const newQty = Math.max(1, (cptData[i].qty || 1) + delta);
+  cptData[i].qty = newQty;
+  cptSave(); cptRender();
+}
+
+function cptSetQty(i, val){
+  const newQty = Math.max(1, parseInt(val) || 1);
+  cptData[i].qty = newQty;
+  cptSave(); cptRender();
+}
+
 function cptRender(){
   const container = document.getElementById('cpt-lines');
   const totalWrap = document.getElementById('cpt-total-wrap');
@@ -1019,14 +1031,20 @@ function cptRender(){
     totalArticles += l.qty;
     return `
     <div style="background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
-      <div style="background:var(--marine);color:var(--or);border-radius:8px;padding:4px 10px;font-size:15px;font-weight:700;flex-shrink:0;">
-        ×${l.qty}
-      </div>
       <div style="flex:1;">
         <div style="font-size:15px;font-weight:700;color:#000;">${l.price.toFixed(2).replace('.',',')} €</div>
-        <div style="font-size:12px;color:#888;margin-top:1px;">= ${sous.toFixed(2).replace('.',',')} €</div>
+        <div style="font-size:12px;color:#888;margin-top:1px;" id="cpt-sous-${i}">= ${sous.toFixed(2).replace('.',',')} €</div>
       </div>
-      <div style="font-size:17px;font-weight:700;color:#2e7d32;min-width:80px;text-align:right;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button onclick="cptChangeQty(${i},-1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #d0d0d0;background:#fff;font-size:18px;font-weight:700;color:var(--marine);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
+        <input
+          type="number" min="1" value="${l.qty}"
+          onchange="cptSetQty(${i}, this.value)"
+          style="width:52px;height:36px;text-align:center;font-size:16px;font-weight:700;color:var(--marine);border:1.5px solid #d0d0d0;border-radius:8px;background:#fff;outline:none;"
+        />
+        <button onclick="cptChangeQty(${i},+1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #d0d0d0;background:#fff;font-size:18px;font-weight:700;color:var(--marine);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+      </div>
+      <div style="font-size:17px;font-weight:700;color:#2e7d32;min-width:72px;text-align:right;" id="cpt-total-${i}">
         ${sous.toFixed(2).replace('.',',')} €
       </div>
       <button onclick="cptRemove(${i})" style="background:none;border:none;color:#bbb;font-size:20px;cursor:pointer;padding:0 2px;">×</button>
