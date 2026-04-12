@@ -612,17 +612,34 @@ function renderPreview() {
   articles.forEach(a=>{
     for(let i=0;i<a.qty;i++){
       const lbl=document.createElement('div'); lbl.className='lbl';
-      // Z1
-      const z1=document.createElement('div'); z1.className='lbl-z1';
-      const z1l=document.createElement('div'); z1l.className='lbl-z1l';
-      if(a.code1){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code1; z1l.appendChild(e); }
-      if(a.code2){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code2; z1l.appendChild(e); }
-      const z1r=document.createElement('span'); z1r.className='lbl-z1r'; z1r.textContent=a.ref;
-      z1.appendChild(z1l); z1.appendChild(z1r);
-      // Z2
-      const z2=document.createElement('div'); z2.className='lbl-z2';
-      z2.appendChild(makeBcSVG(a.ref));
-      if(a.qprod){ const q=document.createElement('span'); q.className='lbl-z2q'; q.textContent=a.qprod; z2.appendChild(q); }
+
+      if(a.isSerie){
+        // ── Étiquette série : numéro en haut + barcode uniquement ──
+        lbl.style.cssText='width:160px;background:#fff;border:1.5px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
+        // Numéro en grand
+        const zNum=document.createElement('div');
+        zNum.style.cssText='padding:4px 6px 2px;text-align:right;border-bottom:.5px solid #bbb;';
+        const numEl=document.createElement('span');
+        numEl.style.cssText='font-size:12px;font-weight:700;color:#000;';
+        numEl.textContent=a.ref;
+        zNum.appendChild(numEl);
+        // Barcode grand
+        const zBc=document.createElement('div');
+        zBc.style.cssText='padding:4px 4px 4px;display:flex;align-items:center;justify-content:center;';
+        zBc.appendChild(makeBcSVG(a.ref));
+        lbl.appendChild(zNum); lbl.appendChild(zBc);
+      } else {
+        // Z1
+        const z1=document.createElement('div'); z1.className='lbl-z1';
+        const z1l=document.createElement('div'); z1l.className='lbl-z1l';
+        if(a.code1){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code1; z1l.appendChild(e); }
+        if(a.code2){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code2; z1l.appendChild(e); }
+        const z1r=document.createElement('span'); z1r.className='lbl-z1r'; z1r.textContent=a.ref;
+        z1.appendChild(z1l); z1.appendChild(z1r);
+        // Z2
+        const z2=document.createElement('div'); z2.className='lbl-z2';
+        z2.appendChild(makeBcSVG(a.ref));
+        if(a.qprod){ const q=document.createElement('span'); q.className='lbl-z2q'; q.textContent=a.qprod; z2.appendChild(q); }
       // Z3
       const z3=document.createElement('div'); z3.className='lbl-z3';
       const [eu,ct]=a.price.toFixed(2).split('.');
@@ -636,6 +653,7 @@ function renderPreview() {
       const sEl=document.createElement('span'); sEl.className='lbl-store'; sEl.textContent='NOZ P854 · Louvroil';
       z4.appendChild(uEl); z4.appendChild(sEl);
       lbl.appendChild(z1); lbl.appendChild(z2); lbl.appendChild(z3); lbl.appendChild(z4);
+      } // fin else
       grid.appendChild(lbl);
     }
   });
@@ -671,34 +689,63 @@ async function generatePNG() {
     const x=MARGIN+col*(LW+GAP), y=MARGIN+row*(LH+GAP);
     ctx.fillStyle='#fff'; ctx.fillRect(x,y,LW,LH);
     ctx.strokeStyle='#222'; ctx.lineWidth=BRD; ctx.strokeRect(x+BRD/2,y+BRD/2,LW-BRD,LH-BRD);
-    const yZ1=y, yZ2=y+Z1H, yZ3=y+Z1H+Z2H, yZ4=y+Z1H+Z2H+Z3H;
-    ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
-    [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(x+2,yy); ctx.lineTo(x+LW-2,yy); ctx.stroke(); });
 
-    // Z1
-    const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
-    if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+Math.round(.6*PX));
-    if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+Math.round(.6*PX)+fsS+Math.round(.3*PX));
-    let fsN=Math.round(3.4*PX); ctx.font=`bold ${fsN}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='middle';
-    while(ctx.measureText(a.ref).width>LW*.65&&fsN>Math.round(1.8*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
-    ctx.fillText(a.ref, x+LW-PR, yZ1+Z1H/2);
+    if(a.isSerie){
+      // ══ ÉTIQUETTE SÉRIE : numéro en haut + barcode grand ══
+      const NUM_H = Math.round(LH*0.22);  // zone numéro
+      const BC_H  = LH - NUM_H;           // zone barcode
 
-    // Z2
-    if(bcMap[a.ref]){ const bc=bcMap[a.ref], pV=Math.round(1.2*PX), pH=Math.round(2.5*PX), qW=a.qprod?Math.round(5*PX):0; ctx.drawImage(bc,x+pH,yZ2+pV,LW-2*pH-qW,Z2H-2*pV); }
-    if(a.qprod){ const fQ=Math.round(2.8*PX); ctx.font=`bold ${fQ}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod,x+LW-Math.round(1.5*PX),yZ2+Z2H-Math.round(1*PX)); }
+      // Séparatrice
+      ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
+      ctx.beginPath(); ctx.moveTo(x+2,y+NUM_H); ctx.lineTo(x+LW-2,y+NUM_H); ctx.stroke();
 
-    // Z3
-    const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.80);
-    ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
-    while(ctx.measureText(ps+' EUR').width>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
-    ctx.fillText(ps, x+PL, yZ3+Z3H/2);
-    const pW=ctx.measureText(ps).width, fsE=Math.round(fsP*.38);
-    ctx.font=`bold ${fsE}px Arial`; ctx.fillText(' EUR',x+PL+pW,yZ3+Z3H/2);
+      // Numéro en grand à droite
+      let fsNum=Math.round(4.5*PX);
+      ctx.fillStyle='#000'; ctx.font=`bold ${fsNum}px Arial`;
+      ctx.textAlign='right'; ctx.textBaseline='middle';
+      while(ctx.measureText(a.ref).width>LW-2*PL && fsNum>Math.round(2*PX)){
+        fsNum-=Math.round(.2*PX); ctx.font=`bold ${fsNum}px Arial`;
+      }
+      ctx.fillText(a.ref, x+LW-PR, y+NUM_H/2);
 
-    // Z4
-    const midZ4=yZ4+Z4H/2; ctx.textBaseline='middle';
-    if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`, fsU=Math.round(Z4H*.52); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='left'; ctx.fillText(uS,x+PL,midZ4); }
-    const fsM=Math.round(Z4H*.38); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.fillText('NOZ P854 · Louvroil',x+LW-PR,midZ4);
+      // Barcode pleine largeur
+      if(bcMap[a.ref]){
+        const bc=bcMap[a.ref];
+        const padV=Math.round(1.5*PX), padH=Math.round(2.5*PX);
+        ctx.drawImage(bc, x+padH, y+NUM_H+padV, LW-2*padH, BC_H-2*padV);
+      }
+
+    } else {
+      // ══ ÉTIQUETTE NORMALE ══
+      const yZ1=y, yZ2=y+Z1H, yZ3=y+Z1H+Z2H, yZ4=y+Z1H+Z2H+Z3H;
+      ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
+      [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(x+2,yy); ctx.lineTo(x+LW-2,yy); ctx.stroke(); });
+
+      // Z1
+      const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
+      if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+Math.round(.6*PX));
+      if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+Math.round(.6*PX)+fsS+Math.round(.3*PX));
+      let fsN=Math.round(3.4*PX); ctx.font=`bold ${fsN}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='middle';
+      while(ctx.measureText(a.ref).width>LW*.65&&fsN>Math.round(1.8*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
+      ctx.fillText(a.ref, x+LW-PR, yZ1+Z1H/2);
+
+      // Z2
+      if(bcMap[a.ref]){ const bc=bcMap[a.ref], pV=Math.round(1.2*PX), pH=Math.round(2.5*PX), qW=a.qprod?Math.round(5*PX):0; ctx.drawImage(bc,x+pH,yZ2+pV,LW-2*pH-qW,Z2H-2*pV); }
+      if(a.qprod){ const fQ=Math.round(2.8*PX); ctx.font=`bold ${fQ}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod,x+LW-Math.round(1.5*PX),yZ2+Z2H-Math.round(1*PX)); }
+
+      // Z3
+      const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.80);
+      ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
+      while(ctx.measureText(ps+' EUR').width>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
+      ctx.fillText(ps, x+PL, yZ3+Z3H/2);
+      const pW=ctx.measureText(ps).width, fsE=Math.round(fsP*.38);
+      ctx.font=`bold ${fsE}px Arial`; ctx.fillText(' EUR',x+PL+pW,yZ3+Z3H/2);
+
+      // Z4
+      const midZ4=yZ4+Z4H/2; ctx.textBaseline='middle';
+      if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`, fsU=Math.round(Z4H*.52); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='left'; ctx.fillText(uS,x+PL,midZ4); }
+      const fsM=Math.round(Z4H*.38); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.fillText('NOZ P854 · Louvroil',x+LW-PR,midZ4);
+    }
   }
 
   const dataURL=canvas.toDataURL('image/png');
