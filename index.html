@@ -209,6 +209,7 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 
   <div class="tabs">
     <button class="tab active" onclick="showTab('saisie',this)">Saisie</button>
+    <button class="tab" onclick="showTab('serie',this)">Série</button>
     <button class="tab" onclick="showTab('liste',this)">Articles</button>
     <button class="tab" onclick="showTab('apercu',this)">Aperçu</button>
     <button class="tab" onclick="showTab('install',this)">Installer</button>
@@ -216,7 +217,78 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 
   <div class="pages">
 
-    <!-- ══ ONGLET SAISIE ══ -->
+    <!-- ══ ONGLET SÉRIE CHAUSSURES ══ -->
+    <div class="page" id="page-serie">
+
+      <div class="card">
+        <div class="card-title">Génération en série — chaussures</div>
+
+        <div class="grid2" style="margin-bottom:10px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Semaine (ex : 16)</label>
+            <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Nombre de paires</label>
+            <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-bottom:10px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Prix (€)</label>
+            <input id="ser-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"/>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Exemplaires par paire</label>
+            <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:10px;">
+          <label>Prix unitaire (optionnel — ex : 5,32 EUR/kg)</label>
+          <div class="uprice-row">
+            <input id="ser-uprice" type="number" placeholder="5,32" step="0.01" min="0" inputmode="decimal"/>
+            <select id="ser-uunit">
+              <option value="EUR/kg">€ / kg</option>
+              <option value="EUR/L">€ / L</option>
+              <option value="EUR/100g">€ / 100g</option>
+              <option value="EUR/100mL">€ / 100 mL</option>
+              <option value="EUR/pce">€ / pièce</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:10px;">
+          <label>Rang IFLS (optionnel)</label>
+          <input id="ser-ifls" type="text" placeholder="ex : 2" maxlength="6"/>
+        </div>
+
+        <!-- Aperçu du format généré -->
+        <div id="ser-preview" style="background:#f0ede8;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#555;display:none;">
+          <span id="ser-preview-txt"></span>
+        </div>
+
+        <button class="btn-add" onclick="genererSerie()">Générer la série</button>
+      </div>
+
+      <!-- Résumé série générée -->
+      <div id="ser-result" style="display:none;">
+        <div class="card">
+          <div class="card-title">Série générée</div>
+          <div id="ser-result-txt" style="font-size:13px;color:#333;line-height:1.8;"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn-primary" style="margin-bottom:0;" onclick="showTab('apercu', document.querySelectorAll('.tab')[3])">
+              Voir l'aperçu
+            </button>
+            <button class="btn-secondary" style="margin-bottom:0;" onclick="viderSerie()">
+              Vider la série
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <div class="page active" id="page-saisie">
 
       <div class="card">
@@ -409,6 +481,80 @@ function showTab(name, btn) {
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
   if(name==='apercu') renderPreview();
+}
+
+// ── Mise à jour preview série en temps réel ──
+function updateSerPreview() {
+  const sem   = document.getElementById('ser-semaine').value.trim();
+  const nb    = parseInt(document.getElementById('ser-nb').value) || 0;
+  const qty   = parseInt(document.getElementById('ser-qty').value) || 2;
+  const prev  = document.getElementById('ser-preview');
+  const txt   = document.getElementById('ser-preview-txt');
+  if(!sem || !nb){ prev.style.display='none'; return; }
+  const first = sem+'01';
+  const last  = sem+String(nb).padStart(2,'0');
+  const total = nb * qty;
+  txt.innerHTML = `Codes générés : <strong>${first}</strong> → <strong>${last}</strong> &nbsp;·&nbsp; <strong>${nb}</strong> références &nbsp;·&nbsp; <strong>${total}</strong> étiquettes au total`;
+  prev.style.display='block';
+}
+['ser-semaine','ser-nb','ser-qty'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updateSerPreview);
+});
+
+// ── Générer la série ──
+function genererSerie() {
+  const sem    = document.getElementById('ser-semaine').value.trim();
+  const nb     = parseInt(document.getElementById('ser-nb').value);
+  const price  = parseFloat(document.getElementById('ser-price').value);
+  const qty    = Math.max(1, parseInt(document.getElementById('ser-qty').value)||2);
+  const uprice = parseFloat(document.getElementById('ser-uprice').value);
+  const uunit  = document.getElementById('ser-uunit').value;
+  const ifls   = document.getElementById('ser-ifls').value.trim();
+
+  if(!sem)               { showToast('Merci de saisir un numéro de semaine.'); return; }
+  if(!nb || nb < 1)      { showToast('Merci de saisir le nombre de paires.'); return; }
+  if(isNaN(price)||price<0) { showToast('Prix invalide.'); return; }
+
+  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
+
+  // Supprimer les anciens articles de série si il y en a
+  articles = articles.filter(a => !a.isSerie);
+
+  // Générer les articles
+  for(let i=1; i<=nb; i++){
+    const num = String(i).padStart(2,'0');
+    const ref = sem + num;
+    articles.push({
+      ref, price, qty,
+      code1: '', code2: '',
+      unitPrice, qprod: ifls,
+      isSerie: true
+    });
+  }
+
+  save(); renderAll();
+
+  // Afficher résumé
+  const first = sem+'01';
+  const last  = sem+String(nb).padStart(2,'0');
+  const total = nb*qty;
+  const res   = document.getElementById('ser-result');
+  const resTxt= document.getElementById('ser-result-txt');
+  resTxt.innerHTML =
+    `Semaine <strong>${sem}</strong> · <strong>${nb}</strong> paires<br>` +
+    `Codes : <strong>${first}</strong> → <strong>${last}</strong><br>` +
+    `Prix : <strong>${price.toFixed(2).replace('.',',')} €</strong> · ×${qty} exemplaires<br>` +
+    `Total : <strong>${total} étiquettes</strong> générées`;
+  res.style.display='block';
+  showToast(`${total} étiquettes générées !`);
+}
+
+// ── Vider la série ──
+function viderSerie() {
+  articles = articles.filter(a => !a.isSerie);
+  save(); renderAll();
+  document.getElementById('ser-result').style.display='none';
+  showToast('Série effacée');
 }
 
 // ── Barcode SVG ──
