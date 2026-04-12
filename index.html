@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NOZ Étiq.">
+<meta name="theme-color" content="#1a2d5a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>NOZ · Étiquettes P854</title>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<style>
+:root {
+  --marine: #1a2d5a;
+  --or: #c8a96e;
+  --bg: #f0ede8;
+  --white: #ffffff;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; background: var(--marine); }
+
+/* ── APP SHELL ── */
+.app {
+  display: flex; flex-direction: column;
+  height: 100%; height: 100dvh;
+  background: var(--bg);
+}
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--marine);
+  padding: calc(var(--safe-top) + 10px) 16px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.hdr-logo { font-size: 20px; font-weight: 700; color: var(--or); letter-spacing: 3px; }
+.hdr-sub  { font-size: 11px; color: #7a8fbb; }
+.hdr-bar  { height: 3px; background: var(--or); flex-shrink: 0; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; background: var(--marine); flex-shrink: 0;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.tab {
+  flex: 1; padding: 10px 4px 8px; text-align: center;
+  font-size: 11px; font-weight: 600; color: #7a8fbb;
+  cursor: pointer; border: none; background: none;
+  border-bottom: 2px solid transparent; transition: all .2s;
+}
+.tab.active { color: var(--or); border-bottom-color: var(--or); }
+
+/* ── PAGES ── */
+.pages { flex: 1; overflow: hidden; position: relative; }
+.page  { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; padding: 14px 14px calc(14px + var(--safe-bot)); }
+.page.active { display: block; }
+
+/* ── FORMULAIRE ── */
+.card { background: var(--white); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+.card-title { font-size: 10px; font-weight: 700; color: #7a8fbb; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+
+.field { margin-bottom: 10px; }
+.field:last-child { margin-bottom: 0; }
+.field label { display: block; font-size: 11px; color: #555; font-weight: 700; margin-bottom: 5px; }
+.field input, .field select {
+  width: 100%; height: 44px; padding: 0 12px; font-size: 15px;
+  border: 1.5px solid #d8d5cc; border-radius: 8px;
+  background: #fff; color: #111; outline: none;
+  -webkit-appearance: none; appearance: none;
+}
+.field input:focus { border-color: var(--marine); }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231a2d5a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 1fr 88px 64px; gap: 8px; }
+.uprice-row { display: grid; grid-template-columns: 1fr 120px; gap: 8px; }
+
+.btn-add {
+  width: 100%; height: 48px; background: var(--marine); color: var(--or);
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; letter-spacing: .5px; margin-top: 4px;
+  active: opacity .8;
+}
+.btn-add:active { opacity: .8; }
+
+/* ── LISTE ARTICLES ── */
+.article-item {
+  background: var(--white); border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+}
+.art-ref   { font-size: 14px; font-weight: 700; color: var(--marine); flex: 1; }
+.art-price { font-size: 13px; font-weight: 600; color: #2e7d32; }
+.art-qty   { font-size: 12px; color: #888; background: #f0ede8; padding: 2px 8px; border-radius: 10px; }
+.art-del   { background: none; border: none; color: #bbb; font-size: 22px; padding: 0 2px; cursor: pointer; }
+.art-del:active { color: #c0392b; }
+.empty-state { text-align: center; color: #bbb; font-size: 14px; padding: 30px 0; }
+
+/* ── TOTAUX BAR ── */
+.totals {
+  background: var(--marine); border-radius: 10px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.totals span   { font-size: 12px; color: #7a8fbb; }
+.totals strong { font-size: 18px; color: var(--or); }
+
+/* ── BOUTONS ACTION ── */
+.btn-primary {
+  width: 100%; height: 52px; background: var(--or); color: #fff;
+  border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.btn-primary:active { opacity: .85; }
+.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+.btn-secondary {
+  width: 100%; height: 44px; background: #fff; color: var(--marine);
+  border: 1.5px solid var(--marine); border-radius: 10px;
+  font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px;
+}
+.btn-secondary:active { background: #f0ede8; }
+.btn-secondary:disabled { opacity: .4; }
+
+.btn-danger {
+  width: 100%; height: 38px; background: #fff; color: #999;
+  border: 1px solid #ddd; border-radius: 10px; font-size: 13px; cursor: pointer;
+}
+
+/* ── PAGE APERÇU ── */
+.preview-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.lbl { background: #fff; border: 1.5px solid #222; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; font-family: Arial,sans-serif; width: 160px; }
+.lbl-z1 { display:flex; align-items:flex-start; justify-content:space-between; padding:2px 4px 2px; border-bottom:.5px solid #bbb; }
+.lbl-z1l { display:flex; flex-direction:column; }
+.lbl-z1s { font-size:6px; color:#333; line-height:1.3; }
+.lbl-z1r { font-size:8px; font-weight:700; color:#000; align-self:center; }
+.lbl-z2 { display:flex; align-items:center; padding:2px 3px; border-bottom:.5px solid #bbb; gap:2px; }
+.lbl-z2 svg { flex:1; height:auto; max-height:42px; }
+.lbl-z2q { font-size:7px; font-weight:700; color:#000; flex-shrink:0; align-self:flex-end; }
+.lbl-z3 { display:flex; align-items:baseline; padding:2px 4px 0; }
+.lbl-price { font-size:20px; font-weight:700; color:#000; line-height:1; }
+.lbl-eur   { font-size:10px; font-weight:700; color:#000; margin-left:3px; }
+.lbl-z4 { display:flex; align-items:center; justify-content:space-between; padding:1px 4px 3px; }
+.lbl-unit  { font-size:6.5px; font-weight:700; color:#222; }
+.lbl-store { font-size:5.5px; color:#888; }
+
+/* ── PAGE INSTALLATION ── */
+.install-card { background: var(--white); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+.install-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; }
+.install-step:last-child { margin-bottom:0; }
+.step-num { width:28px; height:28px; background:var(--marine); color:var(--or); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
+.step-text { font-size:13px; color:#333; line-height:1.5; padding-top:4px; }
+.step-text strong { color: var(--marine); }
+.install-banner {
+  background: var(--marine); border-radius: 12px; padding: 16px;
+  text-align: center; margin-bottom: 12px;
+}
+.install-banner p { color: #7a8fbb; font-size: 12px; margin-top: 6px; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:calc(20px + var(--safe-bot)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--marine); color:var(--or); padding:12px 24px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; z-index:999; white-space:nowrap; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+.spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; }
+@keyframes sp { to { transform:rotate(360deg); } }
+#render-canvas { display:none; }
+
+/* ── Overlay image plein écran iOS ── */
+.img-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.92);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+.img-overlay img {
+  max-width: 100%; max-height: 65vh;
+  border-radius: 8px; display: block;
+}
+.img-overlay-tip {
+  margin-top: 18px; text-align: center;
+  color: #fff; font-size: 15px; font-weight: 600; line-height: 1.6;
+}
+.img-overlay-tip span { color: var(--or); }
+.img-overlay-sub { color: #aaa; font-size: 12px; margin-top: 6px; text-align:center; }
+.img-overlay-close {
+  margin-top: 24px; padding: 12px 36px;
+  background: var(--marine); color: var(--or);
+  border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="hdr">
+    <span class="hdr-logo">NOZ</span>
+    <span class="hdr-sub">P854 Louvroil</span>
+  </div>
+  <div class="hdr-bar"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('saisie',this)">Saisie</button>
+    <button class="tab" onclick="showTab('liste',this)">Articles</button>
+    <button class="tab" onclick="showTab('apercu',this)">Aperçu</button>
+    <button class="tab" onclick="showTab('install',this)">Installer</button>
+  </div>
+
+  <div class="pages">
+
+    <!-- ══ ONGLET SAISIE ══ -->
+    <div class="page active" id="page-saisie">
+
+      <div class="card">
+        <div class="card-title">Nouvel article</div>
+
+        <div class="grid3" style="margin-bottom:10px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Code article (réf NOZ)</label>
+            <input id="inp-ref" type="text" placeholder="1004875273" maxlength="20" autocomplete="off" inputmode="numeric"/>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Prix (€)</label>
+            <input id="inp-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"/>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Qté</label>
+            <input id="inp-qty" type="number" value="1" min="1" max="99" inputmode="numeric"/>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-bottom:10px;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Code interne (ex : t90257)</label>
+            <input id="inp-code1" type="text" placeholder="t90257" maxlength="20"/>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Sous-code (ex : AUX002)</label>
+            <input id="inp-code2" type="text" placeholder="AUX002" maxlength="20"/>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:10px;">
+          <label>Prix unitaire — optionnel (ex : 5,32 EUR/kg)</label>
+          <div class="uprice-row">
+            <input id="inp-uprice" type="number" placeholder="5,32" step="0.01" min="0" inputmode="decimal"/>
+            <select id="inp-uunit">
+              <option value="EUR/kg">€ / kg</option>
+              <option value="EUR/L">€ / L</option>
+              <option value="EUR/100g">€ / 100g</option>
+              <option value="EUR/100mL">€ / 100 mL</option>
+              <option value="EUR/pce">€ / pièce</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Quantité produit (le chiffre à droite du barcode — optionnel)</label>
+          <input id="inp-qprod" type="text" placeholder="ex : 2" maxlength="6"/>
+        </div>
+
+        <button class="btn-add" onclick="addArticle()">+ Ajouter l'article</button>
+      </div>
+
+    </div>
+
+    <!-- ══ ONGLET LISTE ══ -->
+    <div class="page" id="page-liste">
+
+      <div class="totals">
+        <span id="totals-text">0 article · 0 étiquette</span>
+        <strong id="totals-count">0</strong>
+      </div>
+
+      <div id="article-list">
+        <p class="empty-state">Aucun article saisi</p>
+      </div>
+
+      <button class="btn-danger" onclick="clearAll()" style="margin-top:8px;">Tout effacer</button>
+
+    </div>
+
+    <!-- ══ ONGLET APERÇU ══ -->
+    <div class="page" id="page-apercu">
+
+      <button class="btn-primary" id="btn-png" onclick="generatePNG()" disabled>
+        Générer l'image PNG
+      </button>
+      <button class="btn-secondary" id="btn-print" onclick="printDirect()" disabled>
+        Imprimer (Ctrl+P)
+      </button>
+
+      <div id="img-wrap" style="display:none; background:#fff; border-radius:12px; padding:12px; margin-bottom:12px;">
+        <div style="font-size:11px;color:#555;margin-bottom:8px;font-weight:600;">IMAGE GÉNÉRÉE · 300 DPI</div>
+        <img id="img-out" src="" alt="Étiquettes" style="width:100%;height:auto;border:1px solid #eee;border-radius:6px;"/>
+        <div style="margin-top:8px;font-size:11px;color:#888;" id="img-info"></div>
+        <button class="btn-primary" id="img-dl-btn" style="margin-top:10px;margin-bottom:0;">
+          ↓ Enregistrer le PNG
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Prévisualisation</div>
+        <div class="preview-grid" id="preview-grid">
+          <p class="empty-state">Ajoutez des articles dans l'onglet Saisie</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ ONGLET INSTALLER ══ -->
+    <div class="page" id="page-install">
+
+      <div class="install-banner">
+        <div style="font-size:36px;margin-bottom:4px;">📱</div>
+        <div style="font-size:16px;font-weight:700;color:var(--or);">Installer l'application</div>
+        <p>Ajoute l'appli sur ton écran d'accueil pour y accéder en un tap, hors connexion</p>
+      </div>
+
+      <button class="btn-primary" id="btn-install" onclick="installPWA()">
+        Installer sur cet appareil
+      </button>
+
+      <div class="install-card">
+        <div class="card-title">Installation sur iPhone / iPad</div>
+        <div class="install-step">
+          <div class="step-num">1</div>
+          <div class="step-text">Ouvre cette page dans <strong>Safari</strong> (pas Chrome ni Firefox)</div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">2</div>
+          <div class="step-text">Appuie sur le bouton <strong>Partager</strong> <span style="font-size:16px;">⬆</span> en bas de l'écran</div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">3</div>
+          <div class="step-text">Fais défiler et appuie sur <strong>"Sur l'écran d'accueil"</strong></div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">4</div>
+          <div class="step-text">Appuie sur <strong>"Ajouter"</strong> en haut à droite — l'icône NOZ apparaît sur ton écran</div>
+        </div>
+      </div>
+
+      <div class="install-card">
+        <div class="card-title">Installation sur Android / PC</div>
+        <div class="install-step">
+          <div class="step-num">1</div>
+          <div class="step-text">Ouvre cette page dans <strong>Chrome</strong></div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">2</div>
+          <div class="step-text">Appuie sur les <strong>3 points</strong> en haut à droite</div>
+        </div>
+        <div class="install-step">
+          <div class="step-num">3</div>
+          <div class="step-text">Appuie sur <strong>"Installer l'application"</strong> ou <strong>"Ajouter à l'écran d'accueil"</strong></div>
+        </div>
+      </div>
+
+      <div class="install-card">
+        <div class="card-title" style="margin-bottom:6px;">Fonctionnalités hors connexion</div>
+        <p style="font-size:13px;color:#555;line-height:1.6;">Une fois installée, l'application fonctionne <strong>100% sans internet</strong>. Tes articles sont sauvegardés automatiquement sur ton appareil.</p>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<canvas id="render-canvas"></canvas>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── PWA Service Worker ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ── Install prompt ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('btn-install').style.display = 'flex';
+});
+function installPWA() {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; });
+}
+
+// ── Stockage local ──
+let articles = JSON.parse(localStorage.getItem('noz-articles') || '[]');
+renderAll();
+
+function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
+
+// ── Navigation onglets ──
+function showTab(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='apercu') renderPreview();
+}
+
+// ── Barcode SVG ──
+function makeBcSVG(code) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  try { JsBarcode(svg, String(code), {format:'CODE128',width:1.8,height:50,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'}); } catch(e) {}
+  return svg;
+}
+
+function barcodeToImg(code) {
+  return new Promise(resolve => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    try { JsBarcode(svg, String(code), {format:'CODE128',width:3.2,height:100,displayValue:false,margin:4,background:'#ffffff',lineColor:'#000000'}); }
+    catch(e) { resolve(null); return; }
+    const xml  = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([xml],{type:'image/svg+xml;charset=utf-8'});
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image();
+    img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+// ── Ajouter article ──
+function addArticle() {
+  const ref    = document.getElementById('inp-ref').value.trim();
+  const price  = parseFloat(document.getElementById('inp-price').value);
+  const qty    = Math.max(1, parseInt(document.getElementById('inp-qty').value)||1);
+  const code1  = document.getElementById('inp-code1').value.trim();
+  const code2  = document.getElementById('inp-code2').value.trim();
+  const uprice = parseFloat(document.getElementById('inp-uprice').value);
+  const uunit  = document.getElementById('inp-uunit').value;
+  const qprod  = document.getElementById('inp-qprod').value.trim();
+  if (!ref)                  { showToast('Merci de saisir un code article.'); return; }
+  if (isNaN(price)||price<0) { showToast('Prix invalide.'); return; }
+  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
+  articles.push({ref, price, qty, code1, code2, unitPrice, qprod});
+  save(); renderAll();
+  ['inp-ref','inp-price','inp-code1','inp-code2','inp-uprice','inp-qprod'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('inp-qty').value='1';
+  showToast('Article ajouté !');
+  document.getElementById('inp-ref').focus();
+}
+
+function removeArticle(i) {
+  articles.splice(i,1); save(); renderAll();
+}
+function clearAll() {
+  if(!articles.length) return;
+  if(!confirm('Effacer tous les articles ?')) return;
+  articles=[]; save(); renderAll();
+  document.getElementById('img-wrap').style.display='none';
+}
+
+// ── Rendu global ──
+function renderAll() {
+  const total = articles.reduce((s,a)=>s+a.qty,0);
+  const has   = articles.length>0;
+  document.getElementById('totals-text').textContent=`${articles.length} article${articles.length>1?'s':''} · ${total} étiquette${total>1?'s':''}`;
+  document.getElementById('totals-count').textContent=total;
+  const btnPng=document.getElementById('btn-png');
+  const btnPrt=document.getElementById('btn-print');
+  if(btnPng) btnPng.disabled=!has;
+  if(btnPrt) btnPrt.disabled=!has;
+
+  // Liste
+  const list=document.getElementById('article-list');
+  if(!has){ list.innerHTML='<p class="empty-state">Aucun article saisi</p>'; return; }
+  list.innerHTML=articles.map((a,i)=>`
+    <div class="article-item">
+      <div style="flex:1;">
+        <div class="art-ref">${esc(a.ref)}</div>
+        <div style="font-size:11px;color:#888;margin-top:2px;">
+          ${a.code1?`${esc(a.code1)} `:''} ${a.code2?esc(a.code2):''}
+          ${a.unitPrice?` · ${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`:''}
+        </div>
+      </div>
+      <span class="art-price">${fmt(a.price)}</span>
+      <span class="art-qty">×${a.qty}</span>
+      <button class="art-del" onclick="removeArticle(${i})">×</button>
+    </div>`).join('');
+}
+
+// ── Prévisualisation étiquettes ──
+function renderPreview() {
+  const grid=document.getElementById('preview-grid');
+  if(!articles.length){ grid.innerHTML='<p class="empty-state">Ajoutez des articles dans l\'onglet Saisie</p>'; return; }
+  grid.innerHTML='';
+  articles.forEach(a=>{
+    for(let i=0;i<a.qty;i++){
+      const lbl=document.createElement('div'); lbl.className='lbl';
+      // Z1
+      const z1=document.createElement('div'); z1.className='lbl-z1';
+      const z1l=document.createElement('div'); z1l.className='lbl-z1l';
+      if(a.code1){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code1; z1l.appendChild(e); }
+      if(a.code2){ const e=document.createElement('span'); e.className='lbl-z1s'; e.textContent=a.code2; z1l.appendChild(e); }
+      const z1r=document.createElement('span'); z1r.className='lbl-z1r'; z1r.textContent=a.ref;
+      z1.appendChild(z1l); z1.appendChild(z1r);
+      // Z2
+      const z2=document.createElement('div'); z2.className='lbl-z2';
+      z2.appendChild(makeBcSVG(a.ref));
+      if(a.qprod){ const q=document.createElement('span'); q.className='lbl-z2q'; q.textContent=a.qprod; z2.appendChild(q); }
+      // Z3
+      const z3=document.createElement('div'); z3.className='lbl-z3';
+      const [eu,ct]=a.price.toFixed(2).split('.');
+      const pEl=document.createElement('span'); pEl.className='lbl-price'; pEl.textContent=`${eu},${ct}`;
+      const eEl=document.createElement('span'); eEl.className='lbl-eur'; eEl.textContent='EUR';
+      z3.appendChild(pEl); z3.appendChild(eEl);
+      // Z4
+      const z4=document.createElement('div'); z4.className='lbl-z4';
+      const uEl=document.createElement('span'); uEl.className='lbl-unit';
+      if(a.unitPrice) uEl.textContent=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
+      const sEl=document.createElement('span'); sEl.className='lbl-store'; sEl.textContent='NOZ P854 · Louvroil';
+      z4.appendChild(uEl); z4.appendChild(sEl);
+      lbl.appendChild(z1); lbl.appendChild(z2); lbl.appendChild(z3); lbl.appendChild(z4);
+      grid.appendChild(lbl);
+    }
+  });
+}
+
+// ── Génération PNG ──
+async function generatePNG() {
+  const btn=document.getElementById('btn-png');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> Génération…';
+
+  const labels=[];
+  articles.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+
+  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(32*PX);
+  const COLS=Math.min(4, labels.length), ROWS=Math.ceil(labels.length/COLS);
+  const MARGIN=Math.round(3*PX), GAP=Math.round(2*PX);
+  const W=COLS*LW+(COLS-1)*GAP+2*MARGIN, H=ROWS*LH+(ROWS-1)*GAP+2*MARGIN;
+
+  const canvas=document.getElementById('render-canvas');
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+
+  const refs=[...new Set(labels.map(a=>a.ref))];
+  const bcMap={};
+  await Promise.all(refs.map(async r=>{ bcMap[r]=await barcodeToImg(r); }));
+
+  const Z1H=Math.round(LH*.13), Z2H=Math.round(LH*.46), Z3H=Math.round(LH*.28), Z4H=LH-Math.round(LH*.13)-Math.round(LH*.46)-Math.round(LH*.28);
+  const BRD=Math.round(.35*PX), PL=Math.round(2.5*PX), PR=Math.round(2.5*PX);
+
+  for(let i=0;i<labels.length;i++){
+    const a=labels[i], col=i%COLS, row=Math.floor(i/COLS);
+    const x=MARGIN+col*(LW+GAP), y=MARGIN+row*(LH+GAP);
+    ctx.fillStyle='#fff'; ctx.fillRect(x,y,LW,LH);
+    ctx.strokeStyle='#222'; ctx.lineWidth=BRD; ctx.strokeRect(x+BRD/2,y+BRD/2,LW-BRD,LH-BRD);
+    const yZ1=y, yZ2=y+Z1H, yZ3=y+Z1H+Z2H, yZ4=y+Z1H+Z2H+Z3H;
+    ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
+    [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(x+2,yy); ctx.lineTo(x+LW-2,yy); ctx.stroke(); });
+
+    // Z1
+    const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
+    if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+Math.round(.6*PX));
+    if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+Math.round(.6*PX)+fsS+Math.round(.3*PX));
+    let fsN=Math.round(3.4*PX); ctx.font=`bold ${fsN}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    while(ctx.measureText(a.ref).width>LW*.65&&fsN>Math.round(1.8*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
+    ctx.fillText(a.ref, x+LW-PR, yZ1+Z1H/2);
+
+    // Z2
+    if(bcMap[a.ref]){ const bc=bcMap[a.ref], pV=Math.round(1.2*PX), pH=Math.round(2.5*PX), qW=a.qprod?Math.round(5*PX):0; ctx.drawImage(bc,x+pH,yZ2+pV,LW-2*pH-qW,Z2H-2*pV); }
+    if(a.qprod){ const fQ=Math.round(2.8*PX); ctx.font=`bold ${fQ}px Arial`; ctx.fillStyle='#000'; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod,x+LW-Math.round(1.5*PX),yZ2+Z2H-Math.round(1*PX)); }
+
+    // Z3
+    const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.80);
+    ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
+    while(ctx.measureText(ps+' EUR').width>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
+    ctx.fillText(ps, x+PL, yZ3+Z3H/2);
+    const pW=ctx.measureText(ps).width, fsE=Math.round(fsP*.38);
+    ctx.font=`bold ${fsE}px Arial`; ctx.fillText(' EUR',x+PL+pW,yZ3+Z3H/2);
+
+    // Z4
+    const midZ4=yZ4+Z4H/2; ctx.textBaseline='middle';
+    if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`, fsU=Math.round(Z4H*.52); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='left'; ctx.fillText(uS,x+PL,midZ4); }
+    const fsM=Math.round(Z4H*.38); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.fillText('NOZ P854 · Louvroil',x+LW-PR,midZ4);
+  }
+
+  const dataURL=canvas.toDataURL('image/png');
+  document.getElementById('img-out').src=dataURL;
+  document.getElementById('img-wrap').style.display='block';
+  document.getElementById('img-info').textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×32 mm`;
+
+  const dlBtn=document.getElementById('img-dl-btn');
+  const ds=new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
+  const fname=`Etiquettes_NOZ_P854_${ds}.png`;
+  const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+  dlBtn.onclick=()=>{
+    if(isIOS){ showImgOverlay(dataURL); }
+    else {
+      const a=document.createElement('a'); a.href=dataURL; a.download=fname;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      showToast('PNG téléchargé !');
+    }
+  };
+
+  if(isIOS){ showImgOverlay(dataURL); }
+  else { dlBtn.click(); }
+  showToast('Image générée !');
+  btn.disabled=false; btn.innerHTML='Générer l\'image PNG';
+}
+
+// ── Impression ──
+function printDirect() {
+  const labels=[];
+  articles.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+  const win=window.open('','_blank');
+  let body=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes NOZ</title>
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:A4 portrait;margin:5mm;}.grid{display:flex;flex-wrap:wrap;gap:2mm;}.etq{width:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:flex-start;justify-content:space-between;padding:.6mm 1.5mm .5mm;border-bottom:.2mm solid #bbb;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.6mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:2.8mm;font-weight:700;color:#000;align-self:center;}.z2{display:flex;align-items:center;padding:.6mm 2mm .4mm;border-bottom:.2mm solid #bbb;gap:1mm;}.z2 svg{flex:1;height:auto;max-height:12mm;}.z2q{font-family:Arial;font-size:2.2mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:baseline;padding:.4mm 1.5mm .2mm;}.z3p{font-family:Arial;font-size:6mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;margin-left:.8mm;}.z4{display:flex;align-items:center;justify-content:space-between;padding:0 1.5mm .6mm;}.z4u{font-family:Arial;font-size:1.9mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.6mm;color:#888;}</style></head><body><div class="grid">`;
+  labels.forEach(a=>{
+    const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg'); svgEl.setAttribute('xmlns','http://www.w3.org/2000/svg');
+    try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:2,height:70,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
+    const [eu,ct]=a.price.toFixed(2).split('.');
+    body+=`<div class="etq"><div class="z1"><div class="z1l">${a.code1?`<span class="z1s">${esc(a.code1)}</span>`:''} ${a.code2?`<span class="z1s">${esc(a.code2)}</span>`:''}</div><span class="z1r">${esc(a.ref)}</span></div><div class="z2">${new XMLSerializer().serializeToString(svgEl)}${a.qprod?`<span class="z2q">${esc(a.qprod)}</span>`:''}</div><div class="z3"><span class="z3p">${eu},${ct}</span><span class="z3e">EUR</span></div><div class="z4"><span class="z4u">${a.unitPrice?`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`:''}</span><span class="z4m">NOZ P854 · Louvroil</span></div></div>`;
+  });
+  body+='</div></body></html>';
+  win.document.write(body); win.document.close();
+  win.onload=()=>{ win.focus(); win.print(); };
+}
+
+function showImgOverlay(dataURL) {
+  // Supprimer overlay existant
+  const existing = document.getElementById('img-overlay');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'img-overlay';
+  overlay.id = 'img-overlay';
+  overlay.innerHTML = `
+    <img src="${dataURL}" alt="Étiquettes NOZ"/>
+    <div class="img-overlay-tip">
+      Appui long sur l'image<br>→ <span>"Enregistrer dans Photos"</span>
+    </div>
+    <div class="img-overlay-sub">L'image sera ajoutée à ta galerie Photos</div>
+    <button class="img-overlay-close" onclick="document.getElementById('img-overlay').remove()">Fermer</button>
+  `;
+  document.body.appendChild(overlay);
+}
+
+function fmt(p){ return p.toFixed(2).replace('.',',')+' €'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+</script>
+</body>
+</html>
