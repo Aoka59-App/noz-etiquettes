@@ -563,16 +563,17 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <div class="ser-result" id="ser-result">
         <div style="font-size:14px;color:var(--text);margin-bottom:10px;" id="ser-result-txt"></div>
         <div style="display:flex;gap:8px;">
-          <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('apercu')">Voir l'aperçu</button>
+          <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu</button>
           <button class="btn-ios sm outline" style="flex:1;margin-bottom:0;" onclick="viderSerie()">Vider</button>
         </div>
       </div>
 
     </div>
 
-    <!-- ══ ARTICLES ══ -->
+    <!-- ══ ARTICLES + APERÇU (fusionnés) ══ -->
     <div class="page" id="page-liste">
 
+      <!-- Total + liste -->
       <div class="total-card">
         <div>
           <div class="lbl">Total étiquettes</div>
@@ -585,15 +586,10 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <p class="empty-state">Aucun article saisi</p>
       </div>
 
-      <button class="btn-danger" onclick="clearAll()" style="margin-top:8px;">Tout effacer</button>
-
-    </div>
-
-    <!-- ══ APERÇU ══ -->
-    <div class="page" id="page-apercu">
+      <button class="btn-danger" onclick="clearAll()" style="margin-top:8px;margin-bottom:20px;">Tout effacer</button>
 
       <!-- Étiquettes articles -->
-      <div class="section-hdr">Étiquettes articles</div>
+      <div class="section-hdr">Imprimer — Articles</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <button class="btn-ios sm" style="margin-bottom:0;" id="btn-png-normal" onclick="generatePNG('normal')" disabled>PNG grille</button>
@@ -621,7 +617,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </div>
 
       <!-- Série chaussures -->
-      <div class="section-hdr">Série chaussures</div>
+      <div class="section-hdr">Imprimer — Série chaussures</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <button class="btn-ios sm" style="margin-bottom:0;" id="btn-png-serie" onclick="generatePNG('serie')" disabled>PNG grille</button>
@@ -728,44 +724,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
     </div>
 
-    <!-- ══ INSTALLER ══ -->
-    <div class="page" id="page-install">
-
-      <div style="text-align:center;padding:24px 0 20px;">
-        <div style="font-size:52px;margin-bottom:8px;">📱</div>
-        <div style="font-size:20px;font-weight:700;color:var(--accent);">Installer l'application</div>
-        <div style="font-size:14px;color:var(--text2);margin-top:6px;">Accès en un tap, fonctionne hors connexion</div>
-      </div>
-
-      <button class="btn-ios gold" id="btn-install" onclick="installPWA()" style="display:none;">
-        Installer sur cet appareil
-      </button>
-
-      <div class="section-hdr">Sur iPhone / iPad</div>
-      <div class="grouped">
-        <div class="grouped-row"><div class="step-num">1</div><div class="step-txt">Ouvre cette page dans <strong>Safari</strong></div></div>
-        <div class="grouped-row"><div class="step-num">2</div><div class="step-txt">Appuie sur <strong>Partager ⬆</strong> en bas</div></div>
-        <div class="grouped-row"><div class="step-num">3</div><div class="step-txt">Appuie sur <strong>"Sur l'écran d'accueil"</strong></div></div>
-        <div class="grouped-row"><div class="step-num">4</div><div class="step-txt">Appuie sur <strong>"Ajouter"</strong> en haut à droite</div></div>
-      </div>
-
-      <div class="section-hdr">Sur Android / PC</div>
-      <div class="grouped">
-        <div class="grouped-row"><div class="step-num">1</div><div class="step-txt">Ouvre dans <strong>Chrome</strong></div></div>
-        <div class="grouped-row"><div class="step-num">2</div><div class="step-txt">Appuie sur les <strong>3 points</strong> en haut</div></div>
-        <div class="grouped-row"><div class="step-num">3</div><div class="step-txt">Appuie sur <strong>"Installer l'application"</strong></div></div>
-      </div>
-
-      <div class="section-hdr">URL de l'application</div>
-      <div class="grouped">
-        <div class="grouped-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
-          <div style="font-size:13px;font-weight:600;color:var(--accent);">https://antoinekyle.github.io/noz-etiquettes/</div>
-          <div style="font-size:13px;color:var(--text2);">Fonctionne 100% hors connexion après installation</div>
-        </div>
-      </div>
-
-    </div>
-
   </div>
 
   <!-- ══ TAB BAR ══ -->
@@ -808,14 +766,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Articles</span>
     </button>
-    <button class="tb-item" id="tb-apercu" onclick="showTabById('apercu')">
-      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <rect x="3" y="6" width="9" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
-        <rect x="14" y="6" width="9" height="6" rx="2" stroke="currentColor" stroke-width="1.8"/>
-        <rect x="14" y="14" width="9" height="6" rx="2" stroke="currentColor" stroke-width="1.8"/>
-      </svg>
-      <span class="tb-label">Aperçu</span>
-    </button>
+
     <button class="tb-item" id="tb-comptage" onclick="showTabById('comptage')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
         <path d="M5 13h4l3-7 3 14 3-7h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -829,15 +780,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Calcul %</span>
     </button>
-    <button class="tb-item" id="tb-install" onclick="showTabById('install')">>
-      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <rect x="5" y="3" width="16" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>
-        <circle cx="13" cy="18" r="1.5" fill="currentColor"/>
-        <line x1="9" y1="8" x2="17" y2="8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <line x1="9" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      <span class="tb-label">Installer</span>
-    </button>
+
   </div>
 
 </div>
@@ -871,7 +814,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { scanner:'Scanner', saisie:'Saisie', serie:'Série', liste:'Articles', apercu:'Aperçu', comptage:'Comptage', calcul:'Calcul %', install:'Installer' };
+const TAB_TITLES = { scanner:'Scanner', saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', comptage:'Comptage', calcul:'Calcul %' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
@@ -883,7 +826,7 @@ function showTabById(name) {
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('tb-'+name).classList.add('active');
   document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
-  if(name==='apercu') renderPreview();
+  if(name==='liste') renderPreview();
   if(name !== 'scanner') stopScan();
 }
 // Alias pour ancien code
