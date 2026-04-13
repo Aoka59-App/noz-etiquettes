@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
 :root {
   --accent: #1a2d5a;
@@ -288,7 +289,78 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .overlay-sub { color:rgba(255,255,255,.5); font-size:13px; margin-top:6px; text-align:center; }
 .overlay-close { margin-top:24px; padding:12px 36px; background:var(--accent); color:var(--accent2); border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
 
-/* ── CHAINE BTN ── */
+/* ── SCANNER ── */
+.scan-btn-main {
+  width: 100%; height: 64px;
+  background: var(--accent); color: var(--accent2);
+  border: none; border-radius: 16px;
+  font-size: 18px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: -apple-system, sans-serif;
+  margin-bottom: 16px;
+}
+.scan-btn-main:active { opacity: .8; }
+
+#scan-viewport {
+  width: 100%; border-radius: 16px; overflow: hidden;
+  background: #000; position: relative;
+  margin-bottom: 16px; display: none;
+  aspect-ratio: 1;
+}
+#scan-viewport video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#scan-viewport canvas { display: none !important; }
+
+/* Surcouche viseur */
+.scan-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.scan-frame {
+  width: 65%; aspect-ratio: 2/1;
+  border: 2.5px solid var(--accent2);
+  border-radius: 10px;
+  box-shadow: 0 0 0 2000px rgba(0,0,0,.45);
+  position: relative;
+}
+.scan-frame::before, .scan-frame::after {
+  content: ''; position: absolute;
+  width: 20px; height: 20px;
+}
+.scan-frame::before { top: -3px; left: -3px; border-top: 4px solid var(--accent2); border-left: 4px solid var(--accent2); border-radius: 4px 0 0 0; }
+.scan-frame::after  { bottom: -3px; right: -3px; border-bottom: 4px solid var(--accent2); border-right: 4px solid var(--accent2); border-radius: 0 0 4px 0; }
+
+.scan-line {
+  position: absolute; left: 4px; right: 4px;
+  height: 2px; background: var(--accent2); opacity: .8;
+  animation: scanline 1.8s ease-in-out infinite;
+}
+@keyframes scanline { 0%,100%{top:4px} 50%{top:calc(100% - 6px)} }
+
+.scan-hint {
+  position: absolute; bottom: 12px; left: 0; right: 0;
+  text-align: center; color: #fff; font-size: 13px;
+  font-weight: 500; opacity: .8;
+}
+
+.btn-stop-scan {
+  width: 100%; height: 46px;
+  background: transparent; color: var(--red);
+  border: 1.5px solid var(--red); border-radius: 12px;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  margin-bottom: 16px; display: none;
+  font-family: -apple-system, sans-serif;
+}
+
+/* Résultat scan */
+#scan-result-zone { display: none; }
+.scan-success-badge {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(52,199,89,.12); border: 1px solid rgba(52,199,89,.3);
+  border-radius: 12px; padding: 12px 16px; margin-bottom: 12px;
+}
+.scan-success-icon { font-size: 22px; flex-shrink: 0; }
+.scan-success-txt { font-size: 14px; color: var(--green); font-weight: 600; }
 .btn-chaine {
   width:100%; height:52px; background:var(--accent); color:var(--accent2);
   border:none; border-radius:12px; font-size:16px; font-weight:600;
@@ -311,7 +383,102 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
   <div class="pages">
 
-    <!-- ══ SAISIE ══ -->
+    <!-- ══ SCANNER ══ -->
+    <div class="page active" id="page-scanner">
+
+      <!-- Bouton principal scan -->
+      <button class="scan-btn-main" id="btn-start-scan" onclick="startScan()">
+        <svg width="24" height="24" viewBox="0 0 26 26" fill="none">
+          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Scanner un article
+      </button>
+
+      <!-- Viewport caméra -->
+      <div id="scan-viewport">
+        <div id="reader" style="width:100%;height:100%;"></div>
+        <div class="scan-overlay">
+          <div class="scan-frame">
+            <div class="scan-line"></div>
+          </div>
+        </div>
+        <div class="scan-hint">Placez le code-barres dans le cadre</div>
+      </div>
+
+      <!-- Bouton stop -->
+      <button class="btn-stop-scan" id="btn-stop-scan" onclick="stopScan()">
+        Arrêter le scan
+      </button>
+
+      <!-- Zone résultat après scan -->
+      <div id="scan-result-zone">
+
+        <!-- Badge succès -->
+        <div class="scan-success-badge">
+          <span class="scan-success-icon">✓</span>
+          <span class="scan-success-txt">Code-barres détecté — vérifiez et complétez</span>
+        </div>
+
+        <!-- Code scanné (modifiable) -->
+        <div class="section-hdr">Code article</div>
+        <div class="form-card">
+          <div class="form-field">
+            <label>Code NOZ</label>
+            <input id="scan-code" type="text" inputmode="numeric" style="font-weight:700;color:var(--accent);font-size:17px;"/>
+          </div>
+        </div>
+
+        <!-- Prix -->
+        <div class="section-hdr">Prix</div>
+        <div class="form-card">
+          <div class="form-field">
+            <label>Prix de vente (€)</label>
+            <input id="scan-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"/>
+          </div>
+          <div class="form-field">
+            <label>Prix unitaire</label>
+            <div style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end;">
+              <input id="scan-uprice" type="number" placeholder="5,32" step="0.01" min="0" inputmode="decimal"
+                style="border:none;outline:none;font-size:16px;color:var(--text);background:transparent;text-align:right;width:80px;padding:14px 0;"/>
+              <select id="scan-uunit" style="border:none;outline:none;font-size:14px;color:var(--blue);background:transparent;-webkit-appearance:none;padding:0;">
+                <option value="EUR/kg">€/kg</option>
+                <option value="EUR/L">€/L</option>
+                <option value="EUR/100g">€/100g</option>
+                <option value="EUR/100mL">€/100mL</option>
+                <option value="EUR/pce">€/pce</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bouton générer -->
+        <button class="btn-ios gold" onclick="genererDepuisScan()" style="margin-top:4px;">
+          Générer l'étiquette
+        </button>
+
+        <!-- Aperçu étiquette générée -->
+        <div id="scan-preview-wrap" style="display:none;">
+          <div class="section-hdr">Aperçu</div>
+          <div style="background:var(--card);border-radius:16px;padding:16px;display:flex;justify-content:center;margin-bottom:12px;">
+            <div class="lbl" id="scan-lbl-preview" style="width:200px;height:200px;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="btn-ios sm gold" onclick="ajouterDepuisScan()" style="margin-bottom:0;">
+              + Ajouter à la liste
+            </button>
+            <button class="btn-ios sm outline" onclick="resetScan()" style="margin-bottom:0;">
+              Nouveau scan
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
     <div class="page active" id="page-saisie">
 
       <div class="section-hdr">Article</div>
@@ -603,7 +770,17 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
   <!-- ══ TAB BAR ══ -->
   <div class="tabbar">
-    <button class="tb-item active" id="tb-saisie" onclick="showTabById('saisie')">
+    <button class="tb-item active" id="tb-scanner" onclick="showTabById('scanner')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="4" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span class="tb-label">Scanner</span>
+    </button>
+    <button class="tb-item" id="tb-saisie" onclick="showTabById('saisie')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
         <rect x="4" y="4" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
         <line x1="8" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -694,15 +871,20 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles', apercu:'Aperçu', comptage:'Comptage', calcul:'Calcul %', install:'Installer' };
+const TAB_TITLES = { scanner:'Scanner', saisie:'Saisie', serie:'Série', liste:'Articles', apercu:'Aperçu', comptage:'Comptage', calcul:'Calcul %', install:'Installer' };
 
 function showTabById(name) {
+  // Couper la caméra si on quitte le scanner
+  if(document.getElementById('page-scanner') && !document.getElementById('page-scanner').classList.contains('active') === false && name !== 'scanner') {
+    stopScan();
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tb-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('tb-'+name).classList.add('active');
   document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
   if(name==='apercu') renderPreview();
+  if(name !== 'scanner') stopScan();
 }
 // Alias pour ancien code
 function showTab(name, btn) { showTabById(name); }
@@ -1107,7 +1289,170 @@ function cptRender(){
 }
 function cptClear(){ if(!cptData.length) return; if(!confirm('Effacer tout le comptage ?')) return; cptData=[]; cptSave(); cptRender(); }
 
-// ── Calcul % ──
+// ── SCANNER ──
+let html5QrScanner = null;
+let scannerRunning = false;
+
+async function startScan() {
+  const viewport  = document.getElementById('scan-viewport');
+  const btnStart  = document.getElementById('btn-start-scan');
+  const btnStop   = document.getElementById('btn-stop-scan');
+  const resultZone= document.getElementById('scan-result-zone');
+
+  // Masquer le résultat précédent
+  resultZone.style.display = 'none';
+  viewport.style.display   = 'block';
+  btnStart.style.display   = 'none';
+  btnStop.style.display    = 'block';
+
+  // Nettoyer l'ancien scanner si besoin
+  if(html5QrScanner) {
+    try { await html5QrScanner.stop(); } catch(e) {}
+    html5QrScanner = null;
+  }
+
+  const readerEl = document.getElementById('reader');
+  readerEl.innerHTML = '';
+
+  html5QrScanner = new Html5Qrcode('reader');
+  scannerRunning = true;
+
+  try {
+    await html5QrScanner.start(
+      { facingMode: 'environment' },
+      {
+        fps: 15,
+        qrbox: { width: Math.round(window.innerWidth * 0.55), height: Math.round(window.innerWidth * 0.28) },
+        aspectRatio: 1.0,
+        disableFlip: false,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.ITF,
+        ]
+      },
+      (decodedText) => onScanSuccess(decodedText),
+      (errorMsg) => {} // Ignorer les erreurs de scan en continu
+    );
+  } catch(err) {
+    stopScan();
+    showToast('Accès caméra refusé ou indisponible');
+  }
+}
+
+function onScanSuccess(code) {
+  if(!scannerRunning) return;
+
+  // Vibration si disponible
+  if(navigator.vibrate) navigator.vibrate([80, 30, 80]);
+
+  // Bip audio
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 1200;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
+  } catch(e) {}
+
+  stopScan();
+
+  // Remplir le champ code
+  document.getElementById('scan-code').value  = code;
+  document.getElementById('scan-price').value = '';
+  document.getElementById('scan-uprice').value = '';
+  document.getElementById('scan-preview-wrap').style.display = 'none';
+
+  // Afficher la zone résultat
+  document.getElementById('scan-result-zone').style.display = 'block';
+  document.getElementById('scan-price').focus();
+
+  showToast('Code scanné : ' + code);
+}
+
+async function stopScan() {
+  scannerRunning = false;
+  if(html5QrScanner) {
+    try { await html5QrScanner.stop(); } catch(e) {}
+    try { html5QrScanner.clear(); } catch(e) {}
+    html5QrScanner = null;
+  }
+  document.getElementById('scan-viewport').style.display  = 'none';
+  document.getElementById('btn-start-scan').style.display = 'block';
+  document.getElementById('btn-stop-scan').style.display  = 'none';
+}
+
+function genererDepuisScan() {
+  const code  = document.getElementById('scan-code').value.trim();
+  const price = parseFloat(document.getElementById('scan-price').value);
+  const uprice= parseFloat(document.getElementById('scan-uprice').value);
+  const uunit = document.getElementById('scan-uunit').value;
+
+  if(!code)                  { showToast('Code article manquant'); return; }
+  if(isNaN(price)||price<=0) { showToast('Merci de saisir un prix'); return; }
+
+  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
+
+  // Construire l'aperçu étiquette
+  const lbl = document.getElementById('scan-lbl-preview');
+  lbl.innerHTML = '';
+
+  const z1 = document.createElement('div'); z1.className='lbl-z1';
+  const z1l= document.createElement('div'); z1l.className='lbl-z1l';
+  const z1r= document.createElement('span'); z1r.className='lbl-z1r'; z1r.textContent=code;
+  z1.appendChild(z1l); z1.appendChild(z1r);
+
+  const z2 = document.createElement('div'); z2.className='lbl-z2';
+  z2.appendChild(makeBcSVG(code));
+
+  const z3 = document.createElement('div'); z3.className='lbl-z3';
+  const [eu,ct] = price.toFixed(2).split('.');
+  const pEl = document.createElement('span'); pEl.className='lbl-price'; pEl.textContent=`${eu},${ct}`;
+  const eEl = document.createElement('span'); eEl.className='lbl-eur'; eEl.textContent='EUR';
+  z3.appendChild(pEl); z3.appendChild(eEl);
+
+  const z4 = document.createElement('div'); z4.className='lbl-z4';
+  const uEl = document.createElement('span'); uEl.className='lbl-unit';
+  if(unitPrice) uEl.textContent=`${unitPrice.val.toFixed(2).replace('.',',')} ${unitPrice.unit}`;
+  const sEl = document.createElement('span'); sEl.className='lbl-store'; sEl.textContent='NOZ P854 · Louvroil';
+  z4.appendChild(uEl); z4.appendChild(sEl);
+
+  lbl.appendChild(z1); lbl.appendChild(z2); lbl.appendChild(z3); lbl.appendChild(z4);
+
+  document.getElementById('scan-preview-wrap').style.display = 'block';
+  document.getElementById('scan-preview-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function ajouterDepuisScan() {
+  const code  = document.getElementById('scan-code').value.trim();
+  const price = parseFloat(document.getElementById('scan-price').value);
+  const uprice= parseFloat(document.getElementById('scan-uprice').value);
+  const uunit = document.getElementById('scan-uunit').value;
+  if(!code||isNaN(price)||price<=0) { showToast('Code ou prix manquant'); return; }
+  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
+  articles.push({ref:code, price, qty:1, code1:'', code2:'', unitPrice, qprod:''});
+  save(); renderAll();
+  showToast('Article ajouté à la liste !');
+  resetScan();
+  showTabById('liste');
+}
+
+function resetScan() {
+  document.getElementById('scan-result-zone').style.display  = 'none';
+  document.getElementById('scan-preview-wrap').style.display = 'none';
+  document.getElementById('btn-start-scan').style.display    = 'block';
+  document.getElementById('scan-code').value  = '';
+  document.getElementById('scan-price').value = '';
+  document.getElementById('scan-uprice').value= '';
+}
 const REMISES_COURANTES = [10,20,25,30,40,50,60,70,75,80,85,90];
 
 function calculer() {
