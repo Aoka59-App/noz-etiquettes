@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <style>
 :root {
   --accent: #1a2d5a;
@@ -1247,11 +1247,12 @@ function cptRender(){
 }
 function cptClear(){ if(!cptData.length) return; if(!confirm('Effacer tout le comptage ?')) return; cptData=[]; cptSave(); cptRender(); }
 
-// ── SCANNER INLINE (dans Saisie) ──
-let scannerSaisie = null;
+// ══ SCANNER — ZXing (fiable Safari iOS) ══
+let zxingReader = null;
 let scannerSaisieRunning = false;
 let lastScannedCode = '';
 let lastScanTime = 0;
+let scannerSaisie = null;
 
 async function startScanInSaisie() {
   const viewport = document.getElementById('scan-viewport-saisie');
@@ -1261,83 +1262,87 @@ async function startScanInSaisie() {
   viewport.style.display = 'block';
   btnStart.style.display = 'none';
   btnStop.style.display  = 'block';
-
-  // Nettoyer proprement
-  if(scannerSaisie) {
-    try { await scannerSaisie.stop(); } catch(e){}
-    try { scannerSaisie.clear(); } catch(e){}
-    scannerSaisie = null;
-  }
-  document.getElementById('reader-saisie').innerHTML = '';
-  scannerSaisieRunning = true;
+  scannerSaisieRunning   = true;
   lastScannedCode = '';
 
-  try {
-    scannerSaisie = new Html5Qrcode('reader-saisie', {
-      verbose: false,
-      experimentalFeatures: { useBarCodeDetectorIfSupported: false }
-    });
+  // Créer ou récupérer l'élément video
+  let video = document.getElementById('scan-video-native');
+  if(!video) {
+    video = document.createElement('video');
+    video.id = 'scan-video-native';
+    video.setAttribute('playsinline', '');
+    video.setAttribute('autoplay', '');
+    video.setAttribute('muted', '');
+    video.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0;z-index:1;';
+    document.getElementById('reader-saisie').appendChild(video);
+  }
 
-    await scannerSaisie.start(
-      { facingMode: 'environment' },
-      {
-        fps: 30,
-        // Pas de qrbox = toute l'image est analysée, beaucoup plus fiable
-        disableFlip: false,
-        aspectRatio: 1.0,
-        // On laisse la librairie détecter tous les formats automatiquement
-      },
-      (decodedText, decodedResult) => {
-        // Anti-doublon : ignorer si même code dans les 2 secondes
-        const now = Date.now();
-        if(decodedText === lastScannedCode && now - lastScanTime < 2000) return;
-        lastScannedCode = decodedText;
-        lastScanTime = now;
-        onScanSaisie(decodedText, decodedResult);
-      },
-      (errorMsg) => {} // Ignorer — erreurs normales en scan continu
+  try {
+    const hints = new Map();
+    const formats = [
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.CODABAR,
+    ];
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+
+    zxingReader = new ZXing.BrowserMultiFormatReader(hints, 500);
+
+    await zxingReader.decodeFromVideoDevice(
+      undefined, // undefined = caméra arrière automatique
+      video,
+      (result, error) => {
+        if(result) {
+          const code = result.getText();
+          const fmt  = result.getBarcodeFormat();
+          const now  = Date.now();
+          if(code === lastScannedCode && now - lastScanTime < 1500) return;
+          lastScannedCode = code;
+          lastScanTime    = now;
+          onScanSaisie(code, ZXing.BarcodeFormat[fmt] || 'Barcode');
+        }
+        // Les erreurs en scan continu sont normales, on les ignore
+      }
     );
   } catch(err) {
-    console.error('Scanner error:', err);
+    console.error('ZXing error:', err);
     stopScanSaisie();
-    showToast('Erreur caméra — autorisez l\'accès dans Safari');
+    showToast('Autorisez l\'accès à la caméra dans Safari');
   }
 }
 
-function onScanSaisie(code, result) {
+function onScanSaisie(code, format) {
   if(!scannerSaisieRunning) return;
 
-  // Format détecté
-  const format = result && result.result && result.result.format
-    ? result.result.format.formatName || ''
-    : '';
-
-  // Vibration + bip
-  if(navigator.vibrate) navigator.vibrate([60, 20, 60]);
+  // Bip sonore
   try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    const ctx  = new (window.AudioContext||window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
     osc.connect(gain); gain.connect(ctx.destination);
     osc.frequency.value = 1400; osc.type = 'sine';
     gain.gain.setValueAtTime(0.4, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.12);
-  } catch(e){}
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.1);
+  } catch(e) {}
 
-  // NE PAS arrêter le scanner — mode caisse : scan continu
-  // On ajoute directement l'article à la liste avec un prix 0 à compléter
-  // OU on pré-remplit le champ et on attend le prix
+  // Vibration
+  if(navigator.vibrate) navigator.vibrate([60, 20, 60]);
 
-  // Pré-remplir le champ code
+  // Remplir le champ code
   document.getElementById('inp-ref').value = code;
 
-  // Afficher un badge de confirmation sous le scanner
+  // Badge de confirmation
   showScanBadge(code, format);
 
   // Focus sur le prix
-  setTimeout(() => {
-    document.getElementById('inp-price').focus();
-  }, 200);
+  setTimeout(() => document.getElementById('inp-price').focus(), 150);
 }
 
 function showScanBadge(code, format) {
@@ -1345,195 +1350,41 @@ function showScanBadge(code, format) {
   if(!badge) {
     badge = document.createElement('div');
     badge.id = 'scan-inline-badge';
-    badge.style.cssText = 'background:rgba(52,199,89,.15);border:1px solid rgba(52,199,89,.4);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;';
-    // Insérer après le bouton stop
+    badge.style.cssText = 'background:rgba(52,199,89,.12);border:1px solid rgba(52,199,89,.35);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;';
     const btnStop = document.getElementById('btn-stop-scan-saisie');
     btnStop.parentNode.insertBefore(badge, btnStop.nextSibling);
   }
   badge.style.display = 'flex';
   badge.innerHTML = `
-    <span style="font-size:20px;flex-shrink:0;">✓</span>
+    <span style="font-size:22px;">✓</span>
     <div>
-      <div style="font-size:15px;font-weight:700;color:#1c7a3a;">${esc(code)}</div>
-      <div style="font-size:12px;color:#555;margin-top:1px;">${format || 'Code-barres'} · Saisis le prix puis ajoute</div>
+      <div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div>
+      <div style="font-size:12px;color:#555;margin-top:1px;">${format||'Barcode'} · Saisis le prix puis ajoute</div>
     </div>`;
 }
 
-async function stopScanSaisie() {
+function stopScanSaisie() {
   scannerSaisieRunning = false;
-  if(scannerSaisie) {
-    try { await scannerSaisie.stop(); } catch(e){}
-    try { scannerSaisie.clear(); } catch(e){}
-    scannerSaisie = null;
+
+  if(zxingReader) {
+    try { zxingReader.reset(); } catch(e) {}
+    zxingReader = null;
   }
+
+  const video = document.getElementById('scan-video-native');
+  if(video && video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
+
   document.getElementById('scan-viewport-saisie').style.display = 'none';
   document.getElementById('btn-start-scan-saisie').style.display = 'block';
   document.getElementById('btn-stop-scan-saisie').style.display  = 'none';
+
   const badge = document.getElementById('scan-inline-badge');
   if(badge) badge.style.display = 'none';
 }
 
-async function startScan() {
-  const viewport  = document.getElementById('scan-viewport');
-  const btnStart  = document.getElementById('btn-start-scan');
-  const btnStop   = document.getElementById('btn-stop-scan');
-  const resultZone= document.getElementById('scan-result-zone');
-
-  // Masquer le résultat précédent
-  resultZone.style.display = 'none';
-  viewport.style.display   = 'block';
-  btnStart.style.display   = 'none';
-  btnStop.style.display    = 'block';
-
-  // Nettoyer l'ancien scanner si besoin
-  if(html5QrScanner) {
-    try { await html5QrScanner.stop(); } catch(e) {}
-    html5QrScanner = null;
-  }
-
-  const readerEl = document.getElementById('reader');
-  readerEl.innerHTML = '';
-
-  html5QrScanner = new Html5Qrcode('reader');
-  scannerRunning = true;
-
-  try {
-    await html5QrScanner.start(
-      { facingMode: 'environment' },
-      {
-        fps: 15,
-        qrbox: { width: Math.round(window.innerWidth * 0.55), height: Math.round(window.innerWidth * 0.28) },
-        aspectRatio: 1.0,
-        disableFlip: false,
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.ITF,
-        ]
-      },
-      (decodedText) => onScanSuccess(decodedText),
-      (errorMsg) => {} // Ignorer les erreurs de scan en continu
-    );
-  } catch(err) {
-    stopScan();
-    showToast('Accès caméra refusé ou indisponible');
-  }
-}
-
-function onScanSuccess(code) {
-  if(!scannerRunning) return;
-
-  // Vibration si disponible
-  if(navigator.vibrate) navigator.vibrate([80, 30, 80]);
-
-  // Bip audio
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value = 1200;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.15);
-  } catch(e) {}
-
-  stopScan();
-
-  // Remplir le champ code
-  document.getElementById('scan-code').value  = code;
-  document.getElementById('scan-price').value = '';
-  document.getElementById('scan-uprice').value = '';
-  document.getElementById('scan-preview-wrap').style.display = 'none';
-
-  // Afficher la zone résultat
-  document.getElementById('scan-result-zone').style.display = 'block';
-  document.getElementById('scan-price').focus();
-
-  showToast('Code scanné : ' + code);
-}
-
-async function stopScan() {
-  scannerRunning = false;
-  if(html5QrScanner) {
-    try { await html5QrScanner.stop(); } catch(e) {}
-    try { html5QrScanner.clear(); } catch(e) {}
-    html5QrScanner = null;
-  }
-  document.getElementById('scan-viewport').style.display  = 'none';
-  document.getElementById('btn-start-scan').style.display = 'block';
-  document.getElementById('btn-stop-scan').style.display  = 'none';
-}
-
-function genererDepuisScan() {
-  const code  = document.getElementById('scan-code').value.trim();
-  const price = parseFloat(document.getElementById('scan-price').value);
-  const uprice= parseFloat(document.getElementById('scan-uprice').value);
-  const uunit = document.getElementById('scan-uunit').value;
-
-  if(!code)                  { showToast('Code article manquant'); return; }
-  if(isNaN(price)||price<=0) { showToast('Merci de saisir un prix'); return; }
-
-  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
-
-  // Construire l'aperçu étiquette
-  const lbl = document.getElementById('scan-lbl-preview');
-  lbl.innerHTML = '';
-
-  const z1 = document.createElement('div'); z1.className='lbl-z1';
-  const z1l= document.createElement('div'); z1l.className='lbl-z1l';
-  const z1r= document.createElement('span'); z1r.className='lbl-z1r'; z1r.textContent=code;
-  z1.appendChild(z1l); z1.appendChild(z1r);
-
-  const z2 = document.createElement('div'); z2.className='lbl-z2';
-  z2.appendChild(makeBcSVG(code));
-
-  const z3 = document.createElement('div'); z3.className='lbl-z3';
-  const [eu,ct] = price.toFixed(2).split('.');
-  const pEl = document.createElement('span'); pEl.className='lbl-price'; pEl.textContent=`${eu},${ct}`;
-  const eEl = document.createElement('span'); eEl.className='lbl-eur'; eEl.textContent='EUR';
-  z3.appendChild(pEl); z3.appendChild(eEl);
-
-  const z4 = document.createElement('div'); z4.className='lbl-z4';
-  const uEl = document.createElement('span'); uEl.className='lbl-unit';
-  if(unitPrice) uEl.textContent=`${unitPrice.val.toFixed(2).replace('.',',')} ${unitPrice.unit}`;
-  const sEl = document.createElement('span'); sEl.className='lbl-store'; sEl.textContent='NOZ P854 · Louvroil';
-  z4.appendChild(uEl); z4.appendChild(sEl);
-
-  lbl.appendChild(z1); lbl.appendChild(z2); lbl.appendChild(z3); lbl.appendChild(z4);
-
-  document.getElementById('scan-preview-wrap').style.display = 'block';
-  document.getElementById('scan-preview-wrap').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-function ajouterDepuisScan() {
-  const code  = document.getElementById('scan-code').value.trim();
-  const price = parseFloat(document.getElementById('scan-price').value);
-  const uprice= parseFloat(document.getElementById('scan-uprice').value);
-  const uunit = document.getElementById('scan-uunit').value;
-  if(!code||isNaN(price)||price<=0) { showToast('Code ou prix manquant'); return; }
-  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
-  articles.push({ref:code, price, qty:1, code1:'', code2:'', unitPrice, qprod:''});
-  save(); renderAll();
-  showToast('Article ajouté à la liste !');
-  resetScan();
-  showTabById('liste');
-}
-
-function resetScan() {
-  document.getElementById('scan-result-zone').style.display  = 'none';
-  document.getElementById('scan-preview-wrap').style.display = 'none';
-  document.getElementById('btn-start-scan').style.display    = 'block';
-  document.getElementById('scan-code').value  = '';
-  document.getElementById('scan-price').value = '';
-  document.getElementById('scan-uprice').value= '';
-}
-const REMISES_COURANTES = [10,20,25,30,40,50,60,70,75,80,85,90];
 
 function calculer() {
   const prix = parseFloat(document.getElementById('calc-prix').value);
