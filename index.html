@@ -6,141 +6,187 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NOZ Étiq.">
-<meta name="theme-color" content="#1a2d5a">
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <style>
 :root {
-  --marine: #1a2d5a;
-  --or: #c8a96e;
-  --bg: #f0ede8;
-  --white: #ffffff;
+  --accent: #1a2d5a;
+  --accent2: #c8a96e;
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --text: #000000;
+  --text2: #6c6c70;
+  --text3: #aeaeb2;
+  --sep: #e5e5ea;
+  --green: #34c759;
+  --red: #ff3b30;
+  --blue: #007aff;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; background: var(--marine); }
+html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: var(--bg); color: var(--text); }
 
-/* ── APP SHELL ── */
-.app {
-  display: flex; flex-direction: column;
-  height: 100%; height: 100dvh;
-  background: var(--bg);
-}
+.app { display: flex; flex-direction: column; height: 100dvh; }
 
-/* ── HEADER ── */
-.hdr {
-  background: var(--marine);
-  padding: calc(var(--safe-top) + 10px) 16px 10px;
+/* ── STATUS BAR SPACER ── */
+.status-bar { height: var(--safe-top); background: var(--card); flex-shrink: 0; }
+
+/* ── NAV HEADER ── */
+.nav-header {
+  background: var(--card);
+  border-bottom: 0.5px solid var(--sep);
+  padding: 12px 20px 10px;
   display: flex; align-items: center; justify-content: space-between;
   flex-shrink: 0;
 }
-.hdr-logo { font-size: 20px; font-weight: 700; color: var(--or); letter-spacing: 3px; }
-.hdr-sub  { font-size: 11px; color: #7a8fbb; }
-.hdr-bar  { height: 3px; background: var(--or); flex-shrink: 0; }
-
-/* ── TABS ── */
-.tabs {
-  display: flex; background: var(--marine); flex-shrink: 0;
-  border-top: 1px solid rgba(255,255,255,.08);
+.nav-title { font-size: 17px; font-weight: 600; color: var(--text); }
+.nav-badge {
+  background: var(--accent); color: var(--accent2);
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  padding: 3px 8px; border-radius: 6px;
 }
-.tab {
-  flex: 1; padding: 10px 4px 8px; text-align: center;
-  font-size: 11px; font-weight: 600; color: #7a8fbb;
-  cursor: pointer; border: none; background: none;
-  border-bottom: 2px solid transparent; transition: all .2s;
-}
-.tab.active { color: var(--or); border-bottom-color: var(--or); }
 
 /* ── PAGES ── */
 .pages { flex: 1; overflow: hidden; position: relative; }
-.page  { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; padding: 14px 14px calc(14px + var(--safe-bot)); }
+.page { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; display: none; padding: 16px 16px calc(16px + var(--safe-bot)); }
 .page.active { display: block; }
 
+/* ── TAB BAR ── */
+.tabbar {
+  display: flex; background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--sep);
+  padding-bottom: var(--safe-bot);
+  flex-shrink: 0;
+}
+.tb-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 8px 4px 4px; gap: 3px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); transition: color .15s;
+}
+.tb-item.active { color: var(--accent); }
+.tb-icon { width: 26px; height: 26px; flex-shrink: 0; }
+.tb-label { font-size: 10px; font-weight: 500; letter-spacing: -0.1px; }
+
+/* ── SECTION HEADERS ── */
+.section-hdr {
+  font-size: 13px; font-weight: 600; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 0 4px 6px; margin-top: 20px; margin-bottom: 2px;
+}
+.section-hdr:first-child { margin-top: 4px; }
+
+/* ── CARDS / GROUPED ── */
+.grouped {
+  background: var(--card); border-radius: 12px;
+  overflow: hidden; margin-bottom: 8px;
+}
+.grouped-row {
+  display: flex; align-items: center;
+  padding: 13px 16px; gap: 12px;
+  border-bottom: 0.5px solid var(--sep);
+  position: relative;
+}
+.grouped-row:last-child { border-bottom: none; }
+.row-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.row-label { font-size: 17px; color: var(--text); flex: 1; }
+.row-value { font-size: 17px; color: var(--text2); }
+.row-arrow { color: var(--text3); font-size: 14px; }
+
 /* ── FORMULAIRE ── */
-.card { background: var(--white); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-.card-title { font-size: 10px; font-weight: 700; color: #7a8fbb; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
-
-.field { margin-bottom: 10px; }
-.field:last-child { margin-bottom: 0; }
-.field label { display: block; font-size: 11px; color: #555; font-weight: 700; margin-bottom: 5px; }
-.field input, .field select {
-  width: 100%; height: 44px; padding: 0 12px; font-size: 15px;
-  border: 1.5px solid #d8d5cc; border-radius: 8px;
-  background: #fff; color: #111; outline: none;
-  -webkit-appearance: none; appearance: none;
+.form-card {
+  background: var(--card); border-radius: 12px;
+  margin-bottom: 8px; overflow: hidden;
 }
-.field input:focus { border-color: var(--marine); }
-.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231a2d5a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.grid3 { display: grid; grid-template-columns: 1fr 88px 64px; gap: 8px; }
-.uprice-row { display: grid; grid-template-columns: 1fr 120px; gap: 8px; }
-
-.btn-add {
-  width: 100%; height: 48px; background: var(--marine); color: var(--or);
-  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
-  cursor: pointer; letter-spacing: .5px; margin-top: 4px;
-  active: opacity .8;
+.form-field {
+  display: flex; align-items: center;
+  padding: 0 16px;
+  border-bottom: 0.5px solid var(--sep);
+  min-height: 52px;
 }
-.btn-add:active { opacity: .8; }
-
-/* ── LISTE ARTICLES ── */
-.article-item {
-  background: var(--white); border-radius: 10px; padding: 12px 14px;
-  margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+.form-field:last-child { border-bottom: none; }
+.form-field label {
+  font-size: 16px; color: var(--text);
+  min-width: 130px; flex-shrink: 0;
 }
-.art-ref   { font-size: 14px; font-weight: 700; color: var(--marine); flex: 1; }
-.art-price { font-size: 13px; font-weight: 600; color: #2e7d32; }
-.art-qty   { font-size: 12px; color: #888; background: #f0ede8; padding: 2px 8px; border-radius: 10px; }
-.art-del   { background: none; border: none; color: #bbb; font-size: 22px; padding: 0 2px; cursor: pointer; }
-.art-del:active { color: #c0392b; }
-.empty-state { text-align: center; color: #bbb; font-size: 14px; padding: 30px 0; }
-
-/* ── TOTAUX BAR ── */
-.totals {
-  background: var(--marine); border-radius: 10px; padding: 12px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
+.form-field input, .form-field select {
+  flex: 1; border: none; outline: none;
+  font-size: 16px; color: var(--text);
+  background: transparent; text-align: right;
+  font-family: -apple-system, sans-serif;
+  padding: 14px 0;
+  -webkit-appearance: none;
 }
-.totals span   { font-size: 12px; color: #7a8fbb; }
-.totals strong { font-size: 18px; color: var(--or); }
+.form-field input::placeholder { color: var(--text3); }
+.form-field select { color: var(--blue); }
 
-/* ── BOUTONS ACTION ── */
-.btn-primary {
-  width: 100%; height: 52px; background: var(--or); color: #fff;
-  border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-  margin-bottom: 10px;
-}
-.btn-primary:active { opacity: .85; }
-.btn-primary:disabled { background: #ccc; cursor: not-allowed; }
-
-.btn-secondary {
-  width: 100%; height: 44px; background: #fff; color: var(--marine);
-  border: 1.5px solid var(--marine); border-radius: 10px;
-  font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px;
-}
-.btn-secondary:active { background: #f0ede8; }
-.btn-secondary:disabled { opacity: .4; }
-
-.btn-chaine {
-  width: 100%; height: 46px;
-  background: #1a2d5a;
-  color: #c8a96e;
-  border: none; border-radius: 10px;
-  font-size: 13px; font-weight: 700;
-  cursor: pointer; letter-spacing: .3px;
+/* ── BOUTONS iOS ── */
+.btn-ios {
+  width: 100%; height: 52px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 12px;
+  font-size: 17px; font-weight: 600;
+  cursor: pointer; margin-bottom: 12px;
+  font-family: -apple-system, sans-serif;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.btn-chaine:disabled { background: #ccc; color: #999; cursor: not-allowed; }
-.btn-chaine:active { opacity: .85; }
+.btn-ios:active { opacity: .8; }
+.btn-ios:disabled { background: var(--text3); cursor: not-allowed; }
+.btn-ios.gold { background: var(--accent2); color: #fff; }
+.btn-ios.green { background: var(--green); }
+.btn-ios.outline {
+  background: transparent; color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+.btn-ios.red-outline {
+  background: transparent; color: var(--red);
+  border: 1.5px solid var(--red);
+}
+.btn-ios.sm { height: 42px; font-size: 15px; border-radius: 10px; }
 
-/* ── PAGE APERÇU ── */
-.preview-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.lbl { background: #fff; border: 1.5px solid #222; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; font-family: Arial,sans-serif; width: 160px; height: 160px; }
+/* ── LISTE ARTICLES ── */
+.art-row {
+  background: var(--card); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.art-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.art-dot.serie { background: var(--accent2); }
+.art-ref { font-size: 16px; font-weight: 600; flex: 1; }
+.art-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.art-price { font-size: 16px; font-weight: 500; color: var(--green); margin-right: 4px; }
+.art-qty-badge {
+  background: var(--bg); color: var(--text2);
+  font-size: 13px; font-weight: 500;
+  padding: 3px 8px; border-radius: 8px;
+}
+.art-del { background: none; border: none; color: var(--text3); font-size: 22px; cursor: pointer; padding: 0 2px; }
+
+/* ── TOTAUX ── */
+.total-card {
+  background: var(--accent); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.total-card .lbl { font-size: 13px; color: rgba(255,255,255,.6); margin-bottom: 2px; }
+.total-card .val { font-size: 28px; font-weight: 700; color: var(--accent2); }
+.total-card .sub { font-size: 12px; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+/* ── PREVIEW GRID ── */
+.preview-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.preview-empty { color: var(--text3); font-size: 15px; padding: 30px 0; text-align: center; width: 100%; }
+
+/* ── ÉTIQUETTE PREVIEW ── */
+.lbl { background:#fff; border:1.5px solid #222; display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; font-family:Arial,sans-serif; width:160px; height:160px; border-radius: 4px; }
 .lbl-z1 { display:flex; align-items:center; justify-content:space-between; padding:2px 5px; border-bottom:.5px solid #bbb; flex-shrink:0; height:16px; }
 .lbl-z1l { display:flex; flex-direction:column; }
 .lbl-z1s { font-size:5.5px; color:#333; line-height:1.3; }
@@ -155,184 +201,217 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 .lbl-unit  { font-size:6.5px; font-weight:700; color:#222; }
 .lbl-store { font-size:5.5px; color:#888; }
 
-/* ── PAGE INSTALLATION ── */
-.install-card { background: var(--white); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
-.install-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:16px; }
-.install-step:last-child { margin-bottom:0; }
-.step-num { width:28px; height:28px; background:var(--marine); color:var(--or); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; }
-.step-text { font-size:13px; color:#333; line-height:1.5; padding-top:4px; }
-.step-text strong { color: var(--marine); }
-.install-banner {
-  background: var(--marine); border-radius: 12px; padding: 16px;
-  text-align: center; margin-bottom: 12px;
+/* ── IMG RÉSULTAT ── */
+.result-card {
+  background: var(--card); border-radius: 12px;
+  padding: 12px; margin-bottom: 12px;
 }
-.install-banner p { color: #7a8fbb; font-size: 12px; margin-top: 6px; }
+.result-card img { width:100%; height:auto; border-radius:8px; border:1px solid var(--sep); }
+.result-title { font-size:13px; font-weight:600; color:var(--text2); margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em; }
+.result-info { font-size:12px; color:var(--text3); margin-top:6px; }
 
-/* ── TOAST ── */
-.toast { position:fixed; bottom:calc(20px + var(--safe-bot)); left:50%; transform:translateX(-50%) translateY(20px); background:var(--marine); color:var(--or); padding:12px 24px; border-radius:20px; font-size:13px; font-weight:600; opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; z-index:999; white-space:nowrap; }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+/* ── PROGRESS ── */
+.progress-card {
+  background: var(--card); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 12px; display: none;
+}
+.progress-label { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+.progress-track { background: var(--bg); border-radius: 4px; height: 6px; overflow: hidden; }
+.progress-bar { height: 6px; background: var(--accent); border-radius: 4px; width: 0%; transition: width .3s; }
 
+/* ── COMPTAGE ── */
+.cpt-row {
+  background: var(--card); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.cpt-price { font-size: 18px; font-weight: 700; flex: 1; }
+.cpt-sous { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.cpt-result { font-size: 18px; font-weight: 700; color: var(--green); min-width: 80px; text-align: right; }
+.cpt-stepper { display: flex; align-items: center; gap: 6px; }
+.cpt-btn {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 1.5px solid var(--sep); background: var(--bg);
+  font-size: 18px; font-weight: 600; color: var(--accent);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.cpt-qty-input {
+  width: 48px; height: 34px; text-align: center;
+  font-size: 16px; font-weight: 700; color: var(--accent);
+  border: 1.5px solid var(--sep); border-radius: 8px;
+  background: var(--bg); outline: none;
+}
+
+/* ── INSTALL STEPS ── */
+.install-step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 14px; }
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: var(--accent2);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.step-txt { font-size: 15px; color: var(--text); line-height: 1.5; padding-top: 3px; }
+.step-txt strong { color: var(--accent); }
+
+/* ── SÉRIE PREVIEW ── */
+.ser-preview-txt {
+  background: var(--card); border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 12px;
+  font-size: 14px; color: var(--text2); display: none;
+}
+.ser-result {
+  background: var(--card); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 12px; display: none;
+  border-left: 3px solid var(--green);
+}
+
+/* ── MISC ── */
+.empty-state { color: var(--text3); font-size: 15px; padding: 30px 0; text-align: center; }
+.toast {
+  position: fixed; bottom: calc(90px + var(--safe-bot)); left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: rgba(0,0,0,.75); color: #fff;
+  padding: 10px 20px; border-radius: 20px;
+  font-size: 14px; font-weight: 500;
+  opacity: 0; transition: opacity .25s, transform .25s;
+  pointer-events: none; z-index: 999; white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; }
 @keyframes sp { to { transform:rotate(360deg); } }
 #render-canvas { display:none; }
+.img-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.88); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+.img-overlay img { max-width:100%; max-height:60vh; border-radius:10px; }
+.overlay-tip { margin-top:20px; text-align:center; color:#fff; font-size:16px; font-weight:600; line-height:1.6; }
+.overlay-tip span { color: var(--accent2); }
+.overlay-sub { color:rgba(255,255,255,.5); font-size:13px; margin-top:6px; text-align:center; }
+.overlay-close { margin-top:24px; padding:12px 36px; background:var(--accent); color:var(--accent2); border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
 
-/* ── Overlay image plein écran iOS ── */
-.img-overlay {
-  position: fixed; inset: 0; z-index: 1000;
-  background: rgba(0,0,0,.92);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 20px;
-  animation: fadeIn .2s ease;
+/* ── CHAINE BTN ── */
+.btn-chaine {
+  width:100%; height:52px; background:var(--accent); color:var(--accent2);
+  border:none; border-radius:12px; font-size:16px; font-weight:600;
+  cursor:pointer; margin-bottom:8px; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-family:-apple-system,sans-serif;
 }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-.img-overlay img {
-  max-width: 100%; max-height: 65vh;
-  border-radius: 8px; display: block;
-}
-.img-overlay-tip {
-  margin-top: 18px; text-align: center;
-  color: #fff; font-size: 15px; font-weight: 600; line-height: 1.6;
-}
-.img-overlay-tip span { color: var(--or); }
-.img-overlay-sub { color: #aaa; font-size: 12px; margin-top: 6px; text-align:center; }
-.img-overlay-close {
-  margin-top: 24px; padding: 12px 36px;
-  background: var(--marine); color: var(--or);
-  border: none; border-radius: 10px;
-  font-size: 14px; font-weight: 700; cursor: pointer;
-}
+.btn-chaine:disabled { background:var(--text3); color:#fff; cursor:not-allowed; }
+.btn-danger { width:100%; height:44px; background:transparent; color:var(--red); border:1.5px solid var(--red); border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; font-family:-apple-system,sans-serif; }
 </style>
 </head>
 <body>
-
 <div class="app">
 
-  <div class="hdr">
-    <span class="hdr-logo">NOZ</span>
-    <span class="hdr-sub">P854 Louvroil</span>
-  </div>
-  <div class="hdr-bar"></div>
+  <div class="status-bar"></div>
 
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('saisie',this)">Saisie</button>
-    <button class="tab" onclick="showTab('serie',this)">Série</button>
-    <button class="tab" onclick="showTab('liste',this)">Articles</button>
-    <button class="tab" onclick="showTab('apercu',this)">Aperçu</button>
-    <button class="tab" onclick="showTab('comptage',this)">Comptage</button>
-    <button class="tab" onclick="showTab('install',this)">Installer</button>
+  <div class="nav-header">
+    <span class="nav-title" id="nav-title">Saisie</span>
+    <span class="nav-badge">P854</span>
   </div>
 
   <div class="pages">
 
-    <!-- ══ ONGLET SÉRIE CHAUSSURES ══ -->
-    <div class="page" id="page-serie">
-
-      <div class="card">
-        <div class="card-title">Génération en série — chaussures</div>
-
-        <div class="grid2" style="margin-bottom:10px;">
-          <div class="field" style="margin-bottom:0;">
-            <label>Semaine (ex : 16)</label>
-            <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Nombre de paires</label>
-            <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
-          </div>
-        </div>
-
-        <div class="field" style="margin-bottom:10px;">
-          <label>Exemplaires par paire</label>
-          <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
-        </div>
-
-        <!-- Aperçu du format généré -->
-        <div id="ser-preview" style="background:#f0ede8;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#555;display:none;">
-          <span id="ser-preview-txt"></span>
-        </div>
-
-        <button class="btn-add" onclick="genererSerie()">Générer la série</button>
-      </div>
-
-      <!-- Résumé série générée -->
-      <div id="ser-result" style="display:none;">
-        <div class="card">
-          <div class="card-title">Série générée</div>
-          <div id="ser-result-txt" style="font-size:13px;color:#333;line-height:1.8;"></div>
-          <div style="display:flex;gap:8px;margin-top:12px;">
-            <button class="btn-primary" style="margin-bottom:0;" onclick="showTab('apercu', document.querySelectorAll('.tab')[3])">
-              Voir l'aperçu
-            </button>
-            <button class="btn-secondary" style="margin-bottom:0;" onclick="viderSerie()">
-              Vider la série
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <!-- ══ SAISIE ══ -->
     <div class="page active" id="page-saisie">
 
-      <div class="card">
-        <div class="card-title">Nouvel article</div>
-
-        <div class="grid3" style="margin-bottom:10px;">
-          <div class="field" style="margin-bottom:0;">
-            <label>Code article (réf NOZ)</label>
-            <input id="inp-ref" type="text" placeholder="1004875273" maxlength="20" autocomplete="off" inputmode="numeric"/>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Prix (€)</label>
-            <input id="inp-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"/>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Qté</label>
-            <input id="inp-qty" type="number" value="1" min="1" max="99" inputmode="numeric"/>
-          </div>
+      <div class="section-hdr">Article</div>
+      <div class="form-card">
+        <div class="form-field">
+          <label>Code article</label>
+          <input id="inp-ref" type="text" placeholder="1004875273" maxlength="20" autocomplete="off" inputmode="numeric"/>
         </div>
-
-        <div class="grid2" style="margin-bottom:10px;">
-          <div class="field" style="margin-bottom:0;">
-            <label>Code interne (ex : t90257)</label>
-            <input id="inp-code1" type="text" placeholder="t90257" maxlength="20"/>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Sous-code (ex : AUX002)</label>
-            <input id="inp-code2" type="text" placeholder="AUX002" maxlength="20"/>
-          </div>
+        <div class="form-field">
+          <label>Prix (€)</label>
+          <input id="inp-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"/>
         </div>
-
-        <div class="field" style="margin-bottom:10px;">
-          <label>Prix unitaire — optionnel (ex : 5,32 EUR/kg)</label>
-          <div class="uprice-row">
-            <input id="inp-uprice" type="number" placeholder="5,32" step="0.01" min="0" inputmode="decimal"/>
-            <select id="inp-uunit">
-              <option value="EUR/kg">€ / kg</option>
-              <option value="EUR/L">€ / L</option>
-              <option value="EUR/100g">€ / 100g</option>
-              <option value="EUR/100mL">€ / 100 mL</option>
-              <option value="EUR/pce">€ / pièce</option>
-            </select>
-          </div>
+        <div class="form-field">
+          <label>Quantité</label>
+          <input id="inp-qty" type="number" value="1" min="1" max="99" inputmode="numeric"/>
         </div>
+      </div>
 
-        <div class="field">
-          <label>Rang IFLS (le chiffre à droite du barcode — optionnel)</label>
-          <input id="inp-qprod" type="text" placeholder="ex : 2" maxlength="6"/>
+      <div class="section-hdr">Codes</div>
+      <div class="form-card">
+        <div class="form-field">
+          <label>Code interne</label>
+          <input id="inp-code1" type="text" placeholder="t90257" maxlength="20"/>
         </div>
+        <div class="form-field">
+          <label>Sous-code</label>
+          <input id="inp-code2" type="text" placeholder="AUX002" maxlength="20"/>
+        </div>
+        <div class="form-field">
+          <label>Rang IFLS</label>
+          <input id="inp-qprod" type="text" placeholder="2" maxlength="6"/>
+        </div>
+      </div>
 
-        <button class="btn-add" onclick="addArticle()">+ Ajouter l'article</button>
+      <div class="section-hdr">Prix unitaire (optionnel)</div>
+      <div class="form-card">
+        <div class="form-field">
+          <label>Valeur</label>
+          <input id="inp-uprice" type="number" placeholder="5,32" step="0.01" min="0" inputmode="decimal"/>
+        </div>
+        <div class="form-field">
+          <label>Unité</label>
+          <select id="inp-uunit">
+            <option value="EUR/kg">€ / kg</option>
+            <option value="EUR/L">€ / L</option>
+            <option value="EUR/100g">€ / 100g</option>
+            <option value="EUR/100mL">€ / 100 mL</option>
+            <option value="EUR/pce">€ / pièce</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-ios gold" onclick="addArticle()">Ajouter l'article</button>
+
+    </div>
+
+    <!-- ══ SÉRIE ══ -->
+    <div class="page" id="page-serie">
+
+      <div class="section-hdr">Paramètres de la série</div>
+      <div class="form-card">
+        <div class="form-field">
+          <label>Semaine</label>
+          <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
+        </div>
+        <div class="form-field">
+          <label>Nombre de paires</label>
+          <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
+        </div>
+        <div class="form-field">
+          <label>Exemplaires / paire</label>
+          <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
+        </div>
+      </div>
+
+      <div class="ser-preview-txt" id="ser-preview">
+        <span id="ser-preview-txt"></span>
+      </div>
+
+      <button class="btn-ios gold" onclick="genererSerie()">Générer la série</button>
+
+      <div class="ser-result" id="ser-result">
+        <div style="font-size:14px;color:var(--text);margin-bottom:10px;" id="ser-result-txt"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('apercu')">Voir l'aperçu</button>
+          <button class="btn-ios sm outline" style="flex:1;margin-bottom:0;" onclick="viderSerie()">Vider</button>
+        </div>
       </div>
 
     </div>
 
-    <!-- ══ ONGLET LISTE ══ -->
+    <!-- ══ ARTICLES ══ -->
     <div class="page" id="page-liste">
 
-      <div class="totals">
-        <span id="totals-text">0 article · 0 étiquette</span>
-        <strong id="totals-count">0</strong>
+      <div class="total-card">
+        <div>
+          <div class="lbl">Total étiquettes</div>
+          <div class="val" id="totals-count">0</div>
+          <div class="sub" id="totals-text">0 article</div>
+        </div>
       </div>
 
       <div id="article-list">
@@ -343,179 +422,198 @@ html, body { height: 100%; overflow: hidden; font-family: Arial, sans-serif; bac
 
     </div>
 
-    <!-- ══ ONGLET APERÇU ══ -->
+    <!-- ══ APERÇU ══ -->
     <div class="page" id="page-apercu">
 
-      <!-- PAGE 1 : Étiquettes normales -->
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">Page 1 — Étiquettes articles</div>
+      <!-- Étiquettes articles -->
+      <div class="section-hdr">Étiquettes articles</div>
 
-        <div style="display:flex;gap:8px;margin-bottom:8px;">
-          <button class="btn-primary" id="btn-png-normal" onclick="generatePNG('normal')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
-            PNG grille
-          </button>
-          <button class="btn-secondary" id="btn-print-normal" onclick="printDirect('normal')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
-            Imprimer
-          </button>
-        </div>
-        <button class="btn-chaine" id="btn-chaine-normal" onclick="imprimerChaine('normal')" disabled>
-          Imprimer à la chaîne — 1 étiquette à la fois
-        </button>
-        <div id="chaine-progress-normal" style="display:none;margin-top:8px;background:#f0ede8;border-radius:8px;padding:10px 12px;">
-          <div style="font-size:12px;color:var(--marine);font-weight:600;margin-bottom:6px;" id="chaine-txt-normal">Préparation…</div>
-          <div style="background:#ddd;border-radius:4px;height:6px;overflow:hidden;">
-            <div id="chaine-bar-normal" style="height:6px;background:var(--marine);border-radius:4px;width:0%;transition:width .3s;"></div>
-          </div>
-          <button onclick="stopChaine('normal')" style="margin-top:8px;background:none;border:none;color:#c0392b;font-size:12px;font-weight:600;cursor:pointer;">Arrêter</button>
-        </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <button class="btn-ios sm" style="margin-bottom:0;" id="btn-png-normal" onclick="generatePNG('normal')" disabled>PNG grille</button>
+        <button class="btn-ios sm outline" style="margin-bottom:0;" id="btn-print-normal" onclick="printDirect('normal')" disabled>Imprimer</button>
+      </div>
+      <button class="btn-chaine" id="btn-chaine-normal" onclick="imprimerChaine('normal')" disabled>
+        Imprimer à la chaîne
+      </button>
 
-        <div id="img-wrap-normal" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;margin-top:8px;">
-          <div style="font-size:10px;color:#555;margin-bottom:6px;font-weight:600;">IMAGE PNG · 300 DPI · Étiquettes articles</div>
-          <img id="img-out-normal" src="" alt="Étiquettes" style="width:100%;height:auto;border:1px solid #eee;border-radius:4px;"/>
-          <div style="margin-top:6px;font-size:10px;color:#888;" id="img-info-normal"></div>
-          <button class="btn-primary" id="img-dl-normal" style="margin-top:8px;margin-bottom:0;height:38px;font-size:13px;">↓ Enregistrer</button>
-        </div>
-
-        <div class="preview-grid" id="preview-normal" style="margin-top:8px;">
-          <p class="empty-state" style="font-size:12px;">Aucune étiquette article</p>
-        </div>
+      <div class="progress-card" id="chaine-progress-normal">
+        <div class="progress-label" id="chaine-txt-normal">Préparation…</div>
+        <div class="progress-track"><div class="progress-bar" id="chaine-bar-normal"></div></div>
+        <button onclick="stopChaine('normal')" style="margin-top:8px;background:none;border:none;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;">Arrêter</button>
       </div>
 
-      <!-- PAGE 2 : Série chaussures -->
-      <div class="card">
-        <div class="card-title">Page 2 — Série chaussures</div>
+      <div class="result-card" id="img-wrap-normal" style="display:none;">
+        <div class="result-title">Image générée · 300 DPI · Articles</div>
+        <img id="img-out-normal" src="" alt=""/>
+        <div class="result-info" id="img-info-normal"></div>
+        <button class="btn-ios sm gold" id="img-dl-normal" style="margin-top:10px;margin-bottom:0;">↓ Enregistrer le PNG</button>
+      </div>
 
-        <div style="display:flex;gap:8px;margin-bottom:8px;">
-          <button class="btn-primary" id="btn-png-serie" onclick="generatePNG('serie')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
-            PNG grille
-          </button>
-          <button class="btn-secondary" id="btn-print-serie" onclick="printDirect('serie')" disabled style="margin-bottom:0;font-size:12px;height:40px;">
-            Imprimer
-          </button>
-        </div>
-        <button class="btn-chaine" id="btn-chaine-serie" onclick="imprimerChaine('serie')" disabled>
-          Imprimer à la chaîne — 1 étiquette à la fois
-        </button>
-        <div id="chaine-progress-serie" style="display:none;margin-top:8px;background:#f0ede8;border-radius:8px;padding:10px 12px;">
-          <div style="font-size:12px;color:var(--marine);font-weight:600;margin-bottom:6px;" id="chaine-txt-serie">Préparation…</div>
-          <div style="background:#ddd;border-radius:4px;height:6px;overflow:hidden;">
-            <div id="chaine-bar-serie" style="height:6px;background:var(--marine);border-radius:4px;width:0%;transition:width .3s;"></div>
-          </div>
-          <button onclick="stopChaine('serie')" style="margin-top:8px;background:none;border:none;color:#c0392b;font-size:12px;font-weight:600;cursor:pointer;">Arrêter</button>
-        </div>
+      <div class="preview-grid" id="preview-normal" style="margin-bottom:20px;">
+        <p class="preview-empty">Aucune étiquette article</p>
+      </div>
 
-        <div id="img-wrap-serie" style="display:none;background:#f9f8f5;border-radius:8px;padding:10px;margin-bottom:10px;margin-top:8px;">
-          <div style="font-size:10px;color:#555;margin-bottom:6px;font-weight:600;">IMAGE PNG · 300 DPI · Série chaussures</div>
-          <img id="img-out-serie" src="" alt="Série" style="width:100%;height:auto;border:1px solid #eee;border-radius:4px;"/>
-          <div style="margin-top:6px;font-size:10px;color:#888;" id="img-info-serie"></div>
-          <button class="btn-primary" id="img-dl-serie" style="margin-top:8px;margin-bottom:0;height:38px;font-size:13px;">↓ Enregistrer</button>
-        </div>
+      <!-- Série chaussures -->
+      <div class="section-hdr">Série chaussures</div>
 
-        <div class="preview-grid" id="preview-serie" style="margin-top:8px;">
-          <p class="empty-state" style="font-size:12px;">Aucune étiquette série — utilise l'onglet Série</p>
-        </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <button class="btn-ios sm" style="margin-bottom:0;" id="btn-png-serie" onclick="generatePNG('serie')" disabled>PNG grille</button>
+        <button class="btn-ios sm outline" style="margin-bottom:0;" id="btn-print-serie" onclick="printDirect('serie')" disabled>Imprimer</button>
+      </div>
+      <button class="btn-chaine" id="btn-chaine-serie" onclick="imprimerChaine('serie')" disabled>
+        Imprimer à la chaîne
+      </button>
+
+      <div class="progress-card" id="chaine-progress-serie">
+        <div class="progress-label" id="chaine-txt-serie">Préparation…</div>
+        <div class="progress-track"><div class="progress-bar" id="chaine-bar-serie"></div></div>
+        <button onclick="stopChaine('serie')" style="margin-top:8px;background:none;border:none;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;">Arrêter</button>
+      </div>
+
+      <div class="result-card" id="img-wrap-serie" style="display:none;">
+        <div class="result-title">Image générée · 300 DPI · Série</div>
+        <img id="img-out-serie" src="" alt=""/>
+        <div class="result-info" id="img-info-serie"></div>
+        <button class="btn-ios sm gold" id="img-dl-serie" style="margin-top:10px;margin-bottom:0;">↓ Enregistrer le PNG</button>
+      </div>
+
+      <div class="preview-grid" id="preview-serie">
+        <p class="preview-empty">Aucune étiquette série</p>
       </div>
 
     </div>
 
-    <!-- ══ ONGLET COMPTAGE ══ -->
+    <!-- ══ COMPTAGE ══ -->
     <div class="page" id="page-comptage">
 
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title">Ajouter une ligne</div>
-        <div style="display:grid;grid-template-columns:80px 1fr;gap:8px;margin-bottom:10px;">
-          <div class="field" style="margin-bottom:0;">
-            <label>Qté</label>
-            <input id="cpt-qty" type="number" placeholder="6" min="1" inputmode="numeric"
-              style="text-align:center;font-size:18px;font-weight:700;"/>
-          </div>
-          <div class="field" style="margin-bottom:0;">
-            <label>Prix unitaire (€)</label>
-            <input id="cpt-price" type="number" placeholder="9,99" step="0.01" min="0" inputmode="decimal"
-              style="font-size:18px;font-weight:700;"/>
-          </div>
+      <div class="section-hdr">Nouvelle ligne</div>
+      <div class="form-card" style="margin-bottom:12px;">
+        <div class="form-field">
+          <label>Quantité</label>
+          <input id="cpt-qty" type="number" placeholder="6" min="1" inputmode="numeric"/>
         </div>
-        <button class="btn-add" onclick="cptAdd()">+ Ajouter la ligne</button>
+        <div class="form-field">
+          <label>Prix unitaire (€)</label>
+          <input id="cpt-price" type="number" placeholder="9,99" step="0.01" min="0" inputmode="decimal"/>
+        </div>
       </div>
+      <button class="btn-ios gold" onclick="cptAdd()">Ajouter la ligne</button>
 
-      <!-- Lignes saisies -->
-      <div id="cpt-lines" style="margin-bottom:12px;"></div>
+      <div id="cpt-lines"></div>
 
-      <!-- Total global -->
       <div id="cpt-total-wrap" style="display:none;">
-        <div style="background:var(--marine);border-radius:12px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="total-card" style="margin-bottom:8px;">
           <div>
-            <div style="font-size:11px;color:#7a8fbb;margin-bottom:2px;">TOTAL GLOBAL</div>
-            <div style="font-size:13px;color:#7a8fbb;" id="cpt-total-detail"></div>
+            <div class="lbl">Total global</div>
+            <div class="val" id="cpt-total-val">0,00 €</div>
+            <div class="sub" id="cpt-total-detail"></div>
           </div>
-          <div style="font-size:28px;font-weight:700;color:var(--or);" id="cpt-total-val">0,00 €</div>
         </div>
         <button class="btn-danger" onclick="cptClear()">Tout effacer</button>
       </div>
 
     </div>
 
-    <!-- ══ ONGLET INSTALLER ══ -->
+    <!-- ══ INSTALLER ══ -->
     <div class="page" id="page-install">
 
-      <div class="install-banner">
-        <div style="font-size:36px;margin-bottom:4px;">📱</div>
-        <div style="font-size:16px;font-weight:700;color:var(--or);">Installer l'application</div>
-        <p>Ajoute l'appli sur ton écran d'accueil pour y accéder en un tap, hors connexion</p>
+      <div style="text-align:center;padding:24px 0 20px;">
+        <div style="font-size:52px;margin-bottom:8px;">📱</div>
+        <div style="font-size:20px;font-weight:700;color:var(--accent);">Installer l'application</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:6px;">Accès en un tap, fonctionne hors connexion</div>
       </div>
 
-      <button class="btn-primary" id="btn-install" onclick="installPWA()">
+      <button class="btn-ios gold" id="btn-install" onclick="installPWA()" style="display:none;">
         Installer sur cet appareil
       </button>
 
-      <div class="install-card">
-        <div class="card-title">Installation sur iPhone / iPad</div>
-        <div class="install-step">
-          <div class="step-num">1</div>
-          <div class="step-text">Ouvre cette page dans <strong>Safari</strong> (pas Chrome ni Firefox)</div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">2</div>
-          <div class="step-text">Appuie sur le bouton <strong>Partager</strong> <span style="font-size:16px;">⬆</span> en bas de l'écran</div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">3</div>
-          <div class="step-text">Fais défiler et appuie sur <strong>"Sur l'écran d'accueil"</strong></div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">4</div>
-          <div class="step-text">Appuie sur <strong>"Ajouter"</strong> en haut à droite — l'icône NOZ apparaît sur ton écran</div>
-        </div>
+      <div class="section-hdr">Sur iPhone / iPad</div>
+      <div class="grouped">
+        <div class="grouped-row"><div class="step-num">1</div><div class="step-txt">Ouvre cette page dans <strong>Safari</strong></div></div>
+        <div class="grouped-row"><div class="step-num">2</div><div class="step-txt">Appuie sur <strong>Partager ⬆</strong> en bas</div></div>
+        <div class="grouped-row"><div class="step-num">3</div><div class="step-txt">Appuie sur <strong>"Sur l'écran d'accueil"</strong></div></div>
+        <div class="grouped-row"><div class="step-num">4</div><div class="step-txt">Appuie sur <strong>"Ajouter"</strong> en haut à droite</div></div>
       </div>
 
-      <div class="install-card">
-        <div class="card-title">Installation sur Android / PC</div>
-        <div class="install-step">
-          <div class="step-num">1</div>
-          <div class="step-text">Ouvre cette page dans <strong>Chrome</strong></div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">2</div>
-          <div class="step-text">Appuie sur les <strong>3 points</strong> en haut à droite</div>
-        </div>
-        <div class="install-step">
-          <div class="step-num">3</div>
-          <div class="step-text">Appuie sur <strong>"Installer l'application"</strong> ou <strong>"Ajouter à l'écran d'accueil"</strong></div>
-        </div>
+      <div class="section-hdr">Sur Android / PC</div>
+      <div class="grouped">
+        <div class="grouped-row"><div class="step-num">1</div><div class="step-txt">Ouvre dans <strong>Chrome</strong></div></div>
+        <div class="grouped-row"><div class="step-num">2</div><div class="step-txt">Appuie sur les <strong>3 points</strong> en haut</div></div>
+        <div class="grouped-row"><div class="step-num">3</div><div class="step-txt">Appuie sur <strong>"Installer l'application"</strong></div></div>
       </div>
 
-      <div class="install-card">
-        <div class="card-title" style="margin-bottom:6px;">Fonctionnalités hors connexion</div>
-        <p style="font-size:13px;color:#555;line-height:1.6;">Une fois installée, l'application fonctionne <strong>100% sans internet</strong>. Tes articles sont sauvegardés automatiquement sur ton appareil.</p>
+      <div class="section-hdr">URL de l'application</div>
+      <div class="grouped">
+        <div class="grouped-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+          <div style="font-size:13px;font-weight:600;color:var(--accent);">https://antoinekyle.github.io/noz-etiquettes/</div>
+          <div style="font-size:13px;color:var(--text2);">Fonctionne 100% hors connexion après installation</div>
+        </div>
       </div>
 
     </div>
 
   </div>
+
+  <!-- ══ TAB BAR ══ -->
+  <div class="tabbar">
+    <button class="tb-item active" id="tb-saisie" onclick="showTabById('saisie')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <rect x="4" y="4" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="8" y1="9" x2="18" y2="9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8" y1="13" x2="18" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8" y1="17" x2="14" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="tb-label">Saisie</span>
+    </button>
+    <button class="tb-item" id="tb-serie" onclick="showTabById('serie')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <circle cx="7" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="13" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="19" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="9.5" y1="13" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+        <line x1="15.5" y1="13" x2="16.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      <span class="tb-label">Série</span>
+    </button>
+    <button class="tb-item" id="tb-liste" onclick="showTabById('liste')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <rect x="4" y="4" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="8" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8" y1="14" x2="18" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8" y1="18" x2="13" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="tb-label">Articles</span>
+    </button>
+    <button class="tb-item" id="tb-apercu" onclick="showTabById('apercu')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="6" width="9" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+        <rect x="14" y="6" width="9" height="6" rx="2" stroke="currentColor" stroke-width="1.8"/>
+        <rect x="14" y="14" width="9" height="6" rx="2" stroke="currentColor" stroke-width="1.8"/>
+      </svg>
+      <span class="tb-label">Aperçu</span>
+    </button>
+    <button class="tb-item" id="tb-comptage" onclick="showTabById('comptage')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <path d="M5 13h4l3-7 3 14 3-7h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="tb-label">Comptage</span>
+    </button>
+    <button class="tb-item" id="tb-install" onclick="showTabById('install')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <rect x="5" y="3" width="16" height="20" rx="3" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="13" cy="18" r="1.5" fill="currentColor"/>
+        <line x1="9" y1="8" x2="17" y2="8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="9" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="tb-label">Installer</span>
+    </button>
+  </div>
+
 </div>
 
 <canvas id="render-canvas"></canvas>
 <div class="toast" id="toast"></div>
+
 
 <script>
 // ── PWA Service Worker ──
@@ -541,186 +639,146 @@ renderAll();
 
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
-// ── Navigation onglets ──
-function showTab(name, btn) {
+// ── Navigation tabs ──
+const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles', apercu:'Aperçu', comptage:'Comptage', install:'Installer' };
+
+function showTabById(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tb-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  btn.classList.add('active');
+  document.getElementById('tb-'+name).classList.add('active');
+  document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
   if(name==='apercu') renderPreview();
 }
+// Alias pour ancien code
+function showTab(name, btn) { showTabById(name); }
 
-// ── Mise à jour preview série en temps réel ──
+// ── Série preview temps réel ──
 function updateSerPreview() {
-  const sem   = document.getElementById('ser-semaine').value.trim();
-  const nb    = parseInt(document.getElementById('ser-nb').value) || 0;
-  const qty   = parseInt(document.getElementById('ser-qty').value) || 2;
-  const prev  = document.getElementById('ser-preview');
-  const txt   = document.getElementById('ser-preview-txt');
-  if(!sem || !nb){ prev.style.display='none'; return; }
-  const first = sem+'01';
-  const last  = sem+String(nb).padStart(2,'0');
-  const total = nb * qty;
-  txt.innerHTML = `Codes générés : <strong>${first}</strong> → <strong>${last}</strong> &nbsp;·&nbsp; <strong>${nb}</strong> références &nbsp;·&nbsp; <strong>${total}</strong> étiquettes au total`;
+  const sem=document.getElementById('ser-semaine').value.trim();
+  const nb=parseInt(document.getElementById('ser-nb').value)||0;
+  const qty=parseInt(document.getElementById('ser-qty').value)||2;
+  const prev=document.getElementById('ser-preview');
+  const txt=document.getElementById('ser-preview-txt');
+  if(!sem||!nb){ prev.style.display='none'; return; }
+  const first=sem+'01', last=sem+String(nb).padStart(2,'0'), total=nb*qty;
+  txt.innerHTML=`<strong>${first}</strong> → <strong>${last}</strong> · <strong>${nb}</strong> réf. · <strong>${total}</strong> étiquettes`;
   prev.style.display='block';
 }
-['ser-semaine','ser-nb','ser-qty'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', updateSerPreview);
-});
+['ser-semaine','ser-nb','ser-qty'].forEach(id=>{ document.getElementById(id).addEventListener('input',updateSerPreview); });
 
-// ── Générer la série ──
+// ── Générer série ──
 function genererSerie() {
-  const sem    = document.getElementById('ser-semaine').value.trim();
-  const nb     = parseInt(document.getElementById('ser-nb').value);
-  const qty    = Math.max(1, parseInt(document.getElementById('ser-qty').value)||2);
-
-  if(!sem)           { showToast('Merci de saisir un numéro de semaine.'); return; }
-  if(!nb || nb < 1)  { showToast('Merci de saisir le nombre de paires.'); return; }
-
-  articles = articles.filter(a => !a.isSerie);
-
-  for(let i=1; i<=nb; i++){
-    const num = String(i).padStart(2,'0');
-    const ref = sem + num;
-    articles.push({
-      ref, price: 0, qty,
-      code1: '', code2: '',
-      unitPrice: null, qprod: '',
-      isSerie: true
-    });
+  const sem=document.getElementById('ser-semaine').value.trim();
+  const nb=parseInt(document.getElementById('ser-nb').value);
+  const qty=Math.max(1,parseInt(document.getElementById('ser-qty').value)||2);
+  if(!sem){ showToast('Merci de saisir un numéro de semaine.'); return; }
+  if(!nb||nb<1){ showToast('Merci de saisir le nombre de paires.'); return; }
+  articles=articles.filter(a=>!a.isSerie);
+  for(let i=1;i<=nb;i++){
+    const ref=sem+String(i).padStart(2,'0');
+    articles.push({ref,price:0,qty,code1:'',code2:'',unitPrice:null,qprod:'',isSerie:true});
   }
-
   save(); renderAll();
-
-  const first = sem+'01';
-  const last  = sem+String(nb).padStart(2,'0');
-  const total = nb*qty;
-  const res   = document.getElementById('ser-result');
-  const resTxt= document.getElementById('ser-result-txt');
-  resTxt.innerHTML =
-    `Semaine <strong>${sem}</strong> · <strong>${nb}</strong> paires<br>` +
-    `Codes : <strong>${first}</strong> → <strong>${last}</strong><br>` +
-    `×${qty} exemplaires · <strong>${total} étiquettes</strong> générées`;
+  const first=sem+'01', last=sem+String(nb).padStart(2,'0'), total=nb*qty;
+  const res=document.getElementById('ser-result');
+  document.getElementById('ser-result-txt').innerHTML=
+    `Semaine <strong>${sem}</strong> · <strong>${nb}</strong> paires · <strong>${total}</strong> étiquettes générées<br><span style="color:var(--text2);font-size:13px;">${first} → ${last} · ×${qty} exemplaires</span>`;
   res.style.display='block';
   showToast(`${total} étiquettes générées !`);
 }
-
-// ── Vider la série ──
 function viderSerie() {
-  articles = articles.filter(a => !a.isSerie);
-  save(); renderAll();
+  articles=articles.filter(a=>!a.isSerie); save(); renderAll();
   document.getElementById('ser-result').style.display='none';
   showToast('Série effacée');
 }
 
 // ── Barcode SVG ──
 function makeBcSVG(code) {
-  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  try { JsBarcode(svg, String(code), {format:'CODE128',width:1.8,height:50,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'}); } catch(e) {}
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  try { JsBarcode(svg,String(code),{format:'CODE128',width:1.8,height:50,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'}); } catch(e) {}
   return svg;
 }
-
 function barcodeToImg(code) {
-  return new Promise(resolve => {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  return new Promise(resolve=>{
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
-    try { JsBarcode(svg, String(code), {format:'CODE128',width:3.2,height:100,displayValue:false,margin:4,background:'#ffffff',lineColor:'#000000'}); }
-    catch(e) { resolve(null); return; }
-    const xml  = new XMLSerializer().serializeToString(svg);
-    const blob = new Blob([xml],{type:'image/svg+xml;charset=utf-8'});
-    const url  = URL.createObjectURL(blob);
-    const img  = new Image();
-    img.onload  = () => { URL.revokeObjectURL(url); resolve(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
-    img.src = url;
+    try { JsBarcode(svg,String(code),{format:'CODE128',width:3.2,height:100,displayValue:false,margin:4,background:'#ffffff',lineColor:'#000000'}); }
+    catch(e){ resolve(null); return; }
+    const xml=new XMLSerializer().serializeToString(svg);
+    const blob=new Blob([xml],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>{ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror=()=>{ URL.revokeObjectURL(url); resolve(null); };
+    img.src=url;
   });
 }
 
 // ── Ajouter article ──
 function addArticle() {
-  const ref    = document.getElementById('inp-ref').value.trim();
-  const price  = parseFloat(document.getElementById('inp-price').value);
-  const qty    = Math.max(1, parseInt(document.getElementById('inp-qty').value)||1);
-  const code1  = document.getElementById('inp-code1').value.trim();
-  const code2  = document.getElementById('inp-code2').value.trim();
-  const uprice = parseFloat(document.getElementById('inp-uprice').value);
-  const uunit  = document.getElementById('inp-uunit').value;
-  const qprod  = document.getElementById('inp-qprod').value.trim();
-  if (!ref)                  { showToast('Merci de saisir un code article.'); return; }
-  if (isNaN(price)||price<0) { showToast('Prix invalide.'); return; }
-  const unitPrice = (!isNaN(uprice) && uprice>0) ? {val:uprice, unit:uunit} : null;
-  articles.push({ref, price, qty, code1, code2, unitPrice, qprod});
+  const ref=document.getElementById('inp-ref').value.trim();
+  const price=parseFloat(document.getElementById('inp-price').value);
+  const qty=Math.max(1,parseInt(document.getElementById('inp-qty').value)||1);
+  const code1=document.getElementById('inp-code1').value.trim();
+  const code2=document.getElementById('inp-code2').value.trim();
+  const uprice=parseFloat(document.getElementById('inp-uprice').value);
+  const uunit=document.getElementById('inp-uunit').value;
+  const qprod=document.getElementById('inp-qprod').value.trim();
+  if(!ref){ showToast('Merci de saisir un code article.'); return; }
+  if(isNaN(price)||price<0){ showToast('Prix invalide.'); return; }
+  const unitPrice=(!isNaN(uprice)&&uprice>0)?{val:uprice,unit:uunit}:null;
+  articles.push({ref,price,qty,code1,code2,unitPrice,qprod});
   save(); renderAll();
   ['inp-ref','inp-price','inp-code1','inp-code2','inp-uprice','inp-qprod'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('inp-qty').value='1';
-  showToast('Article ajouté !');
   document.getElementById('inp-ref').focus();
+  showToast('Article ajouté !');
 }
-
-function removeArticle(i) {
-  articles.splice(i,1); save(); renderAll();
-}
-function clearAll() {
+function removeArticle(i){ articles.splice(i,1); save(); renderAll(); document.getElementById('img-wrap-normal').style.display='none'; }
+function clearAll(){
   if(!articles.length) return;
   if(!confirm('Effacer tous les articles ?')) return;
   articles=[]; save(); renderAll();
-  document.getElementById('img-wrap').style.display='none';
+  document.getElementById('img-wrap-normal').style.display='none';
+  document.getElementById('img-wrap-serie').style.display='none';
 }
 
 // ── Rendu global ──
 function renderAll() {
-  const total = articles.reduce((s,a)=>s+a.qty,0);
-  const has   = articles.length>0;
-  const hasNormal = articles.some(a=>!a.isSerie);
-  const hasSerie  = articles.some(a=>a.isSerie);
-
-  document.getElementById('totals-text').textContent=`${articles.length} article${articles.length>1?'s':''} · ${total} étiquette${total>1?'s':''}`;
+  const total=articles.reduce((s,a)=>s+a.qty,0);
+  const has=articles.length>0;
+  const hasNormal=articles.some(a=>!a.isSerie);
+  const hasSerie=articles.some(a=>a.isSerie);
+  document.getElementById('totals-text').textContent=`${articles.length} article${articles.length>1?'s':''}`;
   document.getElementById('totals-count').textContent=total;
+  ['btn-png-normal','btn-print-normal','btn-chaine-normal'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!hasNormal; });
+  ['btn-png-serie','btn-print-serie','btn-chaine-serie'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!hasSerie; });
 
-  // Boutons aperçu
-  const bPN=document.getElementById('btn-png-normal');
-  const bPS=document.getElementById('btn-png-serie');
-  const bPrN=document.getElementById('btn-print-normal');
-  const bPrS=document.getElementById('btn-print-serie');
-  const bCN=document.getElementById('btn-chaine-normal');
-  const bCS=document.getElementById('btn-chaine-serie');
-  if(bPN)  bPN.disabled=!hasNormal;
-  if(bPS)  bPS.disabled=!hasSerie;
-  if(bPrN) bPrN.disabled=!hasNormal;
-  if(bPrS) bPrS.disabled=!hasSerie;
-  if(bCN)  bCN.disabled=!hasNormal;
-  if(bCS)  bCS.disabled=!hasSerie;
-
-  // Liste
   const list=document.getElementById('article-list');
   if(!has){ list.innerHTML='<p class="empty-state">Aucun article saisi</p>'; return; }
   list.innerHTML=articles.map((a,i)=>`
-    <div class="article-item">
+    <div class="art-row">
+      <div class="art-dot ${a.isSerie?'serie':''}"></div>
       <div style="flex:1;">
-        <div class="art-ref">${esc(a.ref)} ${a.isSerie?'<span style="font-size:10px;color:#c8a96e;background:#1a2d5a;padding:1px 6px;border-radius:8px;margin-left:4px;">série</span>':''}</div>
-        <div style="font-size:11px;color:#888;margin-top:2px;">
-          ${a.code1?`${esc(a.code1)} `:''} ${a.code2?esc(a.code2):''}
-          ${a.unitPrice?` · ${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`:''}
-        </div>
+        <div class="art-ref">${esc(a.ref)}</div>
+        <div class="art-sub">${a.code1?esc(a.code1)+' ':''} ${a.code2?esc(a.code2):''} ${a.unitPrice?'· '+a.unitPrice.val.toFixed(2).replace('.',',')+' '+a.unitPrice.unit:''}</div>
       </div>
-      <span class="art-price">${a.isSerie ? '—' : fmt(a.price)}</span>
-      <span class="art-qty">×${a.qty}</span>
+      <span class="art-price">${a.isSerie?'—':fmt(a.price)}</span>
+      <span class="art-qty-badge">×${a.qty}</span>
       <button class="art-del" onclick="removeArticle(${i})">×</button>
     </div>`).join('');
 }
 
-// ── Prévisualisation étiquettes ──
+// ── Prévisualisation ──
 function renderPreview() {
   const gridN=document.getElementById('preview-normal');
   const gridS=document.getElementById('preview-serie');
+  const normaux=articles.filter(a=>!a.isSerie);
+  const serie=articles.filter(a=>a.isSerie);
 
-  const normaux = articles.filter(a=>!a.isSerie);
-  const serie   = articles.filter(a=>a.isSerie);
-
-  // Grille normale
-  if(!normaux.length){
-    gridN.innerHTML='<p class="empty-state" style="font-size:12px;">Aucune étiquette article</p>';
-  } else {
+  if(!normaux.length){ gridN.innerHTML='<p class="preview-empty">Aucune étiquette article</p>'; }
+  else {
     gridN.innerHTML='';
     normaux.forEach(a=>{
       for(let i=0;i<a.qty;i++){
@@ -750,22 +808,17 @@ function renderPreview() {
     });
   }
 
-  // Grille série
-  if(!serie.length){
-    gridS.innerHTML='<p class="empty-state" style="font-size:12px;">Aucune étiquette série — utilise l\'onglet Série</p>';
-  } else {
+  if(!serie.length){ gridS.innerHTML='<p class="preview-empty">Aucune étiquette série</p>'; }
+  else {
     gridS.innerHTML='';
     serie.forEach(a=>{
       for(let i=0;i<a.qty;i++){
         const lbl=document.createElement('div');
-        lbl.style.cssText='width:160px;height:160px;background:#fff;border:1.5px solid #222;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
+        lbl.style.cssText='width:160px;height:160px;background:#fff;border:1.5px solid #222;border-radius:4px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;font-family:Arial,sans-serif;';
         const zNum=document.createElement('div');
-        zNum.style.cssText='padding:4px 6px 2px;text-align:right;border-bottom:.5px solid #bbb;';
-        const numEl=document.createElement('span');
-        numEl.style.cssText='font-size:12px;font-weight:700;color:#000;';
-        numEl.textContent=a.ref; zNum.appendChild(numEl);
-        const zBc=document.createElement('div');
-        zBc.style.cssText='padding:4px;display:flex;align-items:center;justify-content:center;';
+        zNum.style.cssText='padding:4px 6px;text-align:right;border-bottom:.5px solid #bbb;flex-shrink:0;';
+        const numEl=document.createElement('span'); numEl.style.cssText='font-size:12px;font-weight:700;color:#000;'; numEl.textContent=a.ref; zNum.appendChild(numEl);
+        const zBc=document.createElement('div'); zBc.style.cssText='flex:1;padding:4px;display:flex;align-items:center;justify-content:center;';
         zBc.appendChild(makeBcSVG(a.ref));
         lbl.appendChild(zNum); lbl.appendChild(zBc);
         gridS.appendChild(lbl);
@@ -776,36 +829,26 @@ function renderPreview() {
 
 // ── Génération PNG ──
 async function generatePNG(type) {
-  const btnId  = type==='serie' ? 'btn-png-serie' : 'btn-png-normal';
-  const btn    = document.getElementById(btnId);
-  btn.disabled=true; btn.innerHTML='<span class="spin"></span>…';
+  const btnId=type==='serie'?'btn-png-serie':'btn-png-normal';
+  const btn=document.getElementById(btnId);
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+  const source=type==='serie'?articles.filter(a=>a.isSerie):articles.filter(a=>!a.isSerie);
+  const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+  if(!labels.length){ btn.disabled=false; btn.innerHTML='PNG grille'; return; }
 
-  const source = type==='serie'
-    ? articles.filter(a=>a.isSerie)
-    : articles.filter(a=>!a.isSerie);
-
-  const labels=[];
-  source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
-
-  if(!labels.length){ btn.disabled=false; btn.innerHTML='Générer PNG'; return; }
-
-  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);  // carré 51×51mm
+  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);
   const COLS=Math.min(4,labels.length), ROWS=Math.ceil(labels.length/COLS);
   const MARGIN=Math.round(3*PX), GAP=Math.round(2*PX);
   const W=COLS*LW+(COLS-1)*GAP+2*MARGIN, H=ROWS*LH+(ROWS-1)*GAP+2*MARGIN;
-
   const canvas=document.getElementById('render-canvas');
   canvas.width=W; canvas.height=H;
   const ctx=canvas.getContext('2d');
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
-
   const refs=[...new Set(labels.map(a=>a.ref))];
   const bcMap={};
   await Promise.all(refs.map(async r=>{ bcMap[r]=await barcodeToImg(r); }));
 
-  // Zones calées sur l'aperçu photo :
-  // Z1 codes : ~10%, Z2 barcode : ~42%, Z3 prix+EUR : ~30%, Z4 prix/kg+magasin : ~18%
-  const Z1H=Math.round(LH*.10), Z2H=Math.round(LH*.42), Z3H=Math.round(LH*.30), Z4H=LH-Math.round(LH*.10)-Math.round(LH*.42)-Math.round(LH*.30);
+  const Z1H=Math.round(LH*.10), Z2H=Math.round(LH*.42), Z3H=Math.round(LH*.30), Z4H=LH-Z1H-Z2H-Z3H;
   const BRD=Math.round(.35*PX), PL=Math.round(2.5*PX), PR=Math.round(2.5*PX);
 
   for(let i=0;i<labels.length;i++){
@@ -815,406 +858,225 @@ async function generatePNG(type) {
     ctx.strokeStyle='#222'; ctx.lineWidth=BRD; ctx.strokeRect(x+BRD/2,y+BRD/2,LW-BRD,LH-BRD);
 
     if(a.isSerie){
-      // ══ ÉTIQUETTE SÉRIE : numéro en haut + barcode grand ══
-      const NUM_H = Math.round(LH*0.22);  // zone numéro
-      const BC_H  = LH - NUM_H;           // zone barcode
-
-      // Séparatrice
+      const NUM_H=Math.round(LH*.20), BC_H=LH-NUM_H;
       ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
       ctx.beginPath(); ctx.moveTo(x+2,y+NUM_H); ctx.lineTo(x+LW-2,y+NUM_H); ctx.stroke();
-
-      // Numéro en grand à droite
-      let fsNum=Math.round(4.5*PX);
-      ctx.fillStyle='#000'; ctx.font=`bold ${fsNum}px Arial`;
-      ctx.textAlign='right'; ctx.textBaseline='middle';
-      while(ctx.measureText(a.ref).width>LW-2*PL && fsNum>Math.round(2*PX)){
-        fsNum-=Math.round(.2*PX); ctx.font=`bold ${fsNum}px Arial`;
-      }
-      ctx.fillText(a.ref, x+LW-PR, y+NUM_H/2);
-
-      // Barcode pleine largeur
-      if(bcMap[a.ref]){
-        const bc=bcMap[a.ref];
-        const padV=Math.round(1.5*PX), padH=Math.round(2.5*PX);
-        ctx.drawImage(bc, x+padH, y+NUM_H+padV, LW-2*padH, BC_H-2*padV);
-      }
-
+      let fsN=Math.round(5*PX); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
+      while(ctx.measureText(a.ref).width>LW-2*PL&&fsN>Math.round(2*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
+      ctx.fillText(a.ref,x+LW-PR,y+NUM_H/2);
+      if(bcMap[a.ref]){ const bc=bcMap[a.ref],pV=Math.round(1.5*PX),pH=Math.round(2.5*PX); ctx.drawImage(bc,x+pH,y+NUM_H+pV,LW-2*pH,BC_H-2*pV); }
     } else {
-      // ══ ÉTIQUETTE NORMALE — disposition exacte photo NOZ ══
-      /*
-        Photo NOZ analyse :
-        Z1 (~18% H) : codes petits gauche + numéro TRÈS GRAND droite (remplit la hauteur)
-        Z2 (~42% H) : barcode pleine largeur + IFLS en bas droite
-        Z3 (~26% H) : prix GROS gauche + EUR GROS droite — même ligne, même taille
-        Z4 (~14% H) : prix unitaire centré seul (pas de magasin si prix unitaire)
-      */
-      const yZ1=y,  Z1h=Math.round(LH*.18);
-      const yZ2=y+Z1h, Z2h=Math.round(LH*.42);
-      const yZ3=y+Z1h+Z2h, Z3h=Math.round(LH*.26);
-      const yZ4=y+Z1h+Z2h+Z3h, Z4h=LH-Z1h-Z2h-Z3h;
-
-      // Séparatrices
+      const yZ1=y,yZ2=y+Z1H,yZ3=y+Z1H+Z2H,yZ4=y+Z1H+Z2H+Z3H;
       ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
       [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(x+2,yy); ctx.lineTo(x+LW-2,yy); ctx.stroke(); });
-
-      // ── Z1 : codes petits gauche + numéro grand droite ──
-      // Codes petits en colonne à gauche
-      const fsS=Math.round(1.9*PX);
-      ctx.fillStyle='#333'; ctx.font=`${fsS}px Arial`;
-      ctx.textAlign='left'; ctx.textBaseline='top';
-      const topPad=Math.round(.5*PX);
-      if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+topPad);
-      if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+topPad+fsS+Math.round(.3*PX));
-
-      // Numéro très grand — remplit toute la hauteur Z1, aligné à droite
-      let fsN=Math.round(Z1h*.85);
-      ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`;
-      ctx.textAlign='right'; ctx.textBaseline='middle';
-      const refMaxW = LW * 0.72;
-      while(ctx.measureText(a.ref).width > refMaxW && fsN > Math.round(1.5*PX)){
-        fsN -= Math.round(.3*PX); ctx.font=`bold ${fsN}px Arial`;
-      }
-      ctx.fillText(a.ref, x+LW-PR, yZ1+Z1h/2);
-
-      // ── Z2 : barcode pleine largeur + IFLS bas droite ──
-      if(bcMap[a.ref]){
-        const bc=bcMap[a.ref];
-        const pV=Math.round(1.2*PX), pH=Math.round(2.5*PX);
-        const qW=a.qprod ? Math.round(6*PX) : 0;
-        ctx.drawImage(bc, x+pH, yZ2+pV, LW-2*pH-qW, Z2h-2*pV);
-      }
-      if(a.qprod){
-        const fQ=Math.round(2.6*PX);
-        ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`;
-        ctx.textAlign='right'; ctx.textBaseline='bottom';
-        ctx.fillText(a.qprod, x+LW-Math.round(1.5*PX), yZ2+Z2h-Math.round(1*PX));
-      }
-
-      // ── Z3 : prix ET EUR sur même ligne, même taille, très gros ──
-      // Sur la photo : "3,99" à gauche et "EUR" à droite, même ligne, taille identique
-      const ps = a.price.toFixed(2).replace('.',',');
-      const eurStr = 'EUR';
-
-      // Trouver la taille qui fait rentrer "3,99   EUR" sur toute la largeur
-      let fsP = Math.round(Z3h * 0.82);
-      ctx.font=`bold ${fsP}px Arial`;
-      const gap = Math.round(2*PX);
-      while((ctx.measureText(ps).width + gap + ctx.measureText(eurStr).width) > LW-2*PL && fsP > Math.round(Z3h*.3)){
-        fsP -= 2; ctx.font=`bold ${fsP}px Arial`;
-      }
-      const midZ3 = yZ3 + Z3h/2;
-      ctx.fillStyle='#000'; ctx.textBaseline='middle';
-
-      // Prix à gauche
-      ctx.textAlign='left';
-      ctx.fillText(ps, x+PL, midZ3);
-
-      // EUR à droite — même taille, même baseline
-      ctx.textAlign='right';
-      ctx.fillText(eurStr, x+LW-PR, midZ3);
-
-      // ── Z4 : prix unitaire centré ──
-      ctx.textBaseline='middle';
-      const midZ4 = yZ4 + Z4h/2;
-      if(a.unitPrice){
-        const uS  = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
-        const fsU = Math.round(Z4h * 0.58);
-        ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`;
-        ctx.textAlign='center';
-        ctx.fillText(uS, x+LW/2, midZ4);
-      } else {
-        // Pas de prix unitaire : magasin en petit
-        const fsM=Math.round(Z4h*.42);
-        ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`;
-        ctx.textAlign='right';
-        ctx.fillText('NOZ P854 · Louvroil', x+LW-PR, midZ4);
-      }
+      const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
+      if(a.code1) ctx.fillText(a.code1,x+PL,yZ1+Math.round(.5*PX));
+      if(a.code2) ctx.fillText(a.code2,x+PL,yZ1+Math.round(.5*PX)+fsS+Math.round(.3*PX));
+      let fsN=Math.round(Z1H*.85); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
+      while(ctx.measureText(a.ref).width>LW*.72&&fsN>Math.round(1.5*PX)){ fsN-=Math.round(.3*PX); ctx.font=`bold ${fsN}px Arial`; }
+      ctx.fillText(a.ref,x+LW-PR,yZ1+Z1H/2);
+      if(bcMap[a.ref]){ const bc=bcMap[a.ref],pV=Math.round(1.2*PX),pH=Math.round(2.5*PX),qW=a.qprod?Math.round(6*PX):0; ctx.drawImage(bc,x+pH,yZ2+pV,LW-2*pH-qW,Z2H-2*pV); }
+      if(a.qprod){ const fQ=Math.round(2.6*PX); ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod,x+LW-Math.round(1.5*PX),yZ2+Z2H-Math.round(1*PX)); }
+      const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.82);
+      ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
+      while((ctx.measureText(ps).width+Math.round(2*PX)+ctx.measureText('EUR').width)>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
+      ctx.fillText(ps,x+PL,yZ3+Z3H/2); ctx.textAlign='right'; ctx.fillText('EUR',x+LW-PR,yZ3+Z3H/2);
+      if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`,fsU=Math.round(Z4H*.58); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(uS,x+LW/2,yZ4+Z4H/2); }
+      else { const fsM=Math.round(Z4H*.42); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText('NOZ P854 · Louvroil',x+LW-PR,yZ4+Z4H/2); }
     }
   }
 
   const dataURL=canvas.toDataURL('image/png');
-
-  const imgOutId = type==='serie' ? 'img-out-serie'  : 'img-out-normal';
-  const imgWrapId= type==='serie' ? 'img-wrap-serie' : 'img-wrap-normal';
-  const imgInfoId= type==='serie' ? 'img-info-serie' : 'img-info-normal';
-  const dlBtnId  = type==='serie' ? 'img-dl-serie'   : 'img-dl-normal';
-  const nomFich  = type==='serie' ? 'Serie_Chaussures' : 'Etiquettes_Articles';
-
-  document.getElementById(imgOutId).src=dataURL;
-  document.getElementById(imgWrapId).style.display='block';
-  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×51 mm (carré)`;
-
-  const dlBtn=document.getElementById(dlBtnId);
+  const nomFich=type==='serie'?'Serie_Chaussures':'Etiquettes_Articles';
   const ds=new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
   const fname=`${nomFich}_NOZ_P854_${ds}.png`;
+  const imgOutId=type==='serie'?'img-out-serie':'img-out-normal';
+  const imgWrapId=type==='serie'?'img-wrap-serie':'img-wrap-normal';
+  const imgInfoId=type==='serie'?'img-info-serie':'img-info-normal';
+  const dlBtnId=type==='serie'?'img-dl-serie':'img-dl-normal';
+  document.getElementById(imgOutId).src=dataURL;
+  document.getElementById(imgWrapId).style.display='block';
+  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×51 mm`;
+  const dlBtn=document.getElementById(dlBtnId);
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
-
   dlBtn.onclick=()=>{
     if(isIOS){ showImgOverlay(dataURL); }
-    else {
-      const a=document.createElement('a'); a.href=dataURL; a.download=fname;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      showToast('PNG téléchargé !');
-    }
+    else { const a=document.createElement('a'); a.href=dataURL; a.download=fname; document.body.appendChild(a); a.click(); document.body.removeChild(a); showToast('PNG téléchargé !'); }
   };
-
-  if(isIOS){ showImgOverlay(dataURL); }
-  else { dlBtn.click(); }
+  if(isIOS){ showImgOverlay(dataURL); } else { dlBtn.click(); }
   showToast('Image générée !');
-  btn.disabled=false; btn.innerHTML='Générer PNG';
+  btn.disabled=false; btn.innerHTML='PNG grille';
 }
 
-// ── Impression ──
+// ── Impression directe ──
 function printDirect(type) {
-  const source = type==='serie'
-    ? articles.filter(a=>a.isSerie)
-    : articles.filter(a=>!a.isSerie);
-  const labels=[];
-  source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
+  const source=type==='serie'?articles.filter(a=>a.isSerie):articles.filter(a=>!a.isSerie);
+  const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   const win=window.open('','_blank');
   let body=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes NOZ</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:A4 portrait;margin:5mm;}.grid{display:flex;flex-wrap:wrap;gap:2mm;}.etq{width:51mm;height:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:flex-start;justify-content:space-between;padding:.6mm 1.5mm .5mm;border-bottom:.2mm solid #bbb;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.8mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:3.5mm;font-weight:700;color:#000;align-self:center;}.z2{display:flex;align-items:center;padding:.6mm 2mm .4mm;border-bottom:.2mm solid #bbb;gap:1mm;flex:1;}.z2 svg{flex:1;height:auto;max-height:18mm;}.z2q{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:center;justify-content:space-between;padding:.5mm 1.5mm .3mm;border-bottom:.2mm solid #bbb;}.z3p{font-family:Arial;font-size:7.5mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:7.5mm;font-weight:700;color:#000;}.z4{display:flex;align-items:center;justify-content:center;padding:.3mm 1.5mm .5mm;}.z4u{font-family:Arial;font-size:2.4mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.8mm;color:#888;}</style></head><body><div class="grid">`;
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:51mm 51mm;margin:0;}.grid{display:flex;flex-wrap:wrap;}.etq{width:51mm;height:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:center;justify-content:space-between;padding:.5mm 1.5mm;border-bottom:.2mm solid #bbb;flex-shrink:0;height:5mm;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.8mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:3.5mm;font-weight:700;color:#000;}.z2{flex:1;display:flex;align-items:center;padding:.5mm 2mm;border-bottom:.2mm solid #bbb;gap:1mm;min-height:0;}.z2 svg{flex:1;height:100%;max-height:none;}.z2q{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:center;justify-content:space-between;padding:.5mm 1.5mm;border-bottom:.2mm solid #bbb;flex-shrink:0;height:15mm;}.z3p{font-family:Arial;font-size:9mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:9mm;font-weight:700;color:#000;}.z4{display:flex;align-items:center;justify-content:center;padding:.3mm 1.5mm;flex-shrink:0;}.z4u{font-family:Arial;font-size:2.4mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.8mm;color:#888;}</style></head><body><div class="grid">`;
   labels.forEach(a=>{
     const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg'); svgEl.setAttribute('xmlns','http://www.w3.org/2000/svg');
     try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:2,height:70,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
     const [eu,ct]=a.price.toFixed(2).split('.');
-    body+=`<div class="etq"><div class="z1"><div class="z1l">${a.code1?`<span class="z1s">${esc(a.code1)}</span>`:''} ${a.code2?`<span class="z1s">${esc(a.code2)}</span>`:''}</div><span class="z1r">${esc(a.ref)}</span></div><div class="z2">${new XMLSerializer().serializeToString(svgEl)}${a.qprod?`<span class="z2q">${esc(a.qprod)}</span>`:''}</div><div class="z3"><span class="z3p">${eu},${ct}</span><span class="z3e">EUR</span></div><div class="z4"><span class="z4u">${a.unitPrice?`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`:''}</span><span class="z4m">NOZ P854 · Louvroil</span></div></div>`;
+    if(a.isSerie){
+      body+=`<div class="etq"><div class="z1" style="justify-content:flex-end;"><span class="z1r">${esc(a.ref)}</span></div><div class="z2">${new XMLSerializer().serializeToString(svgEl)}</div></div>`;
+    } else {
+      body+=`<div class="etq"><div class="z1"><div class="z1l">${a.code1?`<span class="z1s">${esc(a.code1)}</span>`:''} ${a.code2?`<span class="z1s">${esc(a.code2)}</span>`:''}</div><span class="z1r">${esc(a.ref)}</span></div><div class="z2">${new XMLSerializer().serializeToString(svgEl)}${a.qprod?`<span class="z2q">${esc(a.qprod)}</span>`:''}</div><div class="z3"><span class="z3p">${eu},${ct}</span><span class="z3e">EUR</span></div><div class="z4">${a.unitPrice?`<span class="z4u">${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}</span>`:'<span></span>'}<span class="z4m">NOZ P854 · Louvroil</span></div></div>`;
+    }
   });
   body+='</div></body></html>';
   win.document.write(body); win.document.close();
   win.onload=()=>{ win.focus(); win.print(); };
 }
 
+// ── Overlay image iOS ──
 function showImgOverlay(dataURL) {
-  // Supprimer overlay existant
-  const existing = document.getElementById('img-overlay');
-  if(existing) existing.remove();
-
-  const overlay = document.createElement('div');
-  overlay.className = 'img-overlay';
-  overlay.id = 'img-overlay';
-  overlay.innerHTML = `
-    <img src="${dataURL}" alt="Étiquettes NOZ"/>
-    <div class="img-overlay-tip">
-      Appui long sur l'image<br>→ <span>"Enregistrer dans Photos"</span>
-    </div>
-    <div class="img-overlay-sub">L'image sera ajoutée à ta galerie Photos</div>
-    <button class="img-overlay-close" onclick="document.getElementById('img-overlay').remove()">Fermer</button>
-  `;
+  const existing=document.getElementById('img-overlay'); if(existing) existing.remove();
+  const overlay=document.createElement('div'); overlay.className='img-overlay'; overlay.id='img-overlay';
+  overlay.innerHTML=`<img src="${dataURL}" alt="Étiquettes"/><div class="overlay-tip">Appui long sur l'image<br>→ <span>"Enregistrer dans Photos"</span></div><div class="overlay-sub">L'image sera ajoutée à ta galerie Photos</div><button class="overlay-close" onclick="document.getElementById('img-overlay').remove()">Fermer</button>`;
   document.body.appendChild(overlay);
 }
 
 // ── Impression à la chaîne ──
-let chaineTimers = { normal: [], serie: [] };
-let chaineRunning = { normal: false, serie: false };
-
+let chaineRunning={normal:false,serie:false};
 async function renderSingleLabel(a) {
-  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);
+  const PX=300/25.4,LW=Math.round(51*PX),LH=Math.round(51*PX);
   const canvas=document.getElementById('render-canvas');
   canvas.width=LW; canvas.height=LH;
   const ctx=canvas.getContext('2d');
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,LW,LH);
-
-  const bcImg = await barcodeToImg(a.ref);
-
-  const BRD=Math.round(.35*PX), PL=Math.round(2.5*PX), PR=Math.round(2.5*PX);
-  ctx.strokeStyle='#222'; ctx.lineWidth=BRD;
-  ctx.strokeRect(BRD/2,BRD/2,LW-BRD,LH-BRD);
-
+  const bcImg=await barcodeToImg(a.ref);
+  const BRD=Math.round(.35*PX),PL=Math.round(2.5*PX),PR=Math.round(2.5*PX);
+  ctx.strokeStyle='#222'; ctx.lineWidth=BRD; ctx.strokeRect(BRD/2,BRD/2,LW-BRD,LH-BRD);
   if(a.isSerie){
-    const NUM_H=Math.round(LH*.20), BC_H=LH-NUM_H;
+    const NUM_H=Math.round(LH*.20),BC_H=LH-NUM_H;
     ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
     ctx.beginPath(); ctx.moveTo(2,NUM_H); ctx.lineTo(LW-2,NUM_H); ctx.stroke();
-    let fsN=Math.round(5*PX);
-    ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
-    while(ctx.measureText(a.ref).width>LW-2*PL && fsN>Math.round(2*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
-    ctx.fillText(a.ref, LW-PR, NUM_H/2);
-    if(bcImg){ const pV=Math.round(1.5*PX), pH=Math.round(2.5*PX); ctx.drawImage(bcImg, pH, NUM_H+pV, LW-2*pH, BC_H-2*pV); }
+    let fsN=Math.round(5*PX); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
+    while(ctx.measureText(a.ref).width>LW-2*PL&&fsN>Math.round(2*PX)){ fsN-=Math.round(.2*PX); ctx.font=`bold ${fsN}px Arial`; }
+    ctx.fillText(a.ref,LW-PR,NUM_H/2);
+    if(bcImg){ ctx.drawImage(bcImg,Math.round(2.5*PX),NUM_H+Math.round(1.5*PX),LW-2*Math.round(2.5*PX),BC_H-2*Math.round(1.5*PX)); }
   } else {
-    const Z1H=Math.round(LH*.10), Z2H=Math.round(LH*.42), Z3H=Math.round(LH*.30), Z4H=LH-Z1H-Z2H-Z3H;
-    const yZ1=0, yZ2=Z1H, yZ3=Z1H+Z2H, yZ4=Z1H+Z2H+Z3H;
+    const Z1H=Math.round(LH*.10),Z2H=Math.round(LH*.42),Z3H=Math.round(LH*.30),Z4H=LH-Z1H-Z2H-Z3H;
+    const yZ1=0,yZ2=Z1H,yZ3=Z1H+Z2H,yZ4=Z1H+Z2H+Z3H;
     ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.22*PX);
     [yZ2,yZ3,yZ4].forEach(yy=>{ ctx.beginPath(); ctx.moveTo(2,yy); ctx.lineTo(LW-2,yy); ctx.stroke(); });
-    // Z1
     const fsS=Math.round(1.9*PX); ctx.font=`${fsS}px Arial`; ctx.fillStyle='#333'; ctx.textBaseline='top'; ctx.textAlign='left';
-    if(a.code1) ctx.fillText(a.code1, PL, yZ1+Math.round(.5*PX));
-    if(a.code2) ctx.fillText(a.code2, PL, yZ1+Math.round(.5*PX)+fsS+Math.round(.3*PX));
+    if(a.code1) ctx.fillText(a.code1,PL,yZ1+Math.round(.5*PX));
+    if(a.code2) ctx.fillText(a.code2,PL,yZ1+Math.round(.5*PX)+fsS+Math.round(.3*PX));
     let fsN=Math.round(Z1H*.85); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle';
     while(ctx.measureText(a.ref).width>LW*.72&&fsN>Math.round(1.5*PX)){ fsN-=Math.round(.3*PX); ctx.font=`bold ${fsN}px Arial`; }
-    ctx.fillText(a.ref, LW-PR, yZ1+Z1H/2);
-    // Z2
-    if(bcImg){ const pV=Math.round(1.2*PX), pH=Math.round(2.5*PX), qW=a.qprod?Math.round(6*PX):0; ctx.drawImage(bcImg, pH, yZ2+pV, LW-2*pH-qW, Z2H-2*pV); }
-    if(a.qprod){ const fQ=Math.round(2.6*PX); ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod, LW-Math.round(1.5*PX), yZ2+Z2H-Math.round(1*PX)); }
-    // Z3
+    ctx.fillText(a.ref,LW-PR,yZ1+Z1H/2);
+    if(bcImg){ const qW=a.qprod?Math.round(6*PX):0; ctx.drawImage(bcImg,Math.round(2.5*PX),yZ2+Math.round(1.2*PX),LW-2*Math.round(2.5*PX)-qW,Z2H-2*Math.round(1.2*PX)); }
+    if(a.qprod){ const fQ=Math.round(2.6*PX); ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText(a.qprod,LW-Math.round(1.5*PX),yZ2+Z2H-Math.round(1*PX)); }
     const ps=a.price.toFixed(2).replace('.',','); let fsP=Math.round(Z3H*.82);
     ctx.fillStyle='#000'; ctx.font=`bold ${fsP}px Arial`; ctx.textAlign='left'; ctx.textBaseline='middle';
     while((ctx.measureText(ps).width+Math.round(2*PX)+ctx.measureText('EUR').width)>LW-2*PL&&fsP>Math.round(Z3H*.3)){ fsP-=2; ctx.font=`bold ${fsP}px Arial`; }
-    ctx.fillText(ps, PL, yZ3+Z3H/2); ctx.textAlign='right'; ctx.fillText('EUR', LW-PR, yZ3+Z3H/2);
-    // Z4
-    if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`, fsU=Math.round(Z4H*.58); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(uS, LW/2, yZ4+Z4H/2); }
-    else { const fsM=Math.round(Z4H*.42); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText('NOZ P854 · Louvroil', LW-PR, yZ4+Z4H/2); }
+    ctx.fillText(ps,PL,yZ3+Z3H/2); ctx.textAlign='right'; ctx.fillText('EUR',LW-PR,yZ3+Z3H/2);
+    if(a.unitPrice){ const uS=`${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`,fsU=Math.round(Z4H*.58); ctx.fillStyle='#111'; ctx.font=`bold ${fsU}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(uS,LW/2,yZ4+Z4H/2); }
+    else { const fsM=Math.round(Z4H*.42); ctx.fillStyle='#888'; ctx.font=`${fsM}px Arial`; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText('NOZ P854 · Louvroil',LW-PR,yZ4+Z4H/2); }
   }
   return canvas.toDataURL('image/png');
 }
 
 async function imprimerChaine(type) {
   if(chaineRunning[type]) return;
-  const source = type==='serie' ? articles.filter(a=>a.isSerie) : articles.filter(a=>!a.isSerie);
+  const source=type==='serie'?articles.filter(a=>a.isSerie):articles.filter(a=>!a.isSerie);
   const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   if(!labels.length) return;
-
   chaineRunning[type]=true;
   const btn=document.getElementById(`btn-chaine-${type}`);
   const prog=document.getElementById(`chaine-progress-${type}`);
   const txt=document.getElementById(`chaine-txt-${type}`);
   const bar=document.getElementById(`chaine-bar-${type}`);
   btn.disabled=true; prog.style.display='block';
-
-  for(let i=0; i<labels.length; i++){
+  for(let i=0;i<labels.length;i++){
     if(!chaineRunning[type]) break;
     const a=labels[i];
     txt.textContent=`Étiquette ${i+1} / ${labels.length} — ${a.ref}`;
     bar.style.width=`${Math.round(((i+1)/labels.length)*100)}%`;
-
-    const dataURL = await renderSingleLabel(a);
-
-    // Ouvrir une fenêtre d'impression pour chaque étiquette
+    const dataURL=await renderSingleLabel(a);
     const win=window.open('','_blank','width=400,height=400');
-    if(win){
-      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-        <style>*{margin:0;padding:0;}body{background:#fff;}
-        @page{size:51mm 51mm;margin:0;}
-        img{width:51mm;height:51mm;display:block;}
-        </style></head><body>
-        <img src="${dataURL}"/>
-        <script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script>
-        </body></html>`);
-      win.document.close();
-    }
-
-    // Attendre 1.5 secondes entre chaque étiquette pour laisser l'impression se faire
-    await new Promise(r=>setTimeout(r, 1500));
+    if(win){ win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;}body{background:#fff;}@page{size:51mm 51mm;margin:0;}img{width:51mm;height:51mm;display:block;}</style></head><body><img src="${dataURL}"/><script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`); win.document.close(); }
+    await new Promise(r=>setTimeout(r,1500));
   }
-
   if(chaineRunning[type]){
-    txt.textContent=`✔ ${labels.length} étiquette${labels.length>1?'s':''} envoyée${labels.length>1?'s':''} à l'impression !`;
-    bar.style.width='100%'; bar.style.background='#2e7d32';
-    setTimeout(()=>{ prog.style.display='none'; bar.style.background='var(--marine)'; btn.disabled=false; }, 3000);
-  } else {
-    prog.style.display='none'; btn.disabled=false;
-  }
+    txt.textContent=`✔ ${labels.length} étiquette${labels.length>1?'s':''} envoyée${labels.length>1?'s':''} !`;
+    bar.style.width='100%'; bar.style.background='var(--green)';
+    setTimeout(()=>{ prog.style.display='none'; bar.style.background='var(--accent)'; btn.disabled=false; },3000);
+  } else { prog.style.display='none'; btn.disabled=false; }
   chaineRunning[type]=false;
 }
+function stopChaine(type){ chaineRunning[type]=false; document.getElementById(`chaine-progress-${type}`).style.display='none'; document.getElementById(`btn-chaine-${type}`).disabled=false; showToast('Impression arrêtée'); }
 
-function stopChaine(type){
-  chaineRunning[type]=false;
-  document.getElementById(`chaine-progress-${type}`).style.display='none';
-  document.getElementById(`btn-chaine-${type}`).disabled=false;
-  showToast('Impression arrêtée');
-}
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
-
-// ══ COMPTAGE ══
-let cptData = JSON.parse(localStorage.getItem('noz-comptage') || '[]');
+// ── Comptage ──
+let cptData=JSON.parse(localStorage.getItem('noz-comptage')||'[]');
 cptRender();
-
-function cptSave(){ localStorage.setItem('noz-comptage', JSON.stringify(cptData)); }
-
+function cptSave(){ localStorage.setItem('noz-comptage',JSON.stringify(cptData)); }
 function cptAdd(){
-  const qty   = parseInt(document.getElementById('cpt-qty').value);
-  const price = parseFloat(document.getElementById('cpt-price').value);
-  if(!qty || qty < 1)         { showToast('Merci de saisir une quantité.'); return; }
-  if(isNaN(price)||price < 0) { showToast('Prix invalide.'); return; }
-  cptData.push({ qty, price });
-  cptSave(); cptRender();
-  document.getElementById('cpt-qty').value   = '';
-  document.getElementById('cpt-price').value = '';
-  document.getElementById('cpt-qty').focus();
-  showToast('Ligne ajoutée !');
+  const qty=parseInt(document.getElementById('cpt-qty').value);
+  const price=parseFloat(document.getElementById('cpt-price').value);
+  if(!qty||qty<1){ showToast('Merci de saisir une quantité.'); return; }
+  if(isNaN(price)||price<0){ showToast('Prix invalide.'); return; }
+  cptData.push({qty,price}); cptSave(); cptRender();
+  document.getElementById('cpt-qty').value=''; document.getElementById('cpt-price').value='';
+  document.getElementById('cpt-qty').focus(); showToast('Ligne ajoutée !');
 }
-
-function cptRemove(i){
-  cptData.splice(i,1); cptSave(); cptRender();
-}
-
-function cptChangeQty(i, delta){
-  const newQty = Math.max(1, (cptData[i].qty || 1) + delta);
-  cptData[i].qty = newQty;
-  cptSave(); cptRender();
-}
-
-function cptSetQty(i, val){
-  const newQty = Math.max(1, parseInt(val) || 1);
-  cptData[i].qty = newQty;
-  cptSave(); cptRender();
-}
-
+function cptRemove(i){ cptData.splice(i,1); cptSave(); cptRender(); }
+function cptChangeQty(i,delta){ cptData[i].qty=Math.max(1,(cptData[i].qty||1)+delta); cptSave(); cptRender(); }
+function cptSetQty(i,val){ cptData[i].qty=Math.max(1,parseInt(val)||1); cptSave(); cptRender(); }
 function cptRender(){
-  const container = document.getElementById('cpt-lines');
-  const totalWrap = document.getElementById('cpt-total-wrap');
-  const totalVal  = document.getElementById('cpt-total-val');
-  const totalDetail = document.getElementById('cpt-total-detail');
-
-  if(!cptData.length){
-    container.innerHTML = '<p class="empty-state">Aucune ligne saisie</p>';
-    totalWrap.style.display = 'none';
-    return;
-  }
-
-  let totalMontant = 0;
-  let totalArticles = 0;
-
-  container.innerHTML = cptData.map((l,i) => {
-    const sous = l.qty * l.price;
-    totalMontant  += sous;
-    totalArticles += l.qty;
-    return `
-    <div style="background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+  const container=document.getElementById('cpt-lines');
+  const totalWrap=document.getElementById('cpt-total-wrap');
+  if(!cptData.length){ container.innerHTML='<p class="empty-state">Aucune ligne saisie</p>'; totalWrap.style.display='none'; return; }
+  let totalMontant=0, totalArticles=0;
+  container.innerHTML=cptData.map((l,i)=>{
+    const sous=l.qty*l.price; totalMontant+=sous; totalArticles+=l.qty;
+    return `<div class="cpt-row">
       <div style="flex:1;">
-        <div style="font-size:15px;font-weight:700;color:#000;">${l.price.toFixed(2).replace('.',',')} €</div>
-        <div style="font-size:12px;color:#888;margin-top:1px;" id="cpt-sous-${i}">= ${sous.toFixed(2).replace('.',',')} €</div>
+        <div class="cpt-price">${l.price.toFixed(2).replace('.',',')} €</div>
+        <div class="cpt-sous">= ${sous.toFixed(2).replace('.',',')} €</div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <button onclick="cptChangeQty(${i},-1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #d0d0d0;background:#fff;font-size:18px;font-weight:700;color:var(--marine);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">−</button>
-        <input
-          type="number" min="1" value="${l.qty}"
-          onchange="cptSetQty(${i}, this.value)"
-          style="width:52px;height:36px;text-align:center;font-size:16px;font-weight:700;color:var(--marine);border:1.5px solid #d0d0d0;border-radius:8px;background:#fff;outline:none;"
-        />
-        <button onclick="cptChangeQty(${i},+1)" style="width:32px;height:32px;border-radius:50%;border:1.5px solid #d0d0d0;background:#fff;font-size:18px;font-weight:700;color:var(--marine);cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">+</button>
+      <div class="cpt-stepper">
+        <button class="cpt-btn" onclick="cptChangeQty(${i},-1)">−</button>
+        <input class="cpt-qty-input" type="number" min="1" value="${l.qty}" onchange="cptSetQty(${i},this.value)"/>
+        <button class="cpt-btn" onclick="cptChangeQty(${i},+1)">+</button>
       </div>
-      <div style="font-size:17px;font-weight:700;color:#2e7d32;min-width:72px;text-align:right;" id="cpt-total-${i}">
-        ${sous.toFixed(2).replace('.',',')} €
-      </div>
-      <button onclick="cptRemove(${i})" style="background:none;border:none;color:#bbb;font-size:20px;cursor:pointer;padding:0 2px;">×</button>
+      <div class="cpt-result">${sous.toFixed(2).replace('.',',')} €</div>
+      <button onclick="cptRemove(${i})" style="background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;padding:0 2px;">×</button>
     </div>`;
   }).join('');
-
-  totalWrap.style.display = 'block';
-  totalVal.textContent = totalMontant.toFixed(2).replace('.',',') + ' €';
-  totalDetail.textContent = `${totalArticles} article${totalArticles>1?'s':''} · ${cptData.length} ligne${cptData.length>1?'s':''}`;
+  totalWrap.style.display='block';
+  document.getElementById('cpt-total-val').textContent=totalMontant.toFixed(2).replace('.',',')+' €';
+  document.getElementById('cpt-total-detail').textContent=`${totalArticles} article${totalArticles>1?'s':''} · ${cptData.length} ligne${cptData.length>1?'s':''}`;
 }
+function cptClear(){ if(!cptData.length) return; if(!confirm('Effacer tout le comptage ?')) return; cptData=[]; cptSave(); cptRender(); }
 
-function cptClear(){
-  if(!cptData.length) return;
-  if(!confirm('Effacer tout le comptage ?')) return;
-  cptData = []; cptSave(); cptRender();
-}
+// ── Utils ──
+function fmt(p){ return p.toFixed(2).replace('.',',')+' €'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
-// Raccourci Enter sur les champs comptage
+// ── Raccourcis clavier ──
+document.getElementById('inp-ref').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('inp-price').focus(); });
+document.getElementById('inp-price').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-qty').focus(); });
+document.getElementById('inp-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('inp-code1').focus(); });
+document.getElementById('inp-code1').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-code2').focus(); });
+document.getElementById('inp-code2').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-qprod').focus(); });
+document.getElementById('inp-qprod').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-uprice').focus(); });
+document.getElementById('inp-uprice').addEventListener('keydown',e=>{ if(e.key==='Enter') addArticle(); });
 document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('cpt-price').focus(); });
 document.getElementById('cpt-price').addEventListener('keydown', e=>{ if(e.key==='Enter') cptAdd(); });
 </script>
 
 <script>
-// Fix iOS PWA : redirige vers index.html si lancé depuis l'écran d'accueil
 (function(){
-  var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-  var isStandalone = window.navigator.standalone === true;
-  if(isIOS && isStandalone){
-    var path = window.location.pathname;
-    if(path === '/noz-etiquettes/' || path === '/noz-etiquettes'){
+  var isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  var isStandalone=window.navigator.standalone===true;
+  if(isIOS&&isStandalone){
+    var path=window.location.pathname;
+    if(path==='/noz-etiquettes/'||path==='/noz-etiquettes'){
       window.location.replace('/noz-etiquettes/index.html');
     }
   }
