@@ -1250,6 +1250,8 @@ function cptClear(){ if(!cptData.length) return; if(!confirm('Effacer tout le co
 // ── SCANNER INLINE (dans Saisie) ──
 let scannerSaisie = null;
 let scannerSaisieRunning = false;
+let lastScannedCode = '';
+let lastScanTime = 0;
 
 async function startScanInSaisie() {
   const viewport = document.getElementById('scan-viewport-saisie');
@@ -1260,58 +1262,101 @@ async function startScanInSaisie() {
   btnStart.style.display = 'none';
   btnStop.style.display  = 'block';
 
-  if(scannerSaisie) { try { await scannerSaisie.stop(); } catch(e){} scannerSaisie = null; }
+  // Nettoyer proprement
+  if(scannerSaisie) {
+    try { await scannerSaisie.stop(); } catch(e){}
+    try { scannerSaisie.clear(); } catch(e){}
+    scannerSaisie = null;
+  }
   document.getElementById('reader-saisie').innerHTML = '';
-
-  scannerSaisie = new Html5Qrcode('reader-saisie');
   scannerSaisieRunning = true;
+  lastScannedCode = '';
 
   try {
+    scannerSaisie = new Html5Qrcode('reader-saisie', {
+      verbose: false,
+      experimentalFeatures: { useBarCodeDetectorIfSupported: false }
+    });
+
     await scannerSaisie.start(
       { facingMode: 'environment' },
       {
-        fps: 15,
-        qrbox: { width: Math.round(window.innerWidth * 0.55), height: Math.round(window.innerWidth * 0.25) },
+        fps: 30,
+        // Pas de qrbox = toute l'image est analysée, beaucoup plus fiable
+        disableFlip: false,
         aspectRatio: 1.0,
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.ITF,
-        ]
+        // On laisse la librairie détecter tous les formats automatiquement
       },
-      (code) => onScanSaisie(code),
-      () => {}
+      (decodedText, decodedResult) => {
+        // Anti-doublon : ignorer si même code dans les 2 secondes
+        const now = Date.now();
+        if(decodedText === lastScannedCode && now - lastScanTime < 2000) return;
+        lastScannedCode = decodedText;
+        lastScanTime = now;
+        onScanSaisie(decodedText, decodedResult);
+      },
+      (errorMsg) => {} // Ignorer — erreurs normales en scan continu
     );
   } catch(err) {
+    console.error('Scanner error:', err);
     stopScanSaisie();
-    showToast('Accès caméra refusé');
+    showToast('Erreur caméra — autorisez l\'accès dans Safari');
   }
 }
 
-function onScanSaisie(code) {
+function onScanSaisie(code, result) {
   if(!scannerSaisieRunning) return;
+
+  // Format détecté
+  const format = result && result.result && result.result.format
+    ? result.result.format.formatName || ''
+    : '';
+
   // Vibration + bip
-  if(navigator.vibrate) navigator.vibrate([80,30,80]);
+  if(navigator.vibrate) navigator.vibrate([60, 20, 60]);
   try {
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
     const osc = ctx.createOscillator(); const gain = ctx.createGain();
     osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.value=1200; osc.type='sine';
-    gain.gain.setValueAtTime(0.3,ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.15);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.15);
+    osc.frequency.value = 1400; osc.type = 'sine';
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.12);
   } catch(e){}
 
-  stopScanSaisie();
+  // NE PAS arrêter le scanner — mode caisse : scan continu
+  // On ajoute directement l'article à la liste avec un prix 0 à compléter
+  // OU on pré-remplit le champ et on attend le prix
 
-  // Pré-remplir le champ code article
+  // Pré-remplir le champ code
   document.getElementById('inp-ref').value = code;
-  document.getElementById('inp-price').focus();
-  showToast('Code scanné !');
+
+  // Afficher un badge de confirmation sous le scanner
+  showScanBadge(code, format);
+
+  // Focus sur le prix
+  setTimeout(() => {
+    document.getElementById('inp-price').focus();
+  }, 200);
+}
+
+function showScanBadge(code, format) {
+  let badge = document.getElementById('scan-inline-badge');
+  if(!badge) {
+    badge = document.createElement('div');
+    badge.id = 'scan-inline-badge';
+    badge.style.cssText = 'background:rgba(52,199,89,.15);border:1px solid rgba(52,199,89,.4);border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;';
+    // Insérer après le bouton stop
+    const btnStop = document.getElementById('btn-stop-scan-saisie');
+    btnStop.parentNode.insertBefore(badge, btnStop.nextSibling);
+  }
+  badge.style.display = 'flex';
+  badge.innerHTML = `
+    <span style="font-size:20px;flex-shrink:0;">✓</span>
+    <div>
+      <div style="font-size:15px;font-weight:700;color:#1c7a3a;">${esc(code)}</div>
+      <div style="font-size:12px;color:#555;margin-top:1px;">${format || 'Code-barres'} · Saisis le prix puis ajoute</div>
+    </div>`;
 }
 
 async function stopScanSaisie() {
@@ -1324,6 +1369,8 @@ async function stopScanSaisie() {
   document.getElementById('scan-viewport-saisie').style.display = 'none';
   document.getElementById('btn-start-scan-saisie').style.display = 'block';
   document.getElementById('btn-stop-scan-saisie').style.display  = 'none';
+  const badge = document.getElementById('scan-inline-badge');
+  if(badge) badge.style.display = 'none';
 }
 
 async function startScan() {
