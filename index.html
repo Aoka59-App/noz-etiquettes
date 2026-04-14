@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
 <style>
 :root {
   --accent: #1a2d5a;
@@ -1421,113 +1422,39 @@ function bipScan() {
   if(navigator.vibrate) navigator.vibrate([60,20,60]);
 }
 
-// ── Décodage depuis photo (input file) ──
-// Utilise BarcodeDetector natif sur l'image
+// ── Décodage photo (fallback si vidéo indisponible) ──
 function decoderCodeBarres(file, onSuccess, onError) {
+  if(!('BarcodeDetector' in window)) { onError(); return; }
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
     img.onload = async function() {
-      // Préparer le canvas
       const MAX = 1600;
       let w = img.naturalWidth, h = img.naturalHeight;
       if(w > MAX){ h = Math.round(h*MAX/w); w = MAX; }
       else if(h > MAX){ w = Math.round(w*MAX/h); h = MAX; }
-
-      // Essayer les 4 orientations
-      const angles = [0, Math.PI/2, Math.PI, -Math.PI/2];
+      const angles = [0, Math.PI/2, -Math.PI/2, Math.PI];
+      const det = new BarcodeDetector({ formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','codabar'] });
       for(const angle of angles) {
         const c = document.createElement('canvas');
-        if(angle === 0){ c.width=w; c.height=h; }
-        else if(Math.abs(angle) === Math.PI){ c.width=w; c.height=h; }
+        if(angle===0||Math.abs(angle)===Math.PI){ c.width=w; c.height=h; }
         else { c.width=h; c.height=w; }
         const ctx = c.getContext('2d');
-        ctx.translate(c.width/2, c.height/2);
-        ctx.rotate(angle);
+        ctx.translate(c.width/2, c.height/2); ctx.rotate(angle);
         ctx.drawImage(img, -w/2, -h/2, w, h);
-
-        // BarcodeDetector natif iOS 17+
-        if('BarcodeDetector' in window) {
-          try {
-            const det = new BarcodeDetector({ formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','codabar','data_matrix'] });
-            const codes = await det.detect(c);
-            if(codes.length > 0) { onSuccess(codes[0].rawValue, codes[0].format); return; }
-          } catch(e) {}
-        }
-
-        // Fallback: lire le numéro depuis les pixels (pattern matching)
-        // On cherche des zones de barres noires denses
+        try {
+          const codes = await det.detect(c);
+          if(codes.length > 0) { onSuccess(codes[0].rawValue, codes[0].format); return; }
+        } catch(e) {}
       }
-
-      // Dernier recours: demander manuellement
       onError();
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
-function onScanFileChange(input) {
-  const file = input.files && input.files[0];
-  if(!file) return;
-  showToast('Décodage…');
-  decoderCodeBarres(file,
-    (code, fmt) => {
-      bipScan();
-      document.getElementById('inp-ref').value = code;
-      const badge = document.getElementById('scan-inline-badge');
-      badge.style.display='flex';
-      badge.innerHTML=`<span style="font-size:22px;">✓</span><div><div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div><div style="font-size:12px;color:#555;margin-top:1px;">${fmt||'Barcode'} · Saisis le prix puis ajoute</div></div>`;
-      setTimeout(()=>document.getElementById('inp-price').focus(),150);
-      input.value='';
-    },
-    () => { showToast('Code non détecté — réessaie en lumière vive, caméra bien à plat'); input.value=''; }
-  );
-}
 
-function onScanSaisie(code, format) {
-  bipScan();
-  document.getElementById('inp-ref').value = code;
-  const badge = document.getElementById('scan-inline-badge');
-  badge.style.display='flex';
-  badge.innerHTML=`<span style="font-size:22px;">✓</span><div><div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div><div style="font-size:12px;color:#555;margin-top:1px;">${format||'Barcode'}</div></div>`;
-  setTimeout(()=>document.getElementById('inp-price').focus(),150);
-}
 
-function stopScanSaisie() {}
-
-function calculer() {
-  const prix = parseFloat(document.getElementById('calc-prix').value);
-  const pct  = parseFloat(document.getElementById('calc-pct').value);
-  const result  = document.getElementById('calc-result');
-  const empty   = document.getElementById('calc-empty');
-
-  if(isNaN(prix) || isNaN(pct) || prix <= 0) {
-    result.style.display='none'; empty.style.display='block'; return;
-  }
-
-  const remiseMontant = prix * pct / 100;
-  const newPrice      = prix - remiseMontant;
-
-  result.style.display='block'; empty.style.display='none';
-
-  document.getElementById('calc-new-price').textContent = newPrice.toFixed(2).replace('.',',') + ' €';
-  document.getElementById('calc-orig').textContent      = prix.toFixed(2).replace('.',',') + ' €';
-  document.getElementById('calc-remise').textContent    = '−' + remiseMontant.toFixed(2).replace('.',',') + ' €';
-  document.getElementById('calc-saving').textContent    = `économie de ${remiseMontant.toFixed(2).replace('.',',')} € (${pct}%)`;
-
-  // Tableau des autres remises
-  const table = document.getElementById('calc-table');
-  table.innerHTML = REMISES_COURANTES.map(p => {
-    const montant = prix * p / 100;
-    const after   = prix - montant;
-    const isActive = Math.abs(p - pct) < 0.01;
-    return `<div class="grouped-row" style="${isActive ? 'background:rgba(26,45,90,.06);' : ''}">
-      <div style="flex:1;font-size:16px;${isActive?'font-weight:700;color:var(--accent);':'color:var(--text);'}">−${p} %</div>
-      <div style="font-size:16px;font-weight:600;${isActive?'color:var(--accent);':'color:var(--text);'}">${after.toFixed(2).replace('.',',')} €</div>
-      <div style="font-size:13px;color:var(--text3);margin-left:8px;">−${montant.toFixed(2).replace('.',',')} €</div>
-    </div>`;
-  }).join('');
-}
 // ══ SCANNER VIDÉO TEMPS RÉEL ══
 let scannerStream = null;
 let scannerAnimFrame = null;
@@ -1604,8 +1531,20 @@ function scannerLoop() {
         setTimeout(() => flash.classList.remove('flash'), 200);
         bipScan();
 
+        // Capturer le frame vidéo pour OCR prix+IFLS
+        const fc = document.createElement('canvas');
+        fc.width = video.videoWidth; fc.height = video.videoHeight;
+        fc.getContext('2d').drawImage(video, 0, 0);
+
         fermerScanner();
-        onCodeDetecte(code, scannerTarget);
+
+        if(scannerTarget === 'rvn') {
+          onCodeDetecte(code, 'rvn');
+        } else {
+          // Lancer OCR sur le frame pour prix + IFLS
+          document.getElementById('scanner-status') && (document.getElementById('scanner-status').textContent = 'Lecture OCR…');
+          extraireInfosEtiquette(fc, code);
+        }
       } else {
         scannerAnimFrame = requestAnimationFrame(scannerLoop);
       }
@@ -1614,6 +1553,46 @@ function scannerLoop() {
       if(scannerRunning)
         scannerAnimFrame = requestAnimationFrame(scannerLoop);
     });
+}
+
+// OCR sur le frame pour extraire prix + IFLS
+async function extraireInfosEtiquette(canvas, code) {
+  showToast('Lecture de l\'étiquette…');
+  let prix = null, ifls = null;
+
+  try {
+    const worker = await Tesseract.createWorker('eng', 1, { logger: ()=>{} });
+    await worker.setParameters({
+      tessedit_char_whitelist: '0123456789.,',
+      tessedit_pageseg_mode: '11', // sparse text
+    });
+    const { data: { text } } = await worker.recognize(canvas);
+    await worker.terminate();
+
+    // Chercher le prix : nombre avec virgule ou point, ex "12.99" ou "12,99" ou "3.99"
+    const prixMatches = text.match(/\b(\d{1,3}[.,]\d{2})\b/g) || [];
+    if(prixMatches.length > 0) {
+      // Prendre le prix le plus grand (éviter de confondre avec l'IFLS)
+      prix = prixMatches
+        .map(p => parseFloat(p.replace(',','.')))
+        .filter(p => p >= 0.5 && p < 999)
+        .sort((a,b) => b-a)[0] || null;
+    }
+
+    // Chercher l'IFLS : chiffre isolé 1-2 digits (pas collé à d'autres chiffres)
+    const iflsMatches = text.match(/(?<!\d)([1-9]\d?)(?!\d)/g) || [];
+    // L'IFLS est typiquement entre 1 et 20
+    const candidats = iflsMatches
+      .map(n => parseInt(n))
+      .filter(n => n >= 1 && n <= 20);
+    if(candidats.length > 0) ifls = candidats[0];
+
+  } catch(e) {
+    console.error('OCR error:', e);
+  }
+
+  // Afficher le panneau avec les valeurs pré-remplies
+  afficherPanneauScan(code, prix, ifls);
 }
 
 function fermerScanner() {
@@ -1625,50 +1604,149 @@ function fermerScanner() {
   document.getElementById('scanner-overlay').classList.remove('active');
 }
 
-// Callback quand un code est détecté — selon la cible
 function onCodeDetecte(code, target) {
-  if(target === 'saisie') {
-    document.getElementById('inp-ref').value = code;
-    const badge = document.getElementById('scan-inline-badge');
-    if(badge) {
-      badge.style.display='flex';
-      badge.innerHTML=`<span style="font-size:22px;">✓</span><div><div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div><div style="font-size:12px;color:#555;margin-top:1px;">Code scanné · Saisis le prix puis ajoute</div></div>`;
-    }
-    setTimeout(()=>document.getElementById('inp-price').focus(), 200);
-    showToast('Code scanné : ' + code);
-  } else if(target === 'rvn') {
+  if(target === 'rvn') {
     document.getElementById('rvn-code').value = code;
     rvnAdd();
+    return;
   }
+  // Pour Saisie : afficher panneau — sans OCR (fallback)
+  afficherPanneauScan(code, null, null);
 }
 
-// Fallback si BarcodeDetector pas dispo (iOS < 17) → input file + prompt manuel
-function fallbackInputFile(target) {
-  // Créer un input file temporaire
-  const inp = document.createElement('input');
-  inp.type='file'; inp.accept='image/*'; inp.capture='environment';
-  inp.style.cssText='position:absolute;left:-9999px;';
-  document.body.appendChild(inp);
-  inp.addEventListener('change', function() {
-    if(!inp.files || !inp.files[0]) { document.body.removeChild(inp); return; }
-    decoderCodeBarres(inp.files[0],
-      (code) => {
-        bipScan();
-        onCodeDetecte(code, target);
-        document.body.removeChild(inp);
-      },
-      () => {
-        // Photo échouée → demander manuellement
-        const code = prompt('Code non détecté.\nSaisissez le numéro manuellement :');
-        if(code && code.trim()) {
-          bipScan();
-          onCodeDetecte(code.trim(), target);
-        }
-        document.body.removeChild(inp);
-      }
-    );
+function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
+  const old = document.getElementById('modal-scan-complet');
+  if(old) old.remove();
+
+  const prixVal  = prixDetecte  ? prixDetecte.toFixed(2) : '';
+  const iflsVal  = iflsDetecte  ? iflsDetecte : '';
+  const prixOK   = !!prixDetecte;
+  const iflsOK   = !!iflsDetecte;
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-scan-complet';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;';
+  modal.innerHTML = `
+    <div style="background:#f2f2f7;width:100%;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-size:13px;color:#6c6c70;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Article scanné</div>
+          <div style="font-size:20px;font-weight:700;color:#1a2d5a;font-family:monospace;margin-top:2px;">${esc(code)}</div>
+        </div>
+        <button onclick="document.getElementById('modal-scan-complet').remove()"
+          style="width:32px;height:32px;border-radius:50%;background:#e5e5ea;border:none;font-size:18px;cursor:pointer;color:#666;">×</button>
+      </div>
+
+      <div style="background:#fff;border-radius:12px;overflow:hidden;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;padding:0 16px;border-bottom:.5px solid #e5e5ea;min-height:52px;">
+          <label style="font-size:16px;color:#000;min-width:110px;display:flex;align-items:center;gap:6px;">
+            Prix (€)
+            ${prixOK ? '<span style="font-size:11px;background:#34c759;color:#fff;border-radius:6px;padding:1px 6px;">✓ lu</span>' : ''}
+          </label>
+          <input id="scan-modal-price" type="number" placeholder="3,99" step="0.01" min="0" inputmode="decimal"
+            value="${prixVal}"
+            style="flex:1;border:none;outline:none;font-size:17px;font-weight:600;color:#1a2d5a;text-align:right;padding:14px 0;background:transparent;font-family:-apple-system,sans-serif;"/>
+        </div>
+        <div style="display:flex;align-items:center;padding:0 16px;min-height:52px;">
+          <label style="font-size:16px;color:#000;min-width:110px;display:flex;align-items:center;gap:6px;">
+            Rang IFLS
+            ${iflsOK ? '<span style="font-size:11px;background:#34c759;color:#fff;border-radius:6px;padding:1px 6px;">✓ lu</span>' : ''}
+          </label>
+          <input id="scan-modal-ifls" type="number" placeholder="2" min="0" max="99" inputmode="numeric"
+            value="${iflsVal}"
+            style="flex:1;border:none;outline:none;font-size:17px;font-weight:600;color:#1a2d5a;text-align:right;padding:14px 0;background:transparent;font-family:-apple-system,sans-serif;"/>
+        </div>
+      </div>
+
+      <button onclick="validerScanModal('${esc(code)}')"
+        style="width:100%;height:52px;background:#1a2d5a;color:#c8a96e;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;">
+        Ajouter l'article
+      </button>
+
+    </div>`;
+  document.body.appendChild(modal);
+
+  // Focus sur prix si pas détecté, sinon sur IFLS, sinon prêt à valider
+  setTimeout(() => {
+    if(!prixOK) document.getElementById('scan-modal-price').focus();
+    else if(!iflsOK) document.getElementById('scan-modal-ifls').focus();
+  }, 150);
+
+  document.getElementById('scan-modal-price').addEventListener('keydown', e => {
+    if(e.key === 'Enter') document.getElementById('scan-modal-ifls').focus();
   });
-  inp.click();
+  document.getElementById('scan-modal-ifls').addEventListener('keydown', e => {
+    if(e.key === 'Enter') validerScanModal(code);
+  });
+}
+
+function validerScanModal(code) {
+  const price = parseFloat(document.getElementById('scan-modal-price').value);
+  const ifls  = document.getElementById('scan-modal-ifls').value.trim();
+
+  if(isNaN(price) || price <= 0) {
+    document.getElementById('scan-modal-price').style.border = '1.5px solid #ff3b30';
+    document.getElementById('scan-modal-price').focus();
+    return;
+  }
+
+  document.getElementById('modal-scan-complet').remove();
+
+  // Remplir les champs de la page Saisie et ajouter directement
+  document.getElementById('inp-ref').value   = code;
+  document.getElementById('inp-price').value = price;
+  document.getElementById('inp-qprod').value = ifls;
+  document.getElementById('inp-qty').value   = '1';
+  // Vider les codes optionnels
+  document.getElementById('inp-code1').value = '';
+  document.getElementById('inp-code2').value = '';
+
+  addArticle();
+  showTab('saisie', document.getElementById('tb-saisie'));
+}
+
+// Fallback — saisie manuelle propre
+function fallbackInputFile(target) {
+  afficherSaisieManuelle(target);
+}
+
+function afficherSaisieManuelle(target) {
+  // Supprimer ancien modal si présent
+  const old = document.getElementById('modal-saisie-manuelle');
+  if(old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-saisie-manuelle';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;';
+  modal.innerHTML = `
+    <div style="background:#fff;width:100%;border-radius:20px 20px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));">
+      <div style="font-size:17px;font-weight:700;margin-bottom:4px;">Scanner indisponible</div>
+      <div style="font-size:14px;color:#666;margin-bottom:16px;">Saisis le numéro au-dessus du code-barres</div>
+      <input id="saisie-manuelle-input" type="text" inputmode="numeric" placeholder="ex: 1004838132"
+        style="width:100%;height:52px;border:1.5px solid #1a2d5a;border-radius:12px;font-size:20px;font-weight:700;color:#1a2d5a;text-align:center;outline:none;margin-bottom:12px;"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="document.getElementById('modal-saisie-manuelle').remove()"
+          style="height:48px;border:1.5px solid #ccc;border-radius:12px;background:#fff;font-size:16px;cursor:pointer;">Annuler</button>
+        <button onclick="validerSaisieManuelle('${target}')"
+          style="height:48px;border:none;border-radius:12px;background:#1a2d5a;color:#c8a96e;font-size:16px;font-weight:700;cursor:pointer;">Valider</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('saisie-manuelle-input').focus(), 100);
+
+  // Valider sur Entrée
+  document.getElementById('saisie-manuelle-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter') validerSaisieManuelle(target);
+  });
+}
+
+function validerSaisieManuelle(target) {
+  const val = document.getElementById('saisie-manuelle-input').value.trim();
+  if(!val) return;
+  document.getElementById('modal-saisie-manuelle').remove();
+  bipScan();
+  onCodeDetecte(val, target);
 }
 
 // Supprimer les vieilles fonctions fallback
@@ -1677,14 +1755,14 @@ function onScanFileChange(input) {
   if(!input.files||!input.files[0]) return;
   decoderCodeBarres(input.files[0],
     (code)=>{ bipScan(); onCodeDetecte(code,'saisie'); },
-    ()=>{ const c=prompt('Code non détecté. Saisissez manuellement :'); if(c) onCodeDetecte(c.trim(),'saisie'); }
+    ()=>afficherSaisieManuelle('saisie')
   );
 }
 function onRvnScanFile(input) {
   if(!input.files||!input.files[0]) return;
   decoderCodeBarres(input.files[0],
     (code)=>{ bipScan(); onCodeDetecte(code,'rvn'); },
-    ()=>{ const c=prompt('Code non détecté. Saisissez manuellement :'); if(c) onCodeDetecte(c.trim(),'rvn'); }
+    ()=>afficherSaisieManuelle('rvn')
   );
 }
 let rvnData = JSON.parse(localStorage.getItem('noz-rvn') || '{"listes":{"RVN 1":[]},"active":"RVN 1"}');
