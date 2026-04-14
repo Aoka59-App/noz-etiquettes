@@ -1407,8 +1407,7 @@ function cptRender(){
 }
 function cptClear(){ if(!cptData.length) return; if(!confirm('Effacer tout le comptage ?')) return; cptData=[]; cptSave(); cptRender(); }
 
-// ══ SCANNER — BarcodeDetector temps réel + fallback input photo ══
-
+// ── Bip + vibration ──
 function bipScan() {
   try {
     const ac = new (window.AudioContext||window.webkitAudioContext)();
@@ -1422,32 +1421,24 @@ function bipScan() {
   if(navigator.vibrate) navigator.vibrate([60,20,60]);
 }
 
-// ── Décodage photo (fallback si vidéo indisponible) ──
+// ── Décodage photo (fallback) — OCR Tesseract ──
 function decoderCodeBarres(file, onSuccess, onError) {
-  if(!('BarcodeDetector' in window)) { onError(); return; }
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
     img.onload = async function() {
-      const MAX = 1600;
+      const MAX = 1400;
       let w = img.naturalWidth, h = img.naturalHeight;
       if(w > MAX){ h = Math.round(h*MAX/w); w = MAX; }
       else if(h > MAX){ w = Math.round(w*MAX/h); h = MAX; }
-      const angles = [0, Math.PI/2, -Math.PI/2, Math.PI];
-      const det = new BarcodeDetector({ formats:['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','codabar'] });
-      for(const angle of angles) {
-        const c = document.createElement('canvas');
-        if(angle===0||Math.abs(angle)===Math.PI){ c.width=w; c.height=h; }
-        else { c.width=h; c.height=w; }
-        const ctx = c.getContext('2d');
-        ctx.translate(c.width/2, c.height/2); ctx.rotate(angle);
-        ctx.drawImage(img, -w/2, -h/2, w, h);
-        try {
-          const codes = await det.detect(c);
-          if(codes.length > 0) { onSuccess(codes[0].rawValue, codes[0].format); return; }
-        } catch(e) {}
-      }
-      onError();
+      const c = document.createElement('canvas');
+      c.width=w; c.height=h;
+      const ctx = c.getContext('2d');
+      ctx.filter='grayscale(1) contrast(2.5) brightness(1.2)';
+      ctx.drawImage(img,0,0,w,h);
+      const result = await lireEtiquette(c);
+      if(result && result.code) onSuccess(result.code, result.prix, result.ifls);
+      else onError();
     };
     img.src = e.target.result;
   };
@@ -1455,154 +1446,140 @@ function decoderCodeBarres(file, onSuccess, onError) {
 }
 
 
-// ══ SCANNER VIDÉO TEMPS RÉEL ══
-let scannerStream = null;
-let scannerAnimFrame = null;
-let scannerRunning = false;
-let scannerTarget = null; // 'saisie' ou 'rvn'
-let scannerDetector = null;
-let scannerLastCode = '';
-let scannerLastTime = 0;
-
-// Vérifier support BarcodeDetector
-const hasBarcodeDetector = 'BarcodeDetector' in window;
+// ══ SCANNER VIDÉO — OCR Tesseract (lit le texte de l'étiquette) ══
+let scannerStream   = null;
+let scannerAnimFrame= null;
+let scannerRunning  = false;
+let scannerTarget   = null;
+let ocrEnCours      = false;
+let dernierLu       = '';
+let dernierLuTime   = 0;
 
 async function ouvrirScanner(target) {
   scannerTarget = target;
-
-  // Si BarcodeDetector pas supporté → fallback input file
-  if(!hasBarcodeDetector) {
-    fallbackInputFile(target);
-    return;
-  }
-
   const overlay = document.getElementById('scanner-overlay');
   const video   = document.getElementById('scanner-video');
   overlay.classList.add('active');
   scannerRunning = true;
-  scannerLastCode = '';
+  ocrEnCours     = false;
+  dernierLu      = '';
 
   try {
     scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} },
+      video: { facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} },
       audio: false
     });
     video.srcObject = scannerStream;
     await video.play();
-
-    scannerDetector = new BarcodeDetector({
-      formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','codabar']
-    });
-
-    document.getElementById('scanner-status').textContent = 'Recherche d\'un code-barres…';
+    document.getElementById('scanner-status').textContent = 'Pointez vers l'étiquette…';
     scannerLoop();
-
   } catch(err) {
     fermerScanner();
-    // Fallback caméra refusée → input file
-    fallbackInputFile(target);
+    afficherSaisieManuelle(target);
   }
 }
 
+// Capture un frame toutes les 1.5s et lance l'OCR
 function scannerLoop() {
   if(!scannerRunning) return;
   const video = document.getElementById('scanner-video');
-  if(video.readyState < 2) {
-    scannerAnimFrame = requestAnimationFrame(scannerLoop);
+  if(video.readyState < 2 || ocrEnCours) {
+    scannerAnimFrame = setTimeout(scannerLoop, 300);
     return;
   }
+  ocrEnCours = true;
+  document.getElementById('scanner-status').textContent = 'Lecture en cours…';
 
-  scannerDetector.detect(video)
-    .then(codes => {
-      if(!scannerRunning) return;
-      if(codes.length > 0) {
-        const code = codes[0].rawValue;
-        const now  = Date.now();
-        if(code === scannerLastCode && now - scannerLastTime < 2000) {
-          scannerAnimFrame = requestAnimationFrame(scannerLoop);
-          return;
-        }
-        scannerLastCode = code;
-        scannerLastTime = now;
+  // Capturer le frame
+  const c = document.createElement('canvas');
+  c.width = video.videoWidth; c.height = video.videoHeight;
+  c.getContext('2d').drawImage(video, 0, 0);
 
-        // Flash vert + bip
-        const flash = document.getElementById('scanner-flash');
-        flash.classList.add('flash');
-        setTimeout(() => flash.classList.remove('flash'), 200);
-        bipScan();
+  lireEtiquette(c).then(result => {
+    if(!scannerRunning) return;
 
-        // Capturer le frame vidéo pour OCR prix+IFLS
-        const fc = document.createElement('canvas');
-        fc.width = video.videoWidth; fc.height = video.videoHeight;
-        fc.getContext('2d').drawImage(video, 0, 0);
-
-        fermerScanner();
-
-        if(scannerTarget === 'rvn') {
-          onCodeDetecte(code, 'rvn');
-        } else {
-          // Lancer OCR sur le frame pour prix + IFLS
-          document.getElementById('scanner-status') && (document.getElementById('scanner-status').textContent = 'Lecture OCR…');
-          extraireInfosEtiquette(fc, code);
-        }
-      } else {
-        scannerAnimFrame = requestAnimationFrame(scannerLoop);
+    if(result && result.code) {
+      // Anti-doublon
+      const now = Date.now();
+      if(result.code === dernierLu && now - dernierLuTime < 3000) {
+        ocrEnCours = false;
+        scannerAnimFrame = setTimeout(scannerLoop, 500);
+        return;
       }
-    })
-    .catch(() => {
-      if(scannerRunning)
-        scannerAnimFrame = requestAnimationFrame(scannerLoop);
-    });
+      dernierLu     = result.code;
+      dernierLuTime = now;
+
+      // Flash + bip
+      const flash = document.getElementById('scanner-flash');
+      flash.classList.add('flash');
+      setTimeout(()=>flash.classList.remove('flash'), 200);
+      bipScan();
+
+      fermerScanner();
+
+      if(scannerTarget === 'rvn') {
+        document.getElementById('rvn-code').value = result.code;
+        rvnAdd();
+      } else {
+        afficherPanneauScan(result.code, result.prix, result.ifls);
+      }
+    } else {
+      document.getElementById('scanner-status').textContent = 'Pointez vers l'étiquette…';
+      ocrEnCours = false;
+      if(scannerRunning) scannerAnimFrame = setTimeout(scannerLoop, 1200);
+    }
+  });
 }
 
-// OCR sur le frame pour extraire prix + IFLS
-async function extraireInfosEtiquette(canvas, code) {
-  showToast('Lecture de l\'étiquette…');
-  let prix = null, ifls = null;
-
+// OCR Tesseract — lit TOUT le texte de l'étiquette
+async function lireEtiquette(canvas) {
   try {
+    // Améliorer le contraste pour l'OCR
+    const c2 = document.createElement('canvas');
+    c2.width = canvas.width; c2.height = canvas.height;
+    const ctx = c2.getContext('2d');
+    ctx.filter = 'grayscale(1) contrast(2.5) brightness(1.2)';
+    ctx.drawImage(canvas, 0, 0);
+
     const worker = await Tesseract.createWorker('eng', 1, { logger: ()=>{} });
-    await worker.setParameters({
-      tessedit_char_whitelist: '0123456789.,',
-      tessedit_pageseg_mode: '11', // sparse text
-    });
-    const { data: { text } } = await worker.recognize(canvas);
+    await worker.setParameters({ tessedit_pageseg_mode: '11' }); // sparse text
+    const { data: { text } } = await worker.recognize(c2);
     await worker.terminate();
 
-    // Chercher le prix : nombre avec virgule ou point, ex "12.99" ou "12,99" ou "3.99"
-    const prixMatches = text.match(/\b(\d{1,3}[.,]\d{2})\b/g) || [];
-    if(prixMatches.length > 0) {
-      // Prendre le prix le plus grand (éviter de confondre avec l'IFLS)
-      prix = prixMatches
-        .map(p => parseFloat(p.replace(',','.')))
-        .filter(p => p >= 0.5 && p < 999)
-        .sort((a,b) => b-a)[0] || null;
-    }
+    const raw = text.replace(/\s+/g, ' ').trim();
+    console.log('OCR brut:', raw);
 
-    // Chercher l'IFLS : chiffre isolé 1-2 digits (pas collé à d'autres chiffres)
-    const iflsMatches = text.match(/(?<!\d)([1-9]\d?)(?!\d)/g) || [];
-    // L'IFLS est typiquement entre 1 et 20
-    const candidats = iflsMatches
-      .map(n => parseInt(n))
-      .filter(n => n >= 1 && n <= 20);
-    if(candidats.length > 0) ifls = candidats[0];
+    // ── Extraire le code article (séquence de 8-13 chiffres) ──
+    const codes = raw.match(/\d{8,13}/g) || [];
+    const code  = codes.length ? codes[0] : null;
 
+    // ── Extraire le prix (nombre avec , ou . suivi de 2 chiffres) ──
+    const prixMatches = raw.match(/\d{1,3}[.,]\d{2}/g) || [];
+    const prix = prixMatches.length
+      ? parseFloat(prixMatches[0].replace(',', '.'))
+      : null;
+
+    // ── Extraire l'IFLS (chiffre isolé 1-2 digits, entre 1 et 20) ──
+    const iflsMatches = raw.match(/(?<!\d)([1-9]\d?)(?!\d)/g) || [];
+    const ifls = iflsMatches.map(n=>parseInt(n)).find(n => n>=1 && n<=20) || null;
+
+    if(code) return { code, prix, ifls };
+    return null;
   } catch(e) {
     console.error('OCR error:', e);
+    return null;
   }
-
-  // Afficher le panneau avec les valeurs pré-remplies
-  afficherPanneauScan(code, prix, ifls);
 }
 
 function fermerScanner() {
   scannerRunning = false;
-  if(scannerAnimFrame) { cancelAnimationFrame(scannerAnimFrame); scannerAnimFrame=null; }
+  if(scannerAnimFrame) { clearTimeout(scannerAnimFrame); scannerAnimFrame=null; }
   if(scannerStream) { scannerStream.getTracks().forEach(t=>t.stop()); scannerStream=null; }
   const video = document.getElementById('scanner-video');
   if(video) video.srcObject = null;
   document.getElementById('scanner-overlay').classList.remove('active');
 }
+
 
 function onCodeDetecte(code, target) {
   if(target === 'rvn') {
@@ -1753,15 +1730,17 @@ function validerSaisieManuelle(target) {
 function rvnLancerScan() { ouvrirScanner('rvn'); }
 function onScanFileChange(input) {
   if(!input.files||!input.files[0]) return;
+  showToast('Lecture…');
   decoderCodeBarres(input.files[0],
-    (code)=>{ bipScan(); onCodeDetecte(code,'saisie'); },
+    (code, prix, ifls)=>{ bipScan(); afficherPanneauScan(code, prix, ifls); },
     ()=>afficherSaisieManuelle('saisie')
   );
 }
 function onRvnScanFile(input) {
   if(!input.files||!input.files[0]) return;
+  showToast('Lecture…');
   decoderCodeBarres(input.files[0],
-    (code)=>{ bipScan(); onCodeDetecte(code,'rvn'); },
+    (code)=>{ bipScan(); document.getElementById('rvn-code').value=code; rvnAdd(); },
     ()=>afficherSaisieManuelle('rvn')
   );
 }
