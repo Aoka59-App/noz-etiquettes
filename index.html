@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
 <style>
 :root {
   --accent: #1a2d5a;
@@ -674,6 +674,21 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         </div>
       </div>
 
+
+      <!-- Scanner RVN -->
+      <input type="file" id="rvn-scan-input" accept="image/*" capture="environment"
+        style="position:absolute;left:-9999px;opacity:0;width:1px;height:1px;" onchange="onRvnScanFile(this)"/>
+      <button class="scan-btn-main" onclick="rvnLancerScan()" style="margin-bottom:8px;">
+        <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Scanner un code-barres
+      </button>
+
       <!-- Saisie code -->
       <div class="form-card" style="margin-bottom:8px;">
         <div class="form-field">
@@ -1290,94 +1305,97 @@ function cptRender(){
 }
 function cptClear(){ if(!cptData.length) return; if(!confirm('Effacer tout le comptage ?')) return; cptData=[]; cptSave(); cptRender(); }
 
-// ══ SCANNER — input file natif iOS ══
-// Approche la plus fiable sur Safari PWA : on capture une photo avec la caméra
-// puis on décode le code-barres depuis l'image avec ZXing côté image
+// ══ SCANNER — Quagga (décodage image, fiable iOS) ══
+
+function bipScan() {
+  try {
+    const ac = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = ac.createOscillator(), g = ac.createGain();
+    osc.connect(g); g.connect(ac.destination);
+    osc.frequency.value=1400; osc.type='sine';
+    g.gain.setValueAtTime(.4,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.1);
+    osc.start(ac.currentTime); osc.stop(ac.currentTime+.1);
+  } catch(e){}
+  if(navigator.vibrate) navigator.vibrate([60,20,60]);
+}
+
+function decoderCodeBarres(file, onSuccess, onError) {
+  const fr = new FileReader();
+  fr.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      // Redimensionner à 1200px max — améliore la détection
+      const MAX = 1200;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > MAX){ h = Math.round(h*MAX/w); w = MAX; }
+      else if(h > MAX){ w = Math.round(w*MAX/h); h = MAX; }
+
+      function tryDecode(dataURL, cb) {
+        Quagga.decodeSingle({
+          decoder: { readers: ['ean_reader','ean_8_reader','code_128_reader','code_39_reader','upc_reader','upc_e_reader','i2of5_reader'], multiple: false },
+          locate: true,
+          src: dataURL
+        }, function(result) {
+          cb(result && result.codeResult ? result.codeResult.code : null,
+             result && result.codeResult ? result.codeResult.format : null);
+        });
+      }
+
+      function makeCanvas(angle) {
+        const c = document.createElement('canvas');
+        if(angle === 0) { c.width=w; c.height=h; const x=c.getContext('2d'); x.filter='contrast(1.5) brightness(1.1)'; x.drawImage(img,0,0,w,h); }
+        else { c.width=h; c.height=w; const x=c.getContext('2d'); x.translate(h/2,w/2); x.rotate(angle); x.filter='contrast(1.5) brightness(1.1)'; x.drawImage(img,-w/2,-h/2,w,h); }
+        return c.toDataURL('image/jpeg',0.92);
+      }
+
+      // Essai 1 : orientation normale
+      tryDecode(makeCanvas(0), function(code, fmt) {
+        if(code) { onSuccess(code, fmt); return; }
+        // Essai 2 : rotation 90°
+        tryDecode(makeCanvas(Math.PI/2), function(code2, fmt2) {
+          if(code2) { onSuccess(code2, fmt2); return; }
+          // Essai 3 : rotation 270°
+          tryDecode(makeCanvas(-Math.PI/2), function(code3, fmt3) {
+            if(code3) { onSuccess(code3, fmt3); return; }
+            onError();
+          });
+        });
+      });
+    };
+    img.src = e.target.result;
+  };
+  fr.readAsDataURL(file);
+}
 
 function onScanFileChange(input) {
   const file = input.files && input.files[0];
   if(!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const img = new Image();
-    img.onload = async function() {
-      // Créer un canvas pour décoder
-      const canvas = document.createElement('canvas');
-      canvas.width  = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-
-      // Tenter BarcodeDetector natif (iOS 17.4+, Android Chrome)
-      if('BarcodeDetector' in window) {
-        try {
-          const detector = new BarcodeDetector({
-            formats: ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf','codabar']
-          });
-          const codes = await detector.detect(canvas);
-          if(codes.length > 0) {
-            onScanSaisie(codes[0].rawValue, codes[0].format);
-            input.value = '';
-            return;
-          }
-        } catch(e) {}
-      }
-
-      // Fallback : ZXing sur l'image
-      try {
-        const hints = new Map();
-        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-        const reader2 = new ZXing.BrowserMultiFormatReader(hints);
-        const imgEl = document.createElement('img');
-        imgEl.src = canvas.toDataURL();
-        await new Promise(r => { imgEl.onload = r; });
-        const result = await reader2.decodeFromImageElement(imgEl);
-        if(result) {
-          onScanSaisie(result.getText(), 'Barcode');
-          input.value = '';
-          return;
-        }
-      } catch(e) {}
-
-      showToast('Code non détecté — réessaie en tenant la caméra stable');
-      input.value = '';
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
+  showToast('Décodage…');
+  decoderCodeBarres(file,
+    (code, fmt) => {
+      bipScan();
+      document.getElementById('inp-ref').value = code;
+      const badge = document.getElementById('scan-inline-badge');
+      badge.style.display='flex';
+      badge.innerHTML=`<span style="font-size:22px;">✓</span><div><div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div><div style="font-size:12px;color:#555;margin-top:1px;">${fmt||'Barcode'} · Saisis le prix puis ajoute</div></div>`;
+      setTimeout(()=>document.getElementById('inp-price').focus(),150);
+      input.value='';
+    },
+    () => { showToast('Code non détecté — réessaie en lumière vive, caméra bien à plat'); input.value=''; }
+  );
 }
 
 function onScanSaisie(code, format) {
-  // Bip
-  try {
-    const ctx2 = new (window.AudioContext||window.webkitAudioContext)();
-    const osc = ctx2.createOscillator(), gain = ctx2.createGain();
-    osc.connect(gain); gain.connect(ctx2.destination);
-    osc.frequency.value = 1400; osc.type = 'sine';
-    gain.gain.setValueAtTime(0.4, ctx2.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.1);
-    osc.start(ctx2.currentTime); osc.stop(ctx2.currentTime + 0.1);
-  } catch(e) {}
-
-  if(navigator.vibrate) navigator.vibrate([60, 20, 60]);
-
-  // Remplir le champ
+  bipScan();
   document.getElementById('inp-ref').value = code;
-
-  // Badge
   const badge = document.getElementById('scan-inline-badge');
-  badge.style.display = 'flex';
-  badge.innerHTML = `<span style="font-size:22px;">✓</span>
-    <div>
-      <div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div>
-      <div style="font-size:12px;color:#555;margin-top:1px;">${format||'Barcode'} · Saisis le prix puis ajoute</div>
-    </div>`;
-
-  setTimeout(() => document.getElementById('inp-price').focus(), 150);
+  badge.style.display='flex';
+  badge.innerHTML=`<span style="font-size:22px;">✓</span><div><div style="font-size:16px;font-weight:700;color:#1c7a3a;">${esc(code)}</div><div style="font-size:12px;color:#555;margin-top:1px;">${format||'Barcode'}</div></div>`;
+  setTimeout(()=>document.getElementById('inp-price').focus(),150);
 }
 
-function stopScanSaisie() {} // compatibilité
+function stopScanSaisie() {}
 
 function calculer() {
   const prix = parseFloat(document.getElementById('calc-prix').value);
@@ -1515,6 +1533,27 @@ function rvnClearList() {
   if(!confirm(`Vider la liste "${rvnData.active}" ?`)) return;
   rvnData.listes[rvnData.active] = [];
   rvnSave(); rvnRenderCodes();
+}
+
+function rvnLancerScan() {
+  const inp = document.getElementById('rvn-scan-input');
+  inp.value = '';
+  inp.click();
+}
+
+function onRvnScanFile(input) {
+  const file = input.files && input.files[0];
+  if(!file) return;
+  showToast('Décodage…');
+  decoderCodeBarres(file,
+    (code) => {
+      bipScan();
+      document.getElementById('rvn-code').value = code;
+      rvnAdd();
+      input.value='';
+    },
+    () => { showToast('Code non détecté — réessaie en lumière vive, caméra bien à plat'); input.value=''; }
+  );
 }
 
 rvnInit();
