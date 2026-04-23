@@ -1012,7 +1012,7 @@ function barcodeToImg(code) {
   return new Promise(resolve=>{
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
-    try { JsBarcode(svg,String(code),{format:'CODE128',width:3.2,height:100,displayValue:false,margin:4,background:'#ffffff',lineColor:'#000000'}); }
+    try { JsBarcode(svg,String(code),{format:'CODE128',width:6,height:200,displayValue:false,margin:8,background:'#ffffff',lineColor:'#000000'}); }
     catch(e){ resolve(null); return; }
     const xml=new XMLSerializer().serializeToString(svg);
     const blob=new Blob([xml],{type:'image/svg+xml;charset=utf-8'});
@@ -1131,6 +1131,7 @@ function renderPreview() {
 // ══ RENDU ÉTIQUETTE 30×14mm — prix haut gauche, barcode bas ══
 function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
   const BRD = Math.round(.3*PX), PL = Math.round(1.2*PX), PR = Math.round(1.2*PX);
+  ctx.imageSmoothingEnabled = false; // Netteté maximale pour le code-barres
 
   // Fond blanc + bordure
   ctx.fillStyle = '#fff';
@@ -1228,7 +1229,7 @@ async function generatePNG(type) {
   const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   if(!labels.length){ btn.disabled=false; btn.innerHTML='PNG grille'; return; }
 
-  const PX=300/25.4, LW=Math.round(30*PX), LH=Math.round(14*PX);
+  const PX=600/25.4, LW=Math.round(30*PX), LH=Math.round(14*PX);
   const COLS=Math.min(4,labels.length), ROWS=Math.ceil(labels.length/COLS);
   const MARGIN=Math.round(3*PX), GAP=Math.round(2*PX);
   const W=COLS*LW+(COLS-1)*GAP+2*MARGIN, H=ROWS*LH+(ROWS-1)*GAP+2*MARGIN;
@@ -1256,7 +1257,7 @@ async function generatePNG(type) {
   const dlBtnId=type==='serie'?'img-dl-serie':'img-dl-normal';
   document.getElementById(imgOutId).src=dataURL;
   document.getElementById(imgWrapId).style.display='block';
-  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 300 DPI · 51×51 mm`;
+  document.getElementById(imgInfoId).textContent=`${labels.length} étiquette${labels.length>1?'s':''} · 600 DPI · 30×14 mm · ${LW}×${LH}px`;
   const dlBtn=document.getElementById(dlBtnId);
   const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
   dlBtn.onclick=()=>{
@@ -1319,7 +1320,7 @@ function showImgOverlay(dataURL) {
 // ── Impression à la chaîne ──
 let chaineRunning={normal:false,serie:false};
 async function renderSingleLabel(a) {
-  const PX=300/25.4, LW=Math.round(30*PX), LH=Math.round(14*PX);
+  const PX=600/25.4, LW=Math.round(30*PX), LH=Math.round(14*PX);
   const canvas=document.getElementById('render-canvas');
   canvas.width=LW; canvas.height=LH;
   const ctx=canvas.getContext('2d');
@@ -1348,7 +1349,7 @@ async function imprimerChaine(type) {
     bar.style.width=`${Math.round(((i+1)/labels.length)*100)}%`;
     const dataURL=await renderSingleLabel(a);
     const win=window.open('','_blank','width=400,height=400');
-    if(win){ win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;}body{background:#fff;}@page{size:30mm 14mm;margin:0;}img{width:30mm;height:14mm;display:block;}</style></head><body><img src="${dataURL}"/><script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`); win.document.close(); }
+    if(win){ win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;}body{background:#fff;}@page{size:30mm 14mm;margin:0;}img{width:30mm;height:14mm;display:block;image-rendering:crisp-edges;}</style></head><body><img src="${dataURL}" width="${LW}" height="${LH}"/><script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`); win.document.close(); }
     await new Promise(r=>setTimeout(r,1500));
   }
   if(chaineRunning[type]){
