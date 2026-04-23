@@ -270,12 +270,13 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; }
 @keyframes sp { to { transform:rotate(360deg); } }
 #render-canvas { display:none; }
-.img-overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.88); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
-.img-overlay img { max-width:100%; max-height:60vh; border-radius:10px; }
-.overlay-tip { margin-top:20px; text-align:center; color:#fff; font-size:16px; font-weight:600; line-height:1.6; }
+.img-overlay { position:fixed; inset:0; z-index:1000; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.img-overlay-img-wrap { width:100%; background:#fff; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0; }
+.img-overlay img { width:100%; height:auto; display:block; image-rendering:crisp-edges; }
+.overlay-tip { margin-top:16px; text-align:center; color:#fff; font-size:16px; font-weight:600; line-height:1.6; padding:0 20px; }
 .overlay-tip span { color: var(--accent2); }
-.overlay-sub { color:rgba(255,255,255,.5); font-size:13px; margin-top:6px; text-align:center; }
-.overlay-close { margin-top:24px; padding:12px 36px; background:var(--accent); color:var(--accent2); border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
+.overlay-sub { color:rgba(255,255,255,.55); font-size:13px; margin-top:6px; text-align:center; padding:0 20px; }
+.overlay-close { margin:20px auto; padding:14px 48px; background:var(--accent); color:var(--accent2); border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; display:block; }
 
 /* ── SCANNER PLEIN ÉCRAN ── */
 #scanner-overlay {
@@ -1313,8 +1314,16 @@ body{background:#fff;}
 function showImgOverlay(dataURL) {
   const existing=document.getElementById('img-overlay'); if(existing) existing.remove();
   const overlay=document.createElement('div'); overlay.className='img-overlay'; overlay.id='img-overlay';
-  overlay.innerHTML=`<img src="${dataURL}" alt="Étiquettes"/><div class="overlay-tip">Appui long sur l'image<br>→ <span>"Enregistrer dans Photos"</span></div><div class="overlay-sub">L'image sera ajoutée à ta galerie Photos</div><button class="overlay-close" onclick="document.getElementById('img-overlay').remove()">Fermer</button>`;
+  overlay.innerHTML=`
+    <div class="img-overlay-img-wrap">
+      <img src="${dataURL}" alt="Étiquettes"/>
+    </div>
+    <div class="overlay-tip">Appui long sur l'image<br>→ <span>"Enregistrer dans Photos"</span></div>
+    <div class="overlay-sub">Puis ouvre Munbyn Print et sélectionne cette photo</div>
+    <button class="overlay-close" onclick="document.getElementById('img-overlay').remove()">Fermer</button>
+  `;
   document.body.appendChild(overlay);
+  overlay.scrollTop = 0;
 }
 
 // ── Impression à la chaîne ──
