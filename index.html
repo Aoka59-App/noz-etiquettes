@@ -188,19 +188,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
 /* ── ÉTIQUETTE PREVIEW ── */
 .lbl { background:#fff; border:1.5px solid #222; display:flex; flex-direction:column; overflow:hidden; flex-shrink:0; font-family:Arial,sans-serif; width:160px; height:160px; border-radius: 4px; }
-.lbl-z1 { display:flex; align-items:center; justify-content:space-between; padding:2px 5px; border-bottom:.5px solid #bbb; flex-shrink:0; height:16px; }
-.lbl-z1l { display:flex; flex-direction:column; }
-.lbl-z1s { font-size:5.5px; color:#333; line-height:1.3; }
-.lbl-z1r { font-size:9px; font-weight:700; color:#000; }
-.lbl-z2 { flex:1; display:flex; align-items:center; padding:3px 4px; border-bottom:.5px solid #bbb; gap:2px; min-height:0; overflow:hidden; }
-.lbl-z2 svg { flex:1; width:100%; height:100%; max-height:none; }
-.lbl-z2q { font-size:7px; font-weight:700; color:#000; flex-shrink:0; align-self:flex-end; padding-bottom:2px; }
-.lbl-z3 { display:flex; align-items:center; justify-content:space-between; padding:3px 5px 2px; border-bottom:.5px solid #bbb; flex-shrink:0; height:48px; }
-.lbl-price { font-size:26px; font-weight:700; color:#000; line-height:1; }
-.lbl-eur   { font-size:18px; font-weight:700; color:#000; }
-.lbl-z4 { display:flex; align-items:center; justify-content:space-between; padding:2px 5px 3px; flex-shrink:0; }
-.lbl-unit  { font-size:6.5px; font-weight:700; color:#222; }
-.lbl-store { font-size:5.5px; color:#888; }
+/* anciens sélecteurs conservés pour compatibilité canvas — rendu via dessinerEtiquette() */
 
 /* ── IMG RÉSULTAT ── */
 .result-card {
@@ -1094,8 +1082,8 @@ function renderAll() {
 // ── Prévisualisation ──
 // Résolution prévisualisation (96 DPI équivalent écran)
 const PREV_PX = 96/25.4;
-const PREV_W = Math.round(51*PREV_PX);
-const PREV_H = Math.round(51*PREV_PX);
+const PREV_W = Math.round(30*PREV_PX);
+const PREV_H = Math.round(14*PREV_PX);
 
 function renderPreview() {
   const gridN=document.getElementById('preview-normal');
@@ -1140,9 +1128,9 @@ function renderPreview() {
 }
 
 // ── Génération PNG ──
-// ══ RENDU ÉTIQUETTE — disposition exacte photo NOZ ══
+// ══ RENDU ÉTIQUETTE 30×14mm — prix haut gauche, barcode bas ══
 function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
-  const BRD = Math.round(.35*PX), PL = Math.round(2*PX), PR = Math.round(2*PX);
+  const BRD = Math.round(.3*PX), PL = Math.round(1.2*PX), PR = Math.round(1.2*PX);
 
   // Fond blanc + bordure
   ctx.fillStyle = '#fff';
@@ -1152,93 +1140,83 @@ function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
   ctx.strokeRect(x+BRD/2, y+BRD/2, LW-BRD, LH-BRD);
 
   if(a.isSerie) {
-    // ── SÉRIE : numéro + barcode ──
-    const NH = Math.round(LH*.20);
-    ctx.strokeStyle='#ccc'; ctx.lineWidth=Math.round(.2*PX);
+    // ── SÉRIE : numéro petit en haut + barcode bas ──
+    const NH = Math.round(LH*.30);
+    ctx.strokeStyle='#ccc'; ctx.lineWidth=Math.round(.15*PX);
     ctx.beginPath(); ctx.moveTo(x+2,y+NH); ctx.lineTo(x+LW-2,y+NH); ctx.stroke();
-    let fsN=Math.round(NH*.78); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`;
-    ctx.textAlign='right'; ctx.textBaseline='middle';
-    while(ctx.measureText(a.ref).width>LW-2*PL && fsN>8){ fsN--; ctx.font=`bold ${fsN}px Arial`; }
-    ctx.fillText(a.ref, x+LW-PR, y+NH/2);
-    if(bcImg){ const pV=Math.round(1.5*PX),pH=Math.round(2*PX); ctx.drawImage(bcImg,x+pH,y+NH+pV,LW-2*pH,LH-NH-2*pV); }
+    let fsN=Math.round(NH*.72); ctx.fillStyle='#000'; ctx.font=`bold ${fsN}px Arial`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    while(ctx.measureText(a.ref).width > LW-2*PL && fsN>6){ fsN--; ctx.font=`bold ${fsN}px Arial`; }
+    ctx.fillText(a.ref, x+LW/2, y+NH/2);
+    if(bcImg){ const pV=Math.round(.8*PX),pH=Math.round(1.5*PX); ctx.drawImage(bcImg,x+pH,y+NH+pV,LW-2*pH,LH-NH-2*pV); }
     return;
   }
 
-  // ── NORMALE ──
-  // Proportions calées sur la photo NOZ réelle
-  const Z1H = Math.round(LH*.13); // codes + numéro article
-  const Z2H = Math.round(LH*.44); // barcode
-  const Z3H = Math.round(LH*.28); // prix + EUR
-  const Z4H = LH - Z1H - Z2H - Z3H; // prix/kg
+  // ══ NORMALE 30×14mm ══
+  // Zone haute (55%) : prix gauche | infos droite
+  // Zone basse (45%) : barcode pleine largeur
 
-  const yZ1=y, yZ2=y+Z1H, yZ3=y+Z1H+Z2H, yZ4=y+Z1H+Z2H+Z3H;
+  const TOP_H = Math.round(LH * .55);
+  const BOT_H = LH - TOP_H;
+  const yBot  = y + TOP_H;
 
-  // Séparatrices fines
-  ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.18*PX);
-  [yZ2,yZ3,yZ4].forEach(yy=>{
-    ctx.beginPath(); ctx.moveTo(x+BRD,yy); ctx.lineTo(x+LW-BRD,yy); ctx.stroke();
-  });
+  // Séparatrice horizontale haut/bas
+  ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.15*PX);
+  ctx.beginPath(); ctx.moveTo(x+BRD, yBot); ctx.lineTo(x+LW-BRD, yBot); ctx.stroke();
 
-  // ── Z1 : codes petits gauche + numéro grand droite ──
-  const fsS = Math.round(1.7*PX);
-  ctx.fillStyle='#222'; ctx.font=`${fsS}px Arial`;
-  ctx.textBaseline='top'; ctx.textAlign='left';
-  const topPad = Math.round(.5*PX);
-  if(a.code1) ctx.fillText(a.code1, x+PL, yZ1+topPad);
-  if(a.code2) ctx.fillText(a.code2, x+PL, yZ1+topPad+fsS+Math.round(.3*PX));
+  // Séparatrice verticale dans la zone haute (40% depuis gauche)
+  const SEP_X = x + Math.round(LW * .42);
+  ctx.beginPath(); ctx.moveTo(SEP_X, y+BRD); ctx.lineTo(SEP_X, yBot); ctx.stroke();
 
-  // Numéro article — très grand, remplit la hauteur Z1, aligné droite
-  let fsRef = Math.round(Z1H*.78);
-  ctx.fillStyle='#000'; ctx.font=`bold ${fsRef}px Arial`;
-  ctx.textAlign='right'; ctx.textBaseline='middle';
-  const refMaxW = LW * .70;
-  while(ctx.measureText(a.ref).width > refMaxW && fsRef > 7){
-    fsRef--; ctx.font=`bold ${fsRef}px Arial`;
-  }
-  ctx.fillText(a.ref, x+LW-PR, yZ1+Z1H/2);
-
-  // ── Z2 : barcode pleine largeur + IFLS bas droite ──
-  if(bcImg){
-    const pV=Math.round(1.2*PX), pH=Math.round(2*PX);
-    const qW = a.qprod ? Math.round(5.5*PX) : 0;
-    ctx.drawImage(bcImg, x+pH, yZ2+pV, LW-2*pH-qW, Z2H-2*pV);
-  }
-  if(a.qprod){
-    // IFLS : petit, gras, bas-droite
-    const fQ = Math.round(2.4*PX);
-    ctx.fillStyle='#000'; ctx.font=`bold ${fQ}px Arial`;
-    ctx.textAlign='right'; ctx.textBaseline='bottom';
-    ctx.fillText(a.qprod, x+LW-Math.round(1.2*PX), yZ2+Z2H-Math.round(.8*PX));
-  }
-
-  // ── Z3 : prix GROS gauche + EUR GROS droite, même taille, même ligne ──
+  // ── GAUCHE haut : prix gros + EUR dessous ──
+  const prixZoneW = SEP_X - x - PL;
   const ps = a.price.toFixed(2).replace('.',',');
-  let fsP = Math.round(Z3H*.88);
-  ctx.font=`bold ${fsP}px Arial`;
-  const minW = LW - 2*PL - Math.round(2*PX);
-  while((ctx.measureText(ps).width + ctx.measureText('EUR').width) > minW && fsP > 8){
-    fsP--; ctx.font=`bold ${fsP}px Arial`;
-  }
-  const midZ3 = yZ3 + Z3H/2;
-  ctx.fillStyle='#000'; ctx.textBaseline='middle';
-  ctx.textAlign='left';  ctx.fillText(ps,  x+PL,      midZ3);
-  ctx.textAlign='right'; ctx.fillText('EUR', x+LW-PR, midZ3);
+  // Taille max pour le prix
+  let fsP = Math.round(TOP_H * .62);
+  ctx.font = `bold ${fsP}px Arial`;
+  while(ctx.measureText(ps).width > prixZoneW && fsP > 5){ fsP--; ctx.font=`bold ${fsP}px Arial`; }
+  ctx.fillStyle='#000'; ctx.textAlign='left'; ctx.textBaseline='top';
+  const prixY = y + Math.round(TOP_H*.06);
+  ctx.fillText(ps, x+PL, prixY);
 
-  // ── Z4 : prix unitaire centré (ou NOZ si absent) ──
-  const midZ4 = yZ4 + Z4H/2;
-  ctx.textBaseline='middle';
+  // EUR sous le prix
+  const fsEUR = Math.round(fsP * .45);
+  ctx.font = `bold ${fsEUR}px Arial`;
+  ctx.fillText('EUR', x+PL, prixY + fsP + Math.round(.8*PX));
+
+  // Prix unitaire sous EUR (si présent)
   if(a.unitPrice){
-    const uS  = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
-    let fsU = Math.round(Z4H*.62);
-    ctx.font=`bold ${fsU}px Arial`;
-    while(ctx.measureText(uS).width > LW-2*PL && fsU > 6){ fsU--; ctx.font=`bold ${fsU}px Arial`; }
-    ctx.fillStyle='#000'; ctx.textAlign='center';
-    ctx.fillText(uS, x+LW/2, midZ4);
-  } else {
-    const fsM = Math.round(Z4H*.40);
-    ctx.fillStyle='#999'; ctx.font=`${fsM}px Arial`;
-    ctx.textAlign='right';
-    ctx.fillText('NOZ P854 · Louvroil', x+LW-PR, midZ4);
+    const uS = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
+    const fsU = Math.round(fsP * .30);
+    ctx.font = `bold ${fsU}px Arial`;
+    while(ctx.measureText(uS).width > prixZoneW && fsU > 4){ }
+    ctx.fillStyle='#444';
+    ctx.fillText(uS, x+PL, prixY + fsP + fsEUR + Math.round(1.5*PX));
+  }
+
+  // ── DROITE haut : numéro article + codes petits ──
+  const infoX    = SEP_X + Math.round(.8*PX);
+  const infoW    = x + LW - infoX - PR;
+
+  // Numéro article — gros, haut
+  let fsRef = Math.round(TOP_H * .40);
+  ctx.fillStyle='#000'; ctx.font=`bold ${fsRef}px Arial`;
+  ctx.textAlign='left'; ctx.textBaseline='top';
+  while(ctx.measureText(a.ref).width > infoW && fsRef > 5){ fsRef--; ctx.font=`bold ${fsRef}px Arial`; }
+  ctx.fillText(a.ref, infoX, y + Math.round(TOP_H*.06));
+
+  // Code1, code2, IFLS — petits dessous
+  const fsC = Math.round(TOP_H * .22);
+  ctx.fillStyle='#444'; ctx.font=`${fsC}px Arial`;
+  let lineY = y + Math.round(TOP_H*.06) + fsRef + Math.round(.5*PX);
+  if(a.code1){ ctx.fillText(a.code1, infoX, lineY); lineY += fsC + Math.round(.3*PX); }
+  if(a.code2){ ctx.fillText(a.code2, infoX, lineY); lineY += fsC + Math.round(.3*PX); }
+  if(a.qprod){ ctx.fillText(`IFLS: ${a.qprod}`, infoX, lineY); }
+
+  // ── BAS : barcode pleine largeur ──
+  if(bcImg){
+    const pV = Math.round(.6*PX), pH = Math.round(1.5*PX);
+    ctx.drawImage(bcImg, x+pH, yBot+pV, LW-2*pH, BOT_H-2*pV);
   }
 }
 
@@ -1250,7 +1228,7 @@ async function generatePNG(type) {
   const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   if(!labels.length){ btn.disabled=false; btn.innerHTML='PNG grille'; return; }
 
-  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);
+  const PX=300/25.4, LW=Math.round(30*PX), LH=Math.round(14*PX);
   const COLS=Math.min(4,labels.length), ROWS=Math.ceil(labels.length/COLS);
   const MARGIN=Math.round(3*PX), GAP=Math.round(2*PX);
   const W=COLS*LW+(COLS-1)*GAP+2*MARGIN, H=ROWS*LH+(ROWS-1)*GAP+2*MARGIN;
@@ -1296,15 +1274,33 @@ function printDirect(type) {
   const labels=[]; source.forEach(a=>{ for(let i=0;i<a.qty;i++) labels.push(a); });
   const win=window.open('','_blank');
   let body=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Étiquettes NOZ</title>
-<style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#fff;}@page{size:51mm 51mm;margin:0;}.grid{display:flex;flex-wrap:wrap;}.etq{width:51mm;height:51mm;border:.35mm solid #222;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}.z1{display:flex;align-items:center;justify-content:space-between;padding:.5mm 1.5mm;border-bottom:.2mm solid #bbb;flex-shrink:0;height:5mm;}.z1l{display:flex;flex-direction:column;}.z1s{font-family:Arial;font-size:1.8mm;color:#333;line-height:1.3;}.z1r{font-family:Arial;font-size:3.5mm;font-weight:700;color:#000;}.z2{flex:1;display:flex;align-items:center;padding:.5mm 2mm;border-bottom:.2mm solid #bbb;gap:1mm;min-height:0;}.z2 svg{flex:1;height:100%;max-height:none;}.z2q{font-family:Arial;font-size:2.4mm;font-weight:700;color:#000;flex-shrink:0;align-self:flex-end;}.z3{display:flex;align-items:center;justify-content:space-between;padding:.5mm 1.5mm;border-bottom:.2mm solid #bbb;flex-shrink:0;height:15mm;}.z3p{font-family:Arial;font-size:9mm;font-weight:700;color:#000;}.z3e{font-family:Arial;font-size:9mm;font-weight:700;color:#000;}.z4{display:flex;align-items:center;justify-content:center;padding:.3mm 1.5mm;flex-shrink:0;}.z4u{font-family:Arial;font-size:2.4mm;font-weight:700;color:#111;}.z4m{font-family:Arial;font-size:1.8mm;color:#888;}</style></head><body><div class="grid">`;
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#fff;}
+@page{size:30mm 14mm;margin:0;}
+.etq{width:30mm;height:14mm;border:.25mm solid #111;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}
+.top{display:flex;flex-direction:row;height:55%;border-bottom:.15mm solid #bbb;}
+.prix-bloc{display:flex;flex-direction:column;justify-content:center;padding:.3mm .8mm;border-right:.15mm solid #bbb;width:42%;}
+.prix-val{font-family:Arial;font-size:4.2mm;font-weight:700;color:#000;line-height:1;}
+.prix-eur{font-family:Arial;font-size:1.9mm;font-weight:700;color:#000;}
+.prix-unit{font-family:Arial;font-size:1.5mm;font-weight:700;color:#444;}
+.info-bloc{display:flex;flex-direction:column;justify-content:center;padding:.3mm .6mm;flex:1;overflow:hidden;}
+.ref{font-family:Arial;font-size:2.6mm;font-weight:700;color:#000;white-space:nowrap;overflow:hidden;}
+.codes{font-family:Arial;font-size:1.5mm;color:#555;line-height:1.4;}
+.bot{flex:1;display:flex;align-items:center;padding:.3mm 1mm;min-height:0;overflow:hidden;}
+.bot svg{width:100%;height:100%;display:block;}
+</style></head><body>`;
   labels.forEach(a=>{
     const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg'); svgEl.setAttribute('xmlns','http://www.w3.org/2000/svg');
-    try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:2,height:70,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
+    try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:1.4,height:28,displayValue:false,margin:2,background:'#fff',lineColor:'#000'}); }catch(e){}
+    const svgStr = new XMLSerializer().serializeToString(svgEl);
     const [eu,ct]=a.price.toFixed(2).split('.');
     if(a.isSerie){
-      body+=`<div class="etq"><div class="z1" style="justify-content:flex-end;"><span class="z1r">${esc(a.ref)}</span></div><div class="z2">${new XMLSerializer().serializeToString(svgEl)}</div></div>`;
+      body+=`<div class="etq"><div class="top" style="border-bottom:.15mm solid #bbb;align-items:center;justify-content:center;"><span style="font-family:Arial;font-size:3mm;font-weight:700;">${esc(a.ref)}</span></div><div class="bot">${svgStr}</div></div>`;
     } else {
-      body+=`<div class="etq"><div class="z1"><div class="z1l">${a.code1?`<span class="z1s">${esc(a.code1)}</span>`:''} ${a.code2?`<span class="z1s">${esc(a.code2)}</span>`:''}</div><span class="z1r">${esc(a.ref)}</span></div><div class="z2">${new XMLSerializer().serializeToString(svgEl)}${a.qprod?`<span class="z2q">${esc(a.qprod)}</span>`:''}</div><div class="z3"><span class="z3p">${eu},${ct}</span><span class="z3e">EUR</span></div><div class="z4">${a.unitPrice?`<span class="z4u">${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}</span>`:'<span></span>'}<span class="z4m">NOZ P854 · Louvroil</span></div></div>`;
+      const codesHtml = [a.code1,a.code2,a.qprod?'IFLS:'+a.qprod:''].filter(Boolean).map(c=>`<span>${esc(c)}</span>`).join(' ');
+      const unitHtml  = a.unitPrice ? `<span class="prix-unit">${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}</span>` : '';
+      body+=`<div class="etq"><div class="top"><div class="prix-bloc"><span class="prix-val">${eu},${ct}</span><span class="prix-eur">EUR</span>${unitHtml}</div><div class="info-bloc"><span class="ref">${esc(a.ref)}</span><span class="codes">${codesHtml}</span></div></div><div class="bot">${svgStr}</div></div>`;
     }
   });
   body+='</div></body></html>';
@@ -1323,7 +1319,7 @@ function showImgOverlay(dataURL) {
 // ── Impression à la chaîne ──
 let chaineRunning={normal:false,serie:false};
 async function renderSingleLabel(a) {
-  const PX=300/25.4, LW=Math.round(51*PX), LH=Math.round(51*PX);
+  const PX=300/25.4, LW=Math.round(30*PX), LH=Math.round(14*PX);
   const canvas=document.getElementById('render-canvas');
   canvas.width=LW; canvas.height=LH;
   const ctx=canvas.getContext('2d');
@@ -1352,7 +1348,7 @@ async function imprimerChaine(type) {
     bar.style.width=`${Math.round(((i+1)/labels.length)*100)}%`;
     const dataURL=await renderSingleLabel(a);
     const win=window.open('','_blank','width=400,height=400');
-    if(win){ win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;}body{background:#fff;}@page{size:51mm 51mm;margin:0;}img{width:51mm;height:51mm;display:block;}</style></head><body><img src="${dataURL}"/><script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`); win.document.close(); }
+    if(win){ win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;}body{background:#fff;}@page{size:30mm 14mm;margin:0;}img{width:30mm;height:14mm;display:block;}</style></head><body><img src="${dataURL}"/><script>window.onload=function(){window.print();setTimeout(function(){window.close();},800);};<\/script></body></html>`); win.document.close(); }
     await new Promise(r=>setTimeout(r,1500));
   }
   if(chaineRunning[type]){
