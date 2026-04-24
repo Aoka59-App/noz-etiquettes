@@ -1533,42 +1533,61 @@ function scannerLoop() {
     return;
   }
 
-  const c = document.createElement('canvas');
-  c.width = video.videoWidth; c.height = video.videoHeight;
-  c.getContext('2d').drawImage(video, 0, 0);
+  const vw = video.videoWidth, vh = video.videoHeight;
 
-  try {
-    const luminanceSource = new ZXing.HTMLCanvasElementLuminanceSource(c);
-    const binarizer       = new ZXing.HybridBinarizer(luminanceSource);
-    const bitmap          = new ZXing.BinaryBitmap(binarizer);
-    const result          = zxingReader.decodeBitmap(bitmap);
+  // ── Stratégie multi-zones : on tente 3 crops dans l'ordre ──
+  // 1. Image entière (grand code-barres proche)
+  // 2. Zone centrale 60% (affichette à distance moyenne)
+  // 3. Zone centrale 40% upscalée ×2 (petite affichette loin)
+  const crops = [
+    { sx:0,           sy:0,           sw:vw,          sh:vh,          scale:1   },
+    { sx:vw*.20,      sy:vh*.20,      sw:vw*.60,      sh:vh*.60,      scale:1   },
+    { sx:vw*.30,      sy:vh*.25,      sw:vw*.40,      sh:vh*.50,      scale:2   },
+  ];
 
-    if(result && result.getText()) {
-      const code = result.getText();
-      const now  = Date.now();
-      if(code === dernierLu && now - dernierLuTime < 3000) {
-        if(scannerRunning) setTimeout(scannerLoop, 300);
+  for(const crop of crops) {
+    if(!scannerRunning) return;
+    try {
+      const c = document.createElement('canvas');
+      c.width  = Math.round(crop.sw * crop.scale);
+      c.height = Math.round(crop.sh * crop.scale);
+      const ctx = c.getContext('2d');
+      // Augmenter le contraste pour les petites affiches
+      ctx.filter = 'contrast(1.4) brightness(1.05)';
+      ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, c.width, c.height);
+
+      const luminanceSource = new ZXing.HTMLCanvasElementLuminanceSource(c);
+      const binarizer       = new ZXing.HybridBinarizer(luminanceSource);
+      const bitmap          = new ZXing.BinaryBitmap(binarizer);
+      const result          = zxingReader.decodeBitmap(bitmap);
+
+      if(result && result.getText()) {
+        const code = result.getText();
+        const now  = Date.now();
+        if(code === dernierLu && now - dernierLuTime < 3000) {
+          if(scannerRunning) setTimeout(scannerLoop, 300);
+          return;
+        }
+        dernierLu     = code;
+        dernierLuTime = now;
+
+        const flash = document.getElementById('scanner-flash');
+        flash.classList.add('flash');
+        setTimeout(()=>flash.classList.remove('flash'), 200);
+        bipScan();
+        fermerScanner();
+
+        if(scannerTarget === 'rvn') {
+          document.getElementById('rvn-code').value = code;
+          rvnAdd();
+        } else {
+          afficherPanneauScan(code, null, null);
+        }
         return;
       }
-      dernierLu     = code;
-      dernierLuTime = now;
-
-      const flash = document.getElementById('scanner-flash');
-      flash.classList.add('flash');
-      setTimeout(()=>flash.classList.remove('flash'), 200);
-      bipScan();
-      fermerScanner();
-
-      if(scannerTarget === 'rvn') {
-        document.getElementById('rvn-code').value = code;
-        rvnAdd();
-      } else {
-        afficherPanneauScan(code, null, null);
-      }
-      return;
+    } catch(e) {
+      // Pas de code dans ce crop — essayer le suivant
     }
-  } catch(e) {
-    // Pas de code dans ce frame — continuer
   }
 
   document.getElementById('scanner-status').textContent = 'Pointez vers le code-barres…';
