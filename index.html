@@ -1842,8 +1842,7 @@ function casseCopier() {
 ${new Date().toLocaleDateString('fr-FR')}
 
 `
-    + casseData.map((b,i) => `${i+1}. ${b.code}  (${b.date})`).join('
-')
+    + casseData.map((b,i) => (i+1)+'. '+b.code+'  ('+b.date+')').join('\n')
     + `
 
 Total : ${casseData.length} box`;
@@ -1979,97 +1978,9 @@ function rvnClearList() {
   rvnSave(); rvnRenderCodes();
 }
 
-// ══ CASSE — box cassés persistants ══
-let casseData = JSON.parse(localStorage.getItem('noz-casse') || '[]');
-
-function casseSave() { localStorage.setItem('noz-casse', JSON.stringify(casseData)); }
-
-function casseAdd() {
-  const input = document.getElementById('casse-code');
-  const code  = input.value.trim();
-  if(!code) { showToast('Scannez ou saisissez un code box'); return; }
-  if(casseData.find(b => b.code === code)) {
-    showToast('Ce box est déjà enregistré'); input.value=''; return;
-  }
-  casseData.unshift({ code, date: new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) });
-  casseSave(); casseRender();
-  input.value = '';
-  showToast('Box enregistré ✓');
-}
-
-function casseRemove(index) {
-  if(!confirm('Supprimer ce box de la liste ?')) return;
-  casseData.splice(index, 1);
-  casseSave(); casseRender();
-}
-
-function casseRender() {
-  const container  = document.getElementById('casse-list');
-  const totalBar   = document.getElementById('casse-total-bar');
-  const totalEl    = document.getElementById('casse-total');
-  if(!container) return;
-  if(!casseData.length) {
-    container.innerHTML = '<p class="empty-state">Aucun box enregistré</p>';
-    totalBar.style.display = 'none';
-    return;
-  }
-  container.innerHTML = casseData.map((b, i) => `
-    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border-left:4px solid #c0392b;">
-      <div style="flex:1;">
-        <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
-      </div>
-      <button onclick="casseRemove(${i})" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
-    </div>`).join('');
-  totalBar.style.display = 'flex';
-  totalEl.textContent = casseData.length;
-}
-
-function casseCopier() {
-  if(!casseData.length) return;
-  const texte = `Box Cassés — NOZ P854
-${new Date().toLocaleDateString('fr-FR')}
-
-`
-    + casseData.map((b,i) => `${i+1}. ${b.code}  (${b.date})`).join('
-')
-    + `
-
-Total : ${casseData.length} box`;
-  navigator.clipboard.writeText(texte)
-    .then(() => showToast('Liste copiée !'))
-    .catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = texte; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('Liste copiée !');
-    });
-}
-
-function rvnLancerScan() {
-  const inp = document.getElementById('rvn-scan-input');
-  inp.value = '';
-  inp.click();
-}
-
-function onRvnScanFile(input) {
-  const file = input.files && input.files[0];
-  if(!file) return;
-  showToast('Décodage…');
-  decoderCodeBarres(file,
-    (code) => {
-      bipScan();
-      document.getElementById('rvn-code').value = code;
-      rvnAdd();
-      input.value='';
-    },
-    () => { showToast('Code non détecté — réessaie en lumière vive, caméra bien à plat'); input.value=''; }
-  );
-}
 
 rvnInit();
-  casseRender();
+casseRender();
 document.getElementById('rvn-code').addEventListener('keydown', e => { if(e.key==='Enter') rvnAdd(); });
 
 // ── Calcul % ──
