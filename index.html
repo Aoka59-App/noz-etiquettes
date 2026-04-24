@@ -758,6 +758,43 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <button class="btn-danger" onclick="rvnClearList()" id="rvn-btn-clear" style="display:none;">Vider la liste</button>
       </div>
 
+      <!-- ══ SECTION CASSE ══ -->
+      <div class="section-hdr" style="margin-top:18px;">📦 Box Cassé</div>
+
+      <!-- Scanner Casse -->
+      <button class="scan-btn-main" onclick="ouvrirScanner('casse')" style="margin-bottom:8px;">
+        <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Scanner un box cassé
+      </button>
+
+      <!-- Saisie manuelle Casse -->
+      <div class="form-card" style="margin-bottom:8px;">
+        <div class="form-field">
+          <label>Code box</label>
+          <input id="casse-code" type="text" placeholder="Code-barres du box" inputmode="text" autocomplete="off"
+            style="font-weight:700;font-size:17px;color:#c0392b;"/>
+        </div>
+      </div>
+      <button class="btn-ios" onclick="casseAdd()" style="margin-bottom:12px;background:#c0392b;color:#fff;">+ Enregistrer ce box</button>
+
+      <!-- Liste des box cassés -->
+      <div id="casse-list-wrap">
+        <div id="casse-list" style="margin-bottom:8px;"></div>
+        <div id="casse-total-bar" style="display:none;background:#7b1a1a;border-radius:12px;padding:14px 18px;flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:2px;">BOX ENREGISTRÉS</div>
+            <div style="font-size:26px;font-weight:700;color:#ff8a80;" id="casse-total">0</div>
+          </div>
+          <button onclick="casseCopier()" style="background:#ff8a80;color:#7b1a1a;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Copier la liste</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- ══ COMPTAGE ══ -->
@@ -881,7 +918,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <line x1="14" y1="13" x2="18" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
         <line x1="14" y1="17" x2="19" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
-      <span class="tb-label">RVN</span>
+      <span class="tb-label">RVN/Casse</span>
     </button>
     <button class="tb-item" id="tb-comptage" onclick="showTabById('comptage')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
@@ -944,7 +981,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'Listes RVN', comptage:'Comptage', calcul:'Calcul %' };
+const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'RVN / Casse', comptage:'Comptage', calcul:'Calcul %' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
@@ -1578,6 +1615,9 @@ function scannerLoop() {
         if(scannerTarget === 'rvn') {
           document.getElementById('rvn-code').value = code;
           rvnAdd();
+        } else if(scannerTarget === 'casse') {
+          document.getElementById('casse-code').value = code;
+          casseAdd();
         } else {
           afficherPanneauScan(code, null, null);
         }
@@ -1605,6 +1645,9 @@ function onCodeDetecte(code, target) {
   if(target === 'rvn') {
     document.getElementById('rvn-code').value = code;
     rvnAdd();
+  } else if(target === 'casse') {
+    document.getElementById('casse-code').value = code;
+    casseAdd();
     return;
   }
   // Pour Saisie : afficher panneau — sans OCR (fallback)
@@ -1747,6 +1790,74 @@ function validerSaisieManuelle(target) {
 }
 
 // Supprimer les vieilles fonctions fallback
+// ══ CASSE — box cassés persistants ══
+let casseData = JSON.parse(localStorage.getItem('noz-casse') || '[]');
+
+function casseSave() { localStorage.setItem('noz-casse', JSON.stringify(casseData)); }
+
+function casseAdd() {
+  const input = document.getElementById('casse-code');
+  const code  = input.value.trim();
+  if(!code) { showToast('Scannez ou saisissez un code box'); return; }
+  if(casseData.find(b => b.code === code)) {
+    showToast('Ce box est déjà enregistré'); input.value=''; return;
+  }
+  casseData.unshift({ code, date: new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) });
+  casseSave(); casseRender();
+  input.value = '';
+  showToast('Box enregistré ✓');
+}
+
+function casseRemove(index) {
+  if(!confirm('Supprimer ce box de la liste ?')) return;
+  casseData.splice(index, 1);
+  casseSave(); casseRender();
+}
+
+function casseRender() {
+  const container  = document.getElementById('casse-list');
+  const totalBar   = document.getElementById('casse-total-bar');
+  const totalEl    = document.getElementById('casse-total');
+  if(!container) return;
+  if(!casseData.length) {
+    container.innerHTML = '<p class="empty-state">Aucun box enregistré</p>';
+    totalBar.style.display = 'none';
+    return;
+  }
+  container.innerHTML = casseData.map((b, i) => `
+    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border-left:4px solid #c0392b;">
+      <div style="flex:1;">
+        <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
+      </div>
+      <button onclick="casseRemove(${i})" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
+    </div>`).join('');
+  totalBar.style.display = 'flex';
+  totalEl.textContent = casseData.length;
+}
+
+function casseCopier() {
+  if(!casseData.length) return;
+  const texte = `Box Cassés — NOZ P854
+${new Date().toLocaleDateString('fr-FR')}
+
+`
+    + casseData.map((b,i) => `${i+1}. ${b.code}  (${b.date})`).join('
+')
+    + `
+
+Total : ${casseData.length} box`;
+  navigator.clipboard.writeText(texte)
+    .then(() => showToast('Liste copiée !'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = texte; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Liste copiée !');
+    });
+}
+
 function rvnLancerScan() { ouvrirScanner('rvn'); }
 function onScanFileChange(input) {
   if(!input.files||!input.files[0]) return;
@@ -1868,6 +1979,74 @@ function rvnClearList() {
   rvnSave(); rvnRenderCodes();
 }
 
+// ══ CASSE — box cassés persistants ══
+let casseData = JSON.parse(localStorage.getItem('noz-casse') || '[]');
+
+function casseSave() { localStorage.setItem('noz-casse', JSON.stringify(casseData)); }
+
+function casseAdd() {
+  const input = document.getElementById('casse-code');
+  const code  = input.value.trim();
+  if(!code) { showToast('Scannez ou saisissez un code box'); return; }
+  if(casseData.find(b => b.code === code)) {
+    showToast('Ce box est déjà enregistré'); input.value=''; return;
+  }
+  casseData.unshift({ code, date: new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) });
+  casseSave(); casseRender();
+  input.value = '';
+  showToast('Box enregistré ✓');
+}
+
+function casseRemove(index) {
+  if(!confirm('Supprimer ce box de la liste ?')) return;
+  casseData.splice(index, 1);
+  casseSave(); casseRender();
+}
+
+function casseRender() {
+  const container  = document.getElementById('casse-list');
+  const totalBar   = document.getElementById('casse-total-bar');
+  const totalEl    = document.getElementById('casse-total');
+  if(!container) return;
+  if(!casseData.length) {
+    container.innerHTML = '<p class="empty-state">Aucun box enregistré</p>';
+    totalBar.style.display = 'none';
+    return;
+  }
+  container.innerHTML = casseData.map((b, i) => `
+    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border-left:4px solid #c0392b;">
+      <div style="flex:1;">
+        <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
+      </div>
+      <button onclick="casseRemove(${i})" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
+    </div>`).join('');
+  totalBar.style.display = 'flex';
+  totalEl.textContent = casseData.length;
+}
+
+function casseCopier() {
+  if(!casseData.length) return;
+  const texte = `Box Cassés — NOZ P854
+${new Date().toLocaleDateString('fr-FR')}
+
+`
+    + casseData.map((b,i) => `${i+1}. ${b.code}  (${b.date})`).join('
+')
+    + `
+
+Total : ${casseData.length} box`;
+  navigator.clipboard.writeText(texte)
+    .then(() => showToast('Liste copiée !'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = texte; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Liste copiée !');
+    });
+}
+
 function rvnLancerScan() {
   const inp = document.getElementById('rvn-scan-input');
   inp.value = '';
@@ -1890,6 +2069,7 @@ function onRvnScanFile(input) {
 }
 
 rvnInit();
+  casseRender();
 document.getElementById('rvn-code').addEventListener('keydown', e => { if(e.key==='Enter') rvnAdd(); });
 
 // ── Calcul % ──
