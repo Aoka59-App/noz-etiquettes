@@ -296,10 +296,10 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   pointer-events: none;
 }
 .scanner-cadre {
-  width: 70%; aspect-ratio: 2.5/1;
+  width: 80%; aspect-ratio: 2.1/1;
   border: 2.5px solid var(--accent2);
   border-radius: 10px;
-  box-shadow: 0 0 0 2000px rgba(0,0,0,.55);
+  box-shadow: 0 0 0 2000px rgba(0,0,0,.65);
   position: relative;
 }
 .scanner-cadre::before, .scanner-cadre::after {
@@ -314,7 +314,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 }
 @keyframes scanline { 0%,100%{top:4px} 50%{top:calc(100% - 6px)} }
 .scanner-hint {
-  margin-top: 24px; color:#fff; font-size:14px; font-weight:500;
+  margin-top: 20px; color:#fff; font-size:14px; font-weight:500;
   text-align:center; opacity:.85;
 }
 .scanner-status {
@@ -1100,7 +1100,7 @@ function renderPreview() {
     // Barcode SVG -> img
     const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
     svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
-    try{ JsBarcode(svg,String(a.ref),{format:'CODE128',width:2.5,height:80,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
+    try{ JsBarcode(svg,String(a.ref),{format:'CODE128',width:3.5,height:80,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
     const xml=new XMLSerializer().serializeToString(svg);
     const blob=new Blob([xml],{type:'image/svg+xml'});
     const url=URL.createObjectURL(blob);
@@ -1155,10 +1155,10 @@ function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
   }
 
   // ══ NORMALE 30×14mm ══
-  // Zone haute (55%) : prix gauche | infos droite
-  // Zone basse (45%) : barcode pleine largeur
+  // Zone haute (38%) : prix gauche | numéro + codes + IFLS droite
+  // Zone basse (62%) : barcode pleine largeur (MAX)
 
-  const TOP_H = Math.round(LH * .55);
+  const TOP_H = Math.round(LH * .38);
   const BOT_H = LH - TOP_H;
   const yBot  = y + TOP_H;
 
@@ -1166,58 +1166,51 @@ function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
   ctx.strokeStyle='#bbb'; ctx.lineWidth=Math.round(.15*PX);
   ctx.beginPath(); ctx.moveTo(x+BRD, yBot); ctx.lineTo(x+LW-BRD, yBot); ctx.stroke();
 
-  // Séparatrice verticale dans la zone haute (40% depuis gauche)
+  // Séparatrice verticale dans la zone haute (42% depuis gauche)
   const SEP_X = x + Math.round(LW * .42);
   ctx.beginPath(); ctx.moveTo(SEP_X, y+BRD); ctx.lineTo(SEP_X, yBot); ctx.stroke();
 
-  // ── GAUCHE haut : prix gros + EUR dessous ──
+  // ── GAUCHE haut : prix gros + EUR ──
   const prixZoneW = SEP_X - x - PL;
   const ps = a.price.toFixed(2).replace('.',',');
-  // Taille max pour le prix
-  let fsP = Math.round(TOP_H * .62);
+  let fsP = Math.round(TOP_H * .68);
   ctx.font = `bold ${fsP}px Arial`;
   while(ctx.measureText(ps).width > prixZoneW && fsP > 5){ fsP--; ctx.font=`bold ${fsP}px Arial`; }
   ctx.fillStyle='#000'; ctx.textAlign='left'; ctx.textBaseline='top';
   const prixY = y + Math.round(TOP_H*.06);
   ctx.fillText(ps, x+PL, prixY);
-
-  // EUR sous le prix
-  const fsEUR = Math.round(fsP * .45);
+  const fsEUR = Math.round(fsP * .42);
   ctx.font = `bold ${fsEUR}px Arial`;
-  ctx.fillText('EUR', x+PL, prixY + fsP + Math.round(.8*PX));
+  ctx.fillText('EUR', x+PL, prixY + fsP + Math.round(.4*PX));
 
-  // Prix unitaire sous EUR (si présent)
-  if(a.unitPrice){
-    const uS = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
-    const fsU = Math.round(fsP * .30);
-    ctx.font = `bold ${fsU}px Arial`;
-    while(ctx.measureText(uS).width > prixZoneW && fsU > 4){ }
-    ctx.fillStyle='#444';
-    ctx.fillText(uS, x+PL, prixY + fsP + fsEUR + Math.round(1.5*PX));
-  }
+  // ── DROITE haut : numéro article + codes + IFLS (tout compact) ──
+  const infoX = SEP_X + Math.round(.6*PX);
+  const infoW = x + LW - infoX - PR;
 
-  // ── DROITE haut : numéro article + codes petits ──
-  const infoX    = SEP_X + Math.round(.8*PX);
-  const infoW    = x + LW - infoX - PR;
-
-  // Numéro article — gros, haut
-  let fsRef = Math.round(TOP_H * .40);
+  let fsRef = Math.round(TOP_H * .42);
   ctx.fillStyle='#000'; ctx.font=`bold ${fsRef}px Arial`;
   ctx.textAlign='left'; ctx.textBaseline='top';
   while(ctx.measureText(a.ref).width > infoW && fsRef > 5){ fsRef--; ctx.font=`bold ${fsRef}px Arial`; }
-  ctx.fillText(a.ref, infoX, y + Math.round(TOP_H*.06));
+  ctx.fillText(a.ref, infoX, y + Math.round(TOP_H*.05));
 
-  // Code1, code2, IFLS — petits dessous
-  const fsC = Math.round(TOP_H * .22);
-  ctx.fillStyle='#444'; ctx.font=`${fsC}px Arial`;
-  let lineY = y + Math.round(TOP_H*.06) + fsRef + Math.round(.5*PX);
-  if(a.code1){ ctx.fillText(a.code1, infoX, lineY); lineY += fsC + Math.round(.3*PX); }
-  if(a.code2){ ctx.fillText(a.code2, infoX, lineY); lineY += fsC + Math.round(.3*PX); }
-  if(a.qprod){ ctx.fillText(`IFLS: ${a.qprod}`, infoX, lineY); }
+  // Codes + IFLS sur une seule ligne compacte
+  const fsC = Math.round(TOP_H * .26);
+  ctx.fillStyle='#555'; ctx.font=`${fsC}px Arial`;
+  const infos = [a.code1, a.code2, a.qprod ? `IFLS:${a.qprod}` : null].filter(Boolean).join('  ');
+  const lineY2 = y + Math.round(TOP_H*.05) + fsRef + Math.round(.3*PX);
+  if(infos) ctx.fillText(infos, infoX, lineY2);
 
-  // ── BAS : barcode pleine largeur ──
+  // Prix unitaire si présent — sous les codes
+  if(a.unitPrice){
+    const uS = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
+    const fsU = Math.round(TOP_H * .24);
+    ctx.font = `bold ${fsU}px Arial`; ctx.fillStyle='#333';
+    ctx.fillText(uS, infoX, lineY2 + fsC + Math.round(.2*PX));
+  }
+
+  // ── BAS 62% : barcode pleine largeur, hauteur maximale ──
   if(bcImg){
-    const pV = Math.round(.6*PX), pH = Math.round(1.5*PX);
+    const pV = Math.round(.4*PX), pH = Math.round(1.2*PX);
     ctx.drawImage(bcImg, x+pH, yBot+pV, LW-2*pH, BOT_H-2*pV);
   }
 }
@@ -1281,20 +1274,20 @@ function printDirect(type) {
 body{background:#fff;}
 @page{size:30mm 14mm;margin:0;}
 .etq{width:30mm;height:14mm;border:.25mm solid #111;display:flex;flex-direction:column;overflow:hidden;page-break-inside:avoid;break-inside:avoid;background:#fff;}
-.top{display:flex;flex-direction:row;height:55%;border-bottom:.15mm solid #bbb;}
-.prix-bloc{display:flex;flex-direction:column;justify-content:center;padding:.3mm .8mm;border-right:.15mm solid #bbb;width:42%;}
-.prix-val{font-family:Arial;font-size:4.2mm;font-weight:700;color:#000;line-height:1;}
-.prix-eur{font-family:Arial;font-size:1.9mm;font-weight:700;color:#000;}
-.prix-unit{font-family:Arial;font-size:1.5mm;font-weight:700;color:#444;}
-.info-bloc{display:flex;flex-direction:column;justify-content:center;padding:.3mm .6mm;flex:1;overflow:hidden;}
-.ref{font-family:Arial;font-size:2.6mm;font-weight:700;color:#000;white-space:nowrap;overflow:hidden;}
-.codes{font-family:Arial;font-size:1.5mm;color:#555;line-height:1.4;}
-.bot{flex:1;display:flex;align-items:center;padding:.3mm 1mm;min-height:0;overflow:hidden;}
+.top{display:flex;flex-direction:row;height:38%;border-bottom:.15mm solid #bbb;}
+.prix-bloc{display:flex;flex-direction:column;justify-content:center;padding:.2mm .7mm;border-right:.15mm solid #bbb;width:42%;}
+.prix-val{font-family:Arial;font-size:3.6mm;font-weight:700;color:#000;line-height:1;}
+.prix-eur{font-family:Arial;font-size:1.6mm;font-weight:700;color:#000;}
+.prix-unit{font-family:Arial;font-size:1.3mm;font-weight:700;color:#444;}
+.info-bloc{display:flex;flex-direction:column;justify-content:center;padding:.2mm .5mm;flex:1;overflow:hidden;}
+.ref{font-family:Arial;font-size:2.3mm;font-weight:700;color:#000;white-space:nowrap;overflow:hidden;}
+.codes{font-family:Arial;font-size:1.3mm;color:#555;line-height:1.3;white-space:nowrap;overflow:hidden;}
+.bot{flex:1;display:flex;align-items:center;padding:.2mm .8mm;min-height:0;overflow:hidden;}
 .bot svg{width:100%;height:100%;display:block;}
 </style></head><body>`;
   labels.forEach(a=>{
     const svgEl=document.createElementNS('http://www.w3.org/2000/svg','svg'); svgEl.setAttribute('xmlns','http://www.w3.org/2000/svg');
-    try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:1.4,height:28,displayValue:false,margin:2,background:'#fff',lineColor:'#000'}); }catch(e){}
+    try{ JsBarcode(svgEl,String(a.ref),{format:'CODE128',width:2.2,height:36,displayValue:false,margin:3,background:'#fff',lineColor:'#000'}); }catch(e){}
     const svgStr = new XMLSerializer().serializeToString(svgEl);
     const [eu,ct]=a.price.toFixed(2).split('.');
     if(a.isSerie){
@@ -1535,26 +1528,31 @@ function scannerLoop() {
 
   const vw = video.videoWidth, vh = video.videoHeight;
 
-  // ── Stratégie multi-zones : on tente 3 crops dans l'ordre ──
-  // 1. Image entière (grand code-barres proche)
-  // 2. Zone centrale 60% (affichette à distance moyenne)
-  // 3. Zone centrale 40% upscalée ×2 (petite affichette loin)
-  const crops = [
-    { sx:0,           sy:0,           sw:vw,          sh:vh,          scale:1   },
-    { sx:vw*.20,      sy:vh*.20,      sw:vw*.60,      sh:vh*.60,      scale:1   },
-    { sx:vw*.30,      sy:vh*.25,      sw:vw*.40,      sh:vh*.50,      scale:2   },
+  // ── Le cadre visuel occupe 80% de la largeur écran, ratio 2.1:1 ──
+  // On découpe la même zone dans le flux vidéo, upscalée ×2.5 pour ZXing
+  const CADRE_W = 0.80;                       // 80% de la largeur vidéo
+  const CADRE_H = CADRE_W / 2.1;             // ratio 2.1:1
+  const sx = vw * (1 - CADRE_W) / 2;
+  const sy = vh * (1 - CADRE_H) / 2;
+  const sw = vw * CADRE_W;
+  const sh = vh * CADRE_H;
+
+  // Stratégie : 3 passes avec zoom croissant sur la même zone centrale
+  const passes = [
+    { scale: 2.5, filter: 'contrast(1.5) brightness(1.05)' }, // normal + contraste
+    { scale: 3.5, filter: 'contrast(2.0) brightness(1.10)' }, // forte densification
+    { scale: 2.5, filter: 'grayscale(1) contrast(2.5)'     }, // N&B pur si fond coloré
   ];
 
-  for(const crop of crops) {
+  for(const pass of passes) {
     if(!scannerRunning) return;
     try {
       const c = document.createElement('canvas');
-      c.width  = Math.round(crop.sw * crop.scale);
-      c.height = Math.round(crop.sh * crop.scale);
+      c.width  = Math.round(sw * pass.scale);
+      c.height = Math.round(sh * pass.scale);
       const ctx = c.getContext('2d');
-      // Augmenter le contraste pour les petites affiches
-      ctx.filter = 'contrast(1.4) brightness(1.05)';
-      ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, c.width, c.height);
+      ctx.filter = pass.filter;
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
 
       const luminanceSource = new ZXing.HTMLCanvasElementLuminanceSource(c);
       const binarizer       = new ZXing.HybridBinarizer(luminanceSource);
@@ -1586,11 +1584,11 @@ function scannerLoop() {
         return;
       }
     } catch(e) {
-      // Pas de code dans ce crop — essayer le suivant
+      // Pas de code dans cette passe — continuer
     }
   }
 
-  document.getElementById('scanner-status').textContent = 'Pointez vers le code-barres…';
+  document.getElementById('scanner-status').textContent = 'Centrez le code-barres dans le cadre';
   if(scannerRunning) requestAnimationFrame(scannerLoop);
 }
 
