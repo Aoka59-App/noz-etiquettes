@@ -1189,43 +1189,51 @@ function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
   const SEP_X = x + Math.round(LW * .42);
   ctx.beginPath(); ctx.moveTo(SEP_X, y+BRD); ctx.lineTo(SEP_X, yBot); ctx.stroke();
 
-  // ── GAUCHE haut : prix gros + EUR ──
-  const prixZoneW = SEP_X - x - PL;
+  // ── GAUCHE haut : prix gros + EUR en dessous ──
+  const prixZoneW = SEP_X - x - PL - Math.round(.5*PX);
   const ps = a.price.toFixed(2).replace('.',',');
-  let fsP = Math.round(TOP_H * .68);
+  let fsP = Math.round(TOP_H * .62);
   ctx.font = `bold ${fsP}px Arial`;
   while(ctx.measureText(ps).width > prixZoneW && fsP > 5){ fsP--; ctx.font=`bold ${fsP}px Arial`; }
   ctx.fillStyle='#000'; ctx.textAlign='left'; ctx.textBaseline='top';
-  const prixY = y + Math.round(TOP_H*.06);
+  const prixY = y + Math.round(TOP_H * .05);
   ctx.fillText(ps, x+PL, prixY);
-  const fsEUR = Math.round(fsP * .42);
+  // EUR strictement en dessous du prix
+  const fsEUR = Math.round(fsP * .38);
   ctx.font = `bold ${fsEUR}px Arial`;
-  ctx.fillText('EUR', x+PL, prixY + fsP + Math.round(.4*PX));
+  ctx.fillText('EUR', x+PL, prixY + fsP + Math.round(.5*PX));
 
-  // ── DROITE haut : numéro article + codes + IFLS (tout compact) ──
+  // ── DROITE haut : numéro article | prix/kg | IFLS ──
   const infoX = SEP_X + Math.round(.6*PX);
   const infoW = x + LW - infoX - PR;
 
-  let fsRef = Math.round(TOP_H * .42);
+  // Ligne 1 : numéro article
+  let fsRef = Math.round(TOP_H * .40);
   ctx.fillStyle='#000'; ctx.font=`bold ${fsRef}px Arial`;
   ctx.textAlign='left'; ctx.textBaseline='top';
   while(ctx.measureText(a.ref).width > infoW && fsRef > 5){ fsRef--; ctx.font=`bold ${fsRef}px Arial`; }
-  ctx.fillText(a.ref, infoX, y + Math.round(TOP_H*.05));
+  const refY = y + Math.round(TOP_H * .05);
+  ctx.fillText(a.ref, infoX, refY);
 
-  // Codes + IFLS sur une seule ligne compacte
-  const fsC = Math.round(TOP_H * .26);
-  ctx.fillStyle='#555'; ctx.font=`${fsC}px Arial`;
-  const infos = [a.code1, a.code2, a.qprod ? `IFLS:${a.qprod}` : null].filter(Boolean).join('  ');
-  const lineY2 = y + Math.round(TOP_H*.05) + fsRef + Math.round(.3*PX);
-  if(infos) ctx.fillText(infos, infoX, lineY2);
+  const fsC = Math.round(TOP_H * .25);
+  // lineY2 toujours dans la zone haute, max à 2px du séparateur horizontal
+  const lineY2 = Math.min(refY + fsRef + Math.round(.25*PX), yBot - fsC - Math.round(.5*PX));
 
-  // Prix unitaire si présent — sous les codes
+  // Ligne sous le numéro article (zone haute droite) : prix/kg à gauche + IFLS à droite
+  const infoRightEdge = x + LW - PR;
+  ctx.textBaseline = 'top';
   if(a.unitPrice){
     const uS = `${a.unitPrice.val.toFixed(2).replace('.',',')} ${a.unitPrice.unit}`;
-    const fsU = Math.round(TOP_H * .24);
-    ctx.font = `bold ${fsU}px Arial`; ctx.fillStyle='#333';
-    ctx.fillText(uS, infoX, lineY2 + fsC + Math.round(.2*PX));
+    ctx.font = `bold ${fsC}px Arial`; ctx.fillStyle='#333';
+    ctx.textAlign = 'left';
+    ctx.fillText(uS, infoX, lineY2);
   }
+  if(a.qprod){
+    ctx.font = `${fsC}px Arial`; ctx.fillStyle='#555';
+    ctx.textAlign = 'right';
+    ctx.fillText(`IFLS:${a.qprod}`, infoRightEdge, lineY2);
+  }
+  ctx.textAlign = 'left';
 
   // ── BAS 62% : barcode pleine largeur, hauteur maximale ──
   if(bcImg){
