@@ -650,21 +650,12 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <button class="btn-danger" onclick="clearAll()" style="margin-top:8px;margin-bottom:20px;">Tout effacer</button>
 
       <!-- Étiquettes articles -->
-      <div class="section-hdr">Imprimer — Articles</div>
+      <div class="section-hdr">Enregistrer — Articles</div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <button class="btn-ios sm" style="margin-bottom:0;" id="btn-png-normal" onclick="generatePNG('normal')" disabled>PNG grille</button>
-        <button class="btn-ios sm outline" style="margin-bottom:0;" id="btn-print-normal" onclick="printDirect('normal')" disabled>Imprimer</button>
-      </div>
-      <button class="btn-chaine" id="btn-chaine-normal" onclick="imprimerChaine('normal')" disabled>
-        Imprimer à la chaîne
+      <button class="btn-ios green" id="btn-save-normal" onclick="sauvegarderDansPhotos('normal')" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
+        Enregistrer dans Photos
       </button>
-
-      <div class="progress-card" id="chaine-progress-normal">
-        <div class="progress-label" id="chaine-txt-normal">Préparation…</div>
-        <div class="progress-track"><div class="progress-bar" id="chaine-bar-normal"></div></div>
-        <button onclick="stopChaine('normal')" style="margin-top:8px;background:none;border:none;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;">Arrêter</button>
-      </div>
 
       <div class="result-card" id="img-wrap-normal" style="display:none;">
         <div class="result-title">Image générée · 300 DPI · Articles</div>
@@ -680,19 +671,10 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <!-- Série chaussures -->
       <div class="section-hdr">Imprimer — Série chaussures</div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <button class="btn-ios sm" style="margin-bottom:0;" id="btn-png-serie" onclick="generatePNG('serie')" disabled>PNG grille</button>
-        <button class="btn-ios sm outline" style="margin-bottom:0;" id="btn-print-serie" onclick="printDirect('serie')" disabled>Imprimer</button>
-      </div>
-      <button class="btn-chaine" id="btn-chaine-serie" onclick="imprimerChaine('serie')" disabled>
-        Imprimer à la chaîne
+      <button class="btn-ios green" id="btn-save-serie" onclick="sauvegarderDansPhotos('serie')" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
+        Enregistrer dans Photos
       </button>
-
-      <div class="progress-card" id="chaine-progress-serie">
-        <div class="progress-label" id="chaine-txt-serie">Préparation…</div>
-        <div class="progress-track"><div class="progress-bar" id="chaine-bar-serie"></div></div>
-        <button onclick="stopChaine('serie')" style="margin-top:8px;background:none;border:none;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;">Arrêter</button>
-      </div>
 
       <div class="result-card" id="img-wrap-serie" style="display:none;">
         <div class="result-title">Image générée · 300 DPI · Série</div>
@@ -1099,8 +1081,8 @@ function renderAll() {
   const hasSerie=articles.some(a=>a.isSerie);
   document.getElementById('totals-text').textContent=`${articles.length} article${articles.length>1?'s':''}`;
   document.getElementById('totals-count').textContent=total;
-  ['btn-png-normal','btn-print-normal','btn-chaine-normal'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!hasNormal; });
-  ['btn-png-serie','btn-print-serie','btn-chaine-serie'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!hasSerie; });
+  ['btn-save-normal'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!hasNormal; });
+  ['btn-save-serie'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=!hasSerie; });
 
   const list=document.getElementById('article-list');
   if(!has){ list.innerHTML='<p class="empty-state">Aucun article saisi</p>'; return; }
@@ -1298,6 +1280,54 @@ async function generatePNG(type) {
   if(isIOS){ showImgOverlay(dataURL); } else { dlBtn.click(); }
   showToast('Image générée !');
   btn.disabled=false; btn.innerHTML='PNG grille';
+}
+
+// ── Enregistrer dans Photos (1 étiquette à la fois) ──
+async function sauvegarderDansPhotos(type) {
+  const btnId = type === 'serie' ? 'btn-save-serie' : 'btn-save-normal';
+  const btn = document.getElementById(btnId);
+  btn.disabled = true;
+  const origHTML = btn.innerHTML;
+  btn.innerHTML = '<span class="spin"></span> Génération…';
+
+  const source = type === 'serie' ? articles.filter(a => a.isSerie) : articles.filter(a => !a.isSerie);
+  const labels = [];
+  source.forEach(a => { for(let i = 0; i < a.qty; i++) labels.push(a); });
+  if(!labels.length) { btn.disabled = false; btn.innerHTML = origHTML; return; }
+
+  const PX = 600/25.4, LW = Math.round(30*PX), LH = Math.round(14*PX);
+  const refs = [...new Set(labels.map(a => a.ref))];
+  const bcMap = {};
+  await Promise.all(refs.map(async r => { bcMap[r] = await barcodeToImg(r); }));
+
+  const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
+
+  // Télécharger chaque étiquette une par une avec délai
+  for(let i = 0; i < labels.length; i++) {
+    const a = labels[i];
+    const canvas = document.createElement('canvas');
+    canvas.width = LW; canvas.height = LH;
+    const ctx = canvas.getContext('2d');
+    dessinerEtiquette(ctx, a, 0, 0, LW, LH, bcMap[a.ref] || null, PX);
+    const dataURL = canvas.toDataURL('image/png');
+    const fname = `NOZ_P854_${esc(a.ref)}_${String(i+1).padStart(2,'0')}_${ds}.png`;
+
+    // Créer lien de téléchargement
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = fname;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    btn.innerHTML = `<span class="spin"></span> ${i+1}/${labels.length}…`;
+    // Délai entre chaque téléchargement pour iOS
+    if(i < labels.length - 1) await new Promise(r => setTimeout(r, 800));
+  }
+
+  showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} enregistrée${labels.length > 1 ? 's' : ''} !`);
+  btn.disabled = false;
+  btn.innerHTML = origHTML;
 }
 
 // ── Impression directe ──
