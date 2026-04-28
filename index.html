@@ -859,7 +859,57 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
   </div>
 
-  <!-- ══ TAB BAR ══ -->
+    <!-- ══ CAISSE ══ -->
+    <div class="page" id="page-caisse">
+
+      <!-- Statut connexion -->
+      <div id="caisse-status" style="display:flex;align-items:center;gap:8px;background:var(--card);border-radius:12px;padding:12px 16px;margin-bottom:12px;">
+        <div id="caisse-dot" style="width:10px;height:10px;border-radius:50%;background:var(--text3);flex-shrink:0;"></div>
+        <span id="caisse-status-txt" style="font-size:13px;color:var(--text2);">Connexion…</span>
+      </div>
+
+      <!-- Scanner -->
+      <button class="scan-btn-main" onclick="ouvrirScanner('caisse-sync')" style="margin-bottom:8px;">
+        <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        Scanner un article
+      </button>
+
+      <!-- Saisie manuelle -->
+      <div class="form-card" style="margin-bottom:8px;">
+        <div class="form-field">
+          <label>Code article</label>
+          <input id="caisse-code-input" type="text" placeholder="Code-barres" inputmode="numeric" autocomplete="off"
+            style="font-weight:700;font-size:17px;color:var(--accent);"/>
+        </div>
+      </div>
+      <button class="btn-ios gold" onclick="caisseEnvoyer()" style="margin-bottom:16px;">
+        📤 Envoyer à la caisse
+      </button>
+
+      <!-- Liste temps réel -->
+      <div class="section-hdr">Articles en attente</div>
+      <div id="caisse-list" style="margin-bottom:8px;">
+        <p class="empty-state">Aucun article</p>
+      </div>
+
+      <!-- Barre total + vider -->
+      <div id="caisse-total-bar" style="display:none;background:var(--accent);border-radius:12px;padding:14px 18px;flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:2px;">ARTICLES EN ATTENTE</div>
+          <div style="font-size:26px;font-weight:700;color:var(--accent2);" id="caisse-total">0</div>
+        </div>
+        <button onclick="caisseVider()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Tout vider</button>
+      </div>
+
+    </div>
+
+
   <div class="tabbar">
     <button class="tb-item active" id="tb-saisie" onclick="showTabById('saisie')" class="tb-item active">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
@@ -908,15 +958,18 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Comptage</span>
     </button>
-    <button class="tb-item" id="tb-calcul" onclick="showTabById('calcul')">
+    <button class="tb-item" id="tb-caisse" onclick="showTabById('caisse')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <rect x="4" y="4" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/>
-        <text x="13" y="17" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" font-family="-apple-system,sans-serif">%</text>
+        <rect x="3" y="7" width="20" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M8 7V6a3 3 0 0 1 6 0v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="9" y1="14" x2="17" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="13" y1="11" x2="13" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
-      <span class="tb-label">Calcul %</span>
+      <span class="tb-label">Caisse</span>
     </button>
 
   </div>
+
 
 </div>
 
@@ -963,7 +1016,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'RVN / Casse', comptage:'Comptage', calcul:'Calcul %' };
+const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'RVN / Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
@@ -1660,6 +1713,8 @@ function scannerLoop() {
         } else if(scannerTarget === 'casse') {
           document.getElementById('casse-code').value = code;
           casseAdd();
+        } else if(scannerTarget === 'caisse-sync') {
+          if(typeof caisseFromScan === 'function') caisseFromScan(code);
         } else {
           afficherPanneauScan(code, null, null);
         }
@@ -2081,6 +2136,114 @@ document.getElementById('inp-qprod').addEventListener('keydown', e=>{ if(e.key==
 document.getElementById('inp-uprice').addEventListener('keydown',e=>{ if(e.key==='Enter') addArticle(); });
 document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('cpt-price').focus(); });
 document.getElementById('cpt-price').addEventListener('keydown', e=>{ if(e.key==='Enter') cptAdd(); });
+</script>
+
+document.getElementById('caisse-code-input').addEventListener('keydown', e => { if(e.key==='Enter') caisseEnvoyer(); });
+
+</script>
+
+<!-- ══ FIREBASE CAISSE ══ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  databaseURL: 'https://noz-etiquettes-default-rtdb.europe-west1.firebasedatabase.app'
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+const caisseRef = ref(db, 'caisse');
+
+// Statut connexion
+function setCaisseStatus(ok) {
+  const dot = document.getElementById('caisse-dot');
+  const txt = document.getElementById('caisse-status-txt');
+  if(ok) {
+    dot.style.background = '#34c759';
+    txt.textContent = 'Connecté — synchronisation en temps réel';
+    txt.style.color = '#34c759';
+  } else {
+    dot.style.background = '#ff3b30';
+    txt.textContent = 'Hors ligne — vérifiez votre connexion';
+    txt.style.color = '#ff3b30';
+  }
+}
+
+// Écoute temps réel
+onValue(caisseRef, snapshot => {
+  setCaisseStatus(true);
+  const data = snapshot.val();
+  const list = document.getElementById('caisse-list');
+  const bar  = document.getElementById('caisse-total-bar');
+  const tot  = document.getElementById('caisse-total');
+
+  if(!data) {
+    list.innerHTML = '<p class="empty-state">Aucun article</p>';
+    bar.style.display = 'none';
+    return;
+  }
+
+  const items = Object.entries(data).reverse(); // plus récent en haut
+  list.innerHTML = items.map(([key, item]) => `
+    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;border-left:4px solid var(--accent);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="flex:1;">
+          <div style="font-size:17px;font-weight:700;color:var(--accent);font-family:monospace;">${esc(item.code)}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">${esc(item.date)}</div>
+        </div>
+        <button onclick="caisseSupprimer('${key}')" style="background:#fdecea;border:none;border-radius:8px;color:var(--red);font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">✕</button>
+      </div>
+      <svg id="caisse-bc-${key.replace(/[^a-z0-9]/gi,'')}" style="width:100%;height:48px;display:block;"></svg>
+    </div>
+  `).join('');
+
+  // Codes-barres
+  items.forEach(([key, item]) => {
+    const safeKey = key.replace(/[^a-z0-9]/gi,'');
+    try {
+      JsBarcode(`#caisse-bc-${safeKey}`, item.code, {
+        format:'CODE128', width:2, height:40,
+        displayValue:false, margin:0, background:'#ffffff', lineColor:'#000000'
+      });
+    } catch(e){}
+  });
+
+  tot.textContent = items.length;
+  bar.style.display = 'flex';
+}, err => { setCaisseStatus(false); });
+
+// Envoyer un article
+window.caisseEnvoyer = function() {
+  const input = document.getElementById('caisse-code-input');
+  const code  = input.value.trim();
+  if(!code) { showToast('Saisissez un code !'); return; }
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+  push(caisseRef, { code, date })
+    .then(() => { input.value = ''; showToast('Article envoyé à la caisse !'); bipScan(); })
+    .catch(() => showToast('Erreur — vérifiez la connexion'));
+};
+
+// Supprimer un article
+window.caisseSupprimer = function(key) {
+  remove(ref(db, 'caisse/' + key)).catch(() => showToast('Erreur suppression'));
+};
+
+// Vider tout
+window.caisseVider = function() {
+  if(!confirm('Vider tous les articles en attente ?')) return;
+  remove(caisseRef).catch(() => showToast('Erreur'));
+};
+
+// Scan → Caisse
+window.caisseFromScan = function(code) {
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+  push(caisseRef, { code, date })
+    .then(() => { showToast('Envoyé à la caisse !'); bipScan(); })
+    .catch(() => showToast('Erreur Firebase'));
+};
 </script>
 
 <script>
