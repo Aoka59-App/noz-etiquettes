@@ -556,23 +556,15 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
           <label>Quantité</label>
           <input id="inp-qty" type="number" value="1" min="1" max="99" inputmode="numeric"/>
         </div>
-      </div>
-
-      <div class="section-hdr">Codes</div>
-      <div class="form-card">
-        <div class="form-field">
-          <label>Code interne</label>
-          <input id="inp-code1" type="text" placeholder="t90257" maxlength="20"/>
-        </div>
-        <div class="form-field">
-          <label>Sous-code</label>
-          <input id="inp-code2" type="text" placeholder="AUX002" maxlength="20"/>
-        </div>
         <div class="form-field">
           <label>Rang IFLS</label>
           <input id="inp-qprod" type="number" placeholder="2" min="0" max="99" inputmode="numeric"/>
         </div>
       </div>
+
+      <!-- Champs masqués pour compatibilité JS -->
+      <input id="inp-code1" type="hidden" value=""/>
+      <input id="inp-code2" type="hidden" value=""/>
 
       <div class="section-hdr">Prix unitaire (optionnel)</div>
       <div class="form-card">
@@ -2129,9 +2121,7 @@ function showToast(msg){ const t=document.getElementById('toast'); t.textContent
 // ── Raccourcis clavier ──
 document.getElementById('inp-ref').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('inp-price').focus(); });
 document.getElementById('inp-price').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-qty').focus(); });
-document.getElementById('inp-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('inp-code1').focus(); });
-document.getElementById('inp-code1').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-code2').focus(); });
-document.getElementById('inp-code2').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-qprod').focus(); });
+document.getElementById('inp-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('inp-qprod').focus(); });
 document.getElementById('inp-qprod').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('inp-uprice').focus(); });
 document.getElementById('inp-uprice').addEventListener('keydown',e=>{ if(e.key==='Enter') addArticle(); });
 document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('cpt-price').focus(); });
