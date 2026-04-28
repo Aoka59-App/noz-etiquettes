@@ -1189,19 +1189,23 @@ function dessinerEtiquette(ctx, a, x, y, LW, LH, bcImg, PX) {
   const SEP_X = x + Math.round(LW * .42);
   ctx.beginPath(); ctx.moveTo(SEP_X, y+BRD); ctx.lineTo(SEP_X, yBot); ctx.stroke();
 
-  // ── GAUCHE haut : prix gros + EUR en dessous ──
+  // ── GAUCHE haut : prix gros + EUR à droite sur la même ligne ──
   const prixZoneW = SEP_X - x - PL - Math.round(.5*PX);
   const ps = a.price.toFixed(2).replace('.',',');
   let fsP = Math.round(TOP_H * .62);
   ctx.font = `bold ${fsP}px Arial`;
-  while(ctx.measureText(ps).width > prixZoneW && fsP > 5){ fsP--; ctx.font=`bold ${fsP}px Arial`; }
+  while(ctx.measureText(ps).width > prixZoneW * .72 && fsP > 5){ fsP--; ctx.font=`bold ${fsP}px Arial`; }
   ctx.fillStyle='#000'; ctx.textAlign='left'; ctx.textBaseline='top';
-  const prixY = y + Math.round(TOP_H * .05);
+  const prixY = y + Math.round(TOP_H * .08);
   ctx.fillText(ps, x+PL, prixY);
-  // EUR strictement en dessous du prix
-  const fsEUR = Math.round(fsP * .38);
+  // EUR en petit à droite du prix, aligné en haut
+  const fsEUR = Math.round(fsP * .35);
   ctx.font = `bold ${fsEUR}px Arial`;
-  ctx.fillText('EUR', x+PL, prixY + fsP + Math.round(.5*PX));
+  const prixW = ctx.measureText(ps).width; // largeur du prix avec la fonte EUR
+  ctx.font = `bold ${fsP}px Arial`;
+  const prixLargeur = ctx.measureText(ps).width;
+  ctx.font = `bold ${fsEUR}px Arial`;
+  ctx.fillText('EUR', x + PL + prixLargeur + Math.round(.3*PX), prixY);
 
   // ── DROITE haut : numéro article | prix/kg | IFLS ──
   const infoX = SEP_X + Math.round(.6*PX);
@@ -1863,13 +1867,27 @@ function casseRender() {
     return;
   }
   container.innerHTML = casseData.map((b, i) => `
-    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border-left:4px solid #c0392b;">
-      <div style="flex:1;">
-        <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
-        <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
+    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;border-left:4px solid #c0392b;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="flex:1;">
+          <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
+        </div>
+        <button onclick="casseRemove(${i})" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
       </div>
-      <button onclick="casseRemove(${i})" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
+      <svg id="casse-bc-${i}" style="width:100%;height:48px;display:block;"></svg>
     </div>`).join('');
+
+  // Générer les codes-barres
+  casseData.forEach((b, i) => {
+    try {
+      JsBarcode(`#casse-bc-${i}`, b.code, {
+        format: 'CODE128', width: 2, height: 40,
+        displayValue: false, margin: 0, background: '#ffffff', lineColor: '#000000'
+      });
+    } catch(e) {}
+  });
+
   totalBar.style.display = 'flex';
   totalEl.textContent = casseData.length;
 }
