@@ -678,59 +678,8 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
     </div>
 
-    <!-- ══ RVN ══ -->
+    <!-- ══ BOX CASSÉ ══ -->
     <div class="page" id="page-rvn">
-
-      <!-- Sélecteur de liste -->
-      <div class="section-hdr">Liste active</div>
-      <div class="form-card" style="margin-bottom:8px;">
-        <div class="form-field" style="gap:8px;">
-          <select id="rvn-select" onchange="rvnSelectList()" style="flex:1;border:none;outline:none;font-size:16px;font-weight:600;color:var(--accent);background:transparent;-webkit-appearance:none;padding:14px 0;">
-          </select>
-          <button onclick="rvnNewList()" style="background:none;border:none;color:var(--blue);font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;padding:0;">+ Nouvelle</button>
-        </div>
-      </div>
-
-
-      <!-- Scanner RVN -->
-      <button class="scan-btn-main" onclick="ouvrirScanner('rvn')" style="margin-bottom:8px;">
-        <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
-          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="4" y1="13" x2="22" y2="13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-        Scanner un code-barres
-      </button>
-
-      <!-- Saisie code -->
-      <div class="form-card" style="margin-bottom:8px;">
-        <div class="form-field">
-          <label>Code article</label>
-          <input id="rvn-code" type="text" placeholder="1005378167" inputmode="numeric" autocomplete="off"
-            style="font-weight:700;font-size:17px;color:var(--accent);"/>
-        </div>
-      </div>
-      <button class="btn-ios gold" onclick="rvnAdd()" style="margin-bottom:12px;">+ Ajouter à la liste</button>
-
-      <!-- Liste des codes -->
-      <div id="rvn-list-wrap">
-        <div id="rvn-codes" style="margin-bottom:8px;"></div>
-        <div id="rvn-total-bar" style="display:none;background:var(--accent);border-radius:12px;padding:14px 18px;display:none;flex-direction:row;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div>
-            <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:2px;">TOTAL RÉFÉRENCES</div>
-            <div style="font-size:26px;font-weight:700;color:var(--accent2);" id="rvn-total">0</div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-            <button onclick="rvnExport()" style="background:var(--accent2);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Copier la liste</button>
-          </div>
-        </div>
-        <button class="btn-danger" onclick="rvnClearList()" id="rvn-btn-clear" style="display:none;">Vider la liste</button>
-      </div>
-
-      <!-- ══ SECTION CASSE ══ -->
-      <div class="section-hdr" style="margin-top:18px;">📦 Box Cassé</div>
 
       <!-- Scanner Casse -->
       <button class="scan-btn-main" onclick="ouvrirScanner('casse')" style="margin-bottom:8px;">
@@ -767,6 +716,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </div>
 
     </div>
+
 
     <!-- ══ COMPTAGE ══ -->
     <div class="page" id="page-comptage">
@@ -939,7 +889,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <line x1="14" y1="13" x2="18" y2="13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
         <line x1="14" y1="17" x2="19" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
-      <span class="tb-label">RVN/Casse</span>
+      <span class="tb-label">Box Cassé</span>
     </button>
     <button class="tb-item" id="tb-comptage" onclick="showTabById('comptage')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
@@ -1012,7 +962,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'RVN / Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse' };
+const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'Box Cassé', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
