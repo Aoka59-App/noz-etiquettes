@@ -1882,86 +1882,25 @@ function validerSaisieManuelle(target) {
   onCodeDetecte(val, target);
 }
 
-// Supprimer les vieilles fonctions fallback
-// ══ CASSE — box cassés persistants ══
-let casseData = JSON.parse(localStorage.getItem('noz-casse') || '[]');
-
-function casseSave() { localStorage.setItem('noz-casse', JSON.stringify(casseData)); }
-
+// ══ CASSE — géré via Firebase (voir module script en bas) ══
+// Ces stubs permettent au scanner de rester compatible
 function casseAdd() {
   const input = document.getElementById('casse-code');
   const code  = input.value.trim();
   if(!code) { showToast('Scannez ou saisissez un code box'); return; }
-  if(casseData.find(b => b.code === code)) {
-    showToast('Ce box est déjà enregistré'); input.value=''; return;
-  }
-  casseData.unshift({ code, date: new Date().toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) });
-  casseSave(); casseRender();
+  if(typeof casseFirebaseAdd === 'function') casseFirebaseAdd(code);
   input.value = '';
-  showToast('Box enregistré ✓');
 }
 
-function casseRemove(index) {
+function casseRemove(key) {
   if(!confirm('Supprimer ce box de la liste ?')) return;
-  casseData.splice(index, 1);
-  casseSave(); casseRender();
+  if(typeof casseFirebaseRemove === 'function') casseFirebaseRemove(key);
 }
 
-function casseRender() {
-  const container  = document.getElementById('casse-list');
-  const totalBar   = document.getElementById('casse-total-bar');
-  const totalEl    = document.getElementById('casse-total');
-  if(!container) return;
-  if(!casseData.length) {
-    container.innerHTML = '<p class="empty-state">Aucun box enregistré</p>';
-    totalBar.style.display = 'none';
-    return;
-  }
-  container.innerHTML = casseData.map((b, i) => `
-    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;border-left:4px solid #c0392b;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-        <div style="flex:1;">
-          <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
-          <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
-        </div>
-        <button onclick="casseRemove(${i})" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
-      </div>
-      <svg id="casse-bc-${i}" style="width:100%;height:48px;display:block;"></svg>
-    </div>`).join('');
-
-  // Générer les codes-barres
-  casseData.forEach((b, i) => {
-    try {
-      JsBarcode(`#casse-bc-${i}`, b.code, {
-        format: 'CODE128', width: 2, height: 40,
-        displayValue: false, margin: 0, background: '#ffffff', lineColor: '#000000'
-      });
-    } catch(e) {}
-  });
-
-  totalBar.style.display = 'flex';
-  totalEl.textContent = casseData.length;
-}
+function casseRender() {} // rendu géré par Firebase onValue
 
 function casseCopier() {
-  if(!casseData.length) return;
-  const texte = `Box Cassés — NOZ P854
-${new Date().toLocaleDateString('fr-FR')}
-
-`
-    + casseData.map((b,i) => (i+1)+'. '+b.code+'  ('+b.date+')').join('\n')
-    + `
-
-Total : ${casseData.length} box`;
-  navigator.clipboard.writeText(texte)
-    .then(() => showToast('Liste copiée !'))
-    .catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = texte; document.body.appendChild(ta);
-      ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta);
-      showToast('Liste copiée !');
-    });
+  if(typeof casseFirebaseCopier === 'function') casseFirebaseCopier();
 }
 
 function rvnLancerScan() { ouvrirScanner('rvn'); }
@@ -2147,6 +2086,85 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 const caisseRef = ref(db, 'caisse');
+const casseRef2 = ref(db, 'casse');
+
+// ══ FIREBASE CASSE ══
+onValue(casseRef2, snapshot => {
+  const data = snapshot.val();
+  const container = document.getElementById('casse-list');
+  const totalBar  = document.getElementById('casse-total-bar');
+  const totalEl   = document.getElementById('casse-total');
+  if(!container) return;
+
+  if(!data) {
+    container.innerHTML = '<p class="empty-state">Aucun box enregistré</p>';
+    if(totalBar) totalBar.style.display = 'none';
+    return;
+  }
+
+  const items = Object.entries(data).reverse();
+  container.innerHTML = items.map(([key, b]) => {
+    const safeKey = key.replace(/[^a-z0-9]/gi,'');
+    return `
+    <div style="background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;border-left:4px solid #c0392b;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="flex:1;">
+          <div style="font-size:17px;font-weight:700;color:#c0392b;font-family:monospace;">${esc(b.code)}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">Enregistré le ${esc(b.date)}</div>
+        </div>
+        <button onclick="casseRemove('${key}')" style="background:#fdecea;border:none;border-radius:8px;color:#c0392b;font-size:13px;font-weight:700;padding:6px 12px;cursor:pointer;">Supprimer</button>
+      </div>
+      <svg id="casse-bc-${safeKey}" style="width:100%;height:48px;display:block;"></svg>
+    </div>`;
+  }).join('');
+
+  // Codes-barres
+  items.forEach(([key, b]) => {
+    const safeKey = key.replace(/[^a-z0-9]/gi,'');
+    try {
+      JsBarcode(`#casse-bc-${safeKey}`, b.code, {
+        format:'CODE128', width:2, height:40,
+        displayValue:false, margin:0, background:'#ffffff', lineColor:'#000000'
+      });
+    } catch(e){}
+  });
+
+  if(totalBar) totalBar.style.display = 'flex';
+  if(totalEl)  totalEl.textContent = items.length;
+});
+
+window.casseFirebaseAdd = function(code) {
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'})
+    + ' ' + now.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+  push(casseRef2, { code, date })
+    .then(() => { showToast('Box enregistré ✓'); bipScan(); })
+    .catch(() => showToast('Erreur Firebase — vérifiez la connexion'));
+};
+
+window.casseFirebaseRemove = function(key) {
+  remove(ref(db, 'casse/' + key)).catch(() => showToast('Erreur suppression'));
+};
+
+window.casseFirebaseCopier = function() {
+  get(casseRef2).then(snapshot => {
+    const data = snapshot.val();
+    if(!data) { showToast('Aucun box à copier'); return; }
+    const items = Object.values(data);
+    const texte = `Box Cassés — NOZ P854\n${new Date().toLocaleDateString('fr-FR')}\n\n`
+      + items.map((b,i) => `${i+1}. ${b.code}  (${b.date})`).join('\n')
+      + `\n\nTotal : ${items.length} box`;
+    navigator.clipboard.writeText(texte)
+      .then(() => showToast('Liste copiée !'))
+      .catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = texte; document.body.appendChild(ta);
+        ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Liste copiée !');
+      });
+  });
+};
 
 // Statut connexion
 function setCaisseStatus(ok) {
