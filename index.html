@@ -383,7 +383,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   height: 2px; background: var(--accent2); opacity: .8;
   animation: scanline 1.8s ease-in-out infinite;
 }
-@keyframes scanline { 0%,100%{top:4px} 50%{top:calc(100% - 6px)} }
 
 .scan-hint {
   position: absolute; bottom: 12px; left: 0; right: 0;
@@ -1540,27 +1539,63 @@ function decoderCodeBarres(file, onSuccess, onError) {
 }
 
 
-// ══ SCANNER VIDÉO — ZXing (lecture code-barres temps réel) ══
-let scannerStream   = null;
-let scannerRunning  = false;
-let scannerTarget   = null;
-let zxingReader     = null;
-let dernierLu       = '';
-let dernierLuTime   = 0;
+// ══ SCANNER VIDÉO — BarcodeDetector natif + ZXing fallback ══
+let scannerStream  = null;
+let scannerRunning = false;
+let scannerTarget  = null;
+let zxingReader    = null;
+let dernierLu      = '';
+let dernierLuTime  = 0;
+let _nativeDetector = null;
+let _scanCanvas     = null; // canvas réutilisé (évite la pression mémoire)
+
+// ── Normalisation EAN-13 / UPC-A ──
+// ZXing lit parfois un EAN-13 (13 chiffres) comme UPC-A (12 chiffres, sans le 0 initial)
+// ce qui provoque le "chiffre manquant". On restitue le 0.
+function normaliserCode(text, fmt) {
+  if(fmt === ZXing.BarcodeFormat.UPC_A && /^\d{12}$/.test(text)) {
+    return '0' + text;
+  }
+  return text;
+}
+
+function dispatcherCode(code) {
+  if(scannerTarget === 'rvn') {
+    document.getElementById('rvn-code').value = code;
+    rvnAdd();
+  } else if(scannerTarget === 'casse') {
+    document.getElementById('casse-code').value = code;
+    casseAdd();
+  } else if(scannerTarget === 'caisse-sync') {
+    if(typeof caisseFromScan === 'function') caisseFromScan(code);
+  } else {
+    afficherPanneauScan(code, null, null);
+  }
+}
 
 async function ouvrirScanner(target) {
-  scannerTarget = target;
-  const overlay = document.getElementById('scanner-overlay');
-  const video   = document.getElementById('scanner-video');
-  overlay.classList.add('active');
+  scannerTarget  = target;
   scannerRunning = true;
   dernierLu      = '';
 
-  // Initialiser ZXing si pas encore fait
+  document.getElementById('scanner-overlay').classList.add('active');
+  const video = document.getElementById('scanner-video');
+
+  // ── Initialiser BarcodeDetector natif (Chrome Android, Safari 17+) ──
+  if('BarcodeDetector' in window && !_nativeDetector) {
+    try {
+      const supported = await BarcodeDetector.getSupportedFormats();
+      const wanted    = ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf'];
+      const formats   = wanted.filter(f => supported.includes(f));
+      _nativeDetector = new BarcodeDetector({ formats: formats.length ? formats : supported });
+    } catch(e) { _nativeDetector = null; }
+  }
+
+  // ── Initialiser ZXing (fallback) ──
   if(!zxingReader) {
     try {
       const hints = new Map();
-      const formats = [
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
         ZXing.BarcodeFormat.EAN_13,
         ZXing.BarcodeFormat.EAN_8,
         ZXing.BarcodeFormat.CODE_128,
@@ -1568,12 +1603,10 @@ async function ouvrirScanner(target) {
         ZXing.BarcodeFormat.UPC_A,
         ZXing.BarcodeFormat.UPC_E,
         ZXing.BarcodeFormat.ITF,
-      ];
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+      ]);
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
       zxingReader = new ZXing.BrowserMultiFormatReader(hints);
     } catch(e) {
-      console.error('ZXing init error:', e);
       fermerScanner();
       afficherSaisieManuelle(target);
       return;
@@ -1582,7 +1615,7 @@ async function ouvrirScanner(target) {
 
   try {
     scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} },
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
     video.srcObject = scannerStream;
@@ -1595,84 +1628,75 @@ async function ouvrirScanner(target) {
   }
 }
 
-// Capture frames en continu et lit le code-barres avec ZXing
-function scannerLoop() {
+// Capture frames en continu — BarcodeDetector natif en priorité, ZXing en fallback
+async function scannerLoop() {
   if(!scannerRunning) return;
   const video = document.getElementById('scanner-video');
-  if(video.readyState < 2) {
-    setTimeout(scannerLoop, 200);
-    return;
-  }
+  if(video.readyState < 2) { setTimeout(scannerLoop, 200); return; }
 
   const vw = video.videoWidth, vh = video.videoHeight;
+  const CADRE_W = 0.80, CADRE_H = CADRE_W / 2.1;
+  const sx = Math.round(vw * (1 - CADRE_W) / 2);
+  const sy = Math.round(vh * (1 - CADRE_H) / 2);
+  const sw = Math.round(vw * CADRE_W);
+  const sh = Math.round(vh * CADRE_H);
 
-  // ── Le cadre visuel occupe 80% de la largeur écran, ratio 2.1:1 ──
-  // On découpe la même zone dans le flux vidéo, upscalée ×2.5 pour ZXing
-  const CADRE_W = 0.80;                       // 80% de la largeur vidéo
-  const CADRE_H = CADRE_W / 2.1;             // ratio 2.1:1
-  const sx = vw * (1 - CADRE_W) / 2;
-  const sy = vh * (1 - CADRE_H) / 2;
-  const sw = vw * CADRE_W;
-  const sh = vh * CADRE_H;
+  let code = null;
 
-  // Stratégie : 3 passes avec zoom croissant sur la même zone centrale
-  const passes = [
-    { scale: 2.5, filter: 'contrast(1.5) brightness(1.05)' }, // normal + contraste
-    { scale: 3.5, filter: 'contrast(2.0) brightness(1.10)' }, // forte densification
-    { scale: 2.5, filter: 'grayscale(1) contrast(2.5)'     }, // N&B pur si fond coloré
-  ];
-
-  for(const pass of passes) {
-    if(!scannerRunning) return;
+  // ── 1. BarcodeDetector natif (plus rapide, plus précis, pas de problème de chiffre) ──
+  if(_nativeDetector) {
     try {
-      const c = document.createElement('canvas');
-      c.width  = Math.round(sw * pass.scale);
-      c.height = Math.round(sh * pass.scale);
-      const ctx = c.getContext('2d');
-      ctx.filter = pass.filter;
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      const barcodes = await _nativeDetector.detect(video);
+      if(barcodes.length > 0) code = barcodes[0].rawValue;
+    } catch(e) { _nativeDetector = null; } // désactiver si erreur persistante
+  }
 
-      const luminanceSource = new ZXing.HTMLCanvasElementLuminanceSource(c);
-      const binarizer       = new ZXing.HybridBinarizer(luminanceSource);
-      const bitmap          = new ZXing.BinaryBitmap(binarizer);
-      const result          = zxingReader.decodeBitmap(bitmap);
-
-      if(result && result.getText()) {
-        const code = result.getText();
-        const now  = Date.now();
-        if(code === dernierLu && now - dernierLuTime < 3000) {
-          if(scannerRunning) setTimeout(scannerLoop, 300);
-          return;
+  // ── 2. ZXing fallback — 2 passes avec canvas réutilisé ──
+  if(!code && zxingReader) {
+    if(!_scanCanvas) _scanCanvas = document.createElement('canvas');
+    const passes = [
+      { scale: 2.5, filter: 'contrast(1.4) brightness(1.05)' },
+      { scale: 2.5, filter: 'grayscale(1) contrast(2.2)'     },
+    ];
+    for(const pass of passes) {
+      if(!scannerRunning) return;
+      try {
+        _scanCanvas.width  = Math.round(sw * pass.scale);
+        _scanCanvas.height = Math.round(sh * pass.scale);
+        const ctx = _scanCanvas.getContext('2d');
+        ctx.filter = pass.filter;
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, _scanCanvas.width, _scanCanvas.height);
+        const result = zxingReader.decodeBitmap(
+          new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(_scanCanvas)))
+        );
+        if(result && result.getText()) {
+          code = normaliserCode(result.getText(), result.getBarcodeFormat());
+          break;
         }
-        dernierLu     = code;
-        dernierLuTime = now;
-
-        const flash = document.getElementById('scanner-flash');
-        flash.classList.add('flash');
-        setTimeout(()=>flash.classList.remove('flash'), 200);
-        bipScan();
-        fermerScanner();
-
-        if(scannerTarget === 'rvn') {
-          document.getElementById('rvn-code').value = code;
-          rvnAdd();
-        } else if(scannerTarget === 'casse') {
-          document.getElementById('casse-code').value = code;
-          casseAdd();
-        } else if(scannerTarget === 'caisse-sync') {
-          if(typeof caisseFromScan === 'function') caisseFromScan(code);
-        } else {
-          afficherPanneauScan(code, null, null);
-        }
-        return;
-      }
-    } catch(e) {
-      // Pas de code dans cette passe — continuer
+      } catch(e) { /* pas de code dans cette passe */ }
     }
   }
 
+  if(code) {
+    const now = Date.now();
+    // Anti-doublon : même code lu dans les 3 dernières secondes → ignorer
+    if(code === dernierLu && now - dernierLuTime < 3000) {
+      if(scannerRunning) setTimeout(scannerLoop, 300);
+      return;
+    }
+    dernierLu = code; dernierLuTime = now;
+
+    const flash = document.getElementById('scanner-flash');
+    flash.classList.add('flash');
+    setTimeout(() => flash.classList.remove('flash'), 200);
+    bipScan();
+    fermerScanner();
+    dispatcherCode(code);
+    return;
+  }
+
   document.getElementById('scanner-status').textContent = 'Centrez le code-barres dans le cadre';
-  if(scannerRunning) requestAnimationFrame(scannerLoop);
+  if(scannerRunning) setTimeout(scannerLoop, 150);
 }
 
 function fermerScanner() {
@@ -1697,9 +1721,13 @@ function onCodeDetecte(code, target) {
   afficherPanneauScan(code, null, null);
 }
 
+let _codeScanEnCours = '';
+
 function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
   const old = document.getElementById('modal-scan-complet');
   if(old) old.remove();
+
+  _codeScanEnCours = code;
 
   const prixVal  = prixDetecte  ? prixDetecte.toFixed(2) : '';
   const iflsVal  = iflsDetecte  ? iflsDetecte : '';
@@ -1742,7 +1770,7 @@ function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
         </div>
       </div>
 
-      <button onclick="validerScanModal('${esc(code)}')"
+      <button onclick="validerScanModal()"
         style="width:100%;height:52px;background:#1a2d5a;color:#c8a96e;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;">
         Ajouter l'article
       </button>
@@ -1750,7 +1778,6 @@ function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
     </div>`;
   document.body.appendChild(modal);
 
-  // Focus sur prix si pas détecté, sinon sur IFLS, sinon prêt à valider
   setTimeout(() => {
     if(!prixOK) document.getElementById('scan-modal-price').focus();
     else if(!iflsOK) document.getElementById('scan-modal-ifls').focus();
@@ -1760,11 +1787,12 @@ function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
     if(e.key === 'Enter') document.getElementById('scan-modal-ifls').focus();
   });
   document.getElementById('scan-modal-ifls').addEventListener('keydown', e => {
-    if(e.key === 'Enter') validerScanModal(code);
+    if(e.key === 'Enter') validerScanModal();
   });
 }
 
-function validerScanModal(code) {
+function validerScanModal() {
+  const code  = _codeScanEnCours;
   const price = parseFloat(document.getElementById('scan-modal-price').value);
   const ifls  = document.getElementById('scan-modal-ifls').value.trim();
 
@@ -1776,12 +1804,10 @@ function validerScanModal(code) {
 
   document.getElementById('modal-scan-complet').remove();
 
-  // Remplir les champs de la page Saisie et ajouter directement
   document.getElementById('inp-ref').value   = code;
   document.getElementById('inp-price').value = price;
   document.getElementById('inp-qprod').value = ifls;
   document.getElementById('inp-qty').value   = '1';
-  // Vider les codes optionnels
   document.getElementById('inp-code1').value = '';
   document.getElementById('inp-code2').value = '';
 
@@ -1794,8 +1820,11 @@ function fallbackInputFile(target) {
   afficherSaisieManuelle(target);
 }
 
+let _targetSaisieManuelle = '';
+
 function afficherSaisieManuelle(target) {
-  // Supprimer ancien modal si présent
+  _targetSaisieManuelle = target;
+
   const old = document.getElementById('modal-saisie-manuelle');
   if(old) old.remove();
 
@@ -1811,21 +1840,21 @@ function afficherSaisieManuelle(target) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <button onclick="document.getElementById('modal-saisie-manuelle').remove()"
           style="height:48px;border:1.5px solid #ccc;border-radius:12px;background:#fff;font-size:16px;cursor:pointer;">Annuler</button>
-        <button onclick="validerSaisieManuelle('${target}')"
+        <button onclick="validerSaisieManuelle()"
           style="height:48px;border:none;border-radius:12px;background:#1a2d5a;color:#c8a96e;font-size:16px;font-weight:700;cursor:pointer;">Valider</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
   setTimeout(() => document.getElementById('saisie-manuelle-input').focus(), 100);
 
-  // Valider sur Entrée
   document.getElementById('saisie-manuelle-input').addEventListener('keydown', e => {
-    if(e.key === 'Enter') validerSaisieManuelle(target);
+    if(e.key === 'Enter') validerSaisieManuelle();
   });
 }
 
-function validerSaisieManuelle(target) {
-  const val = document.getElementById('saisie-manuelle-input').value.trim();
+function validerSaisieManuelle() {
+  const val    = document.getElementById('saisie-manuelle-input').value.trim();
+  const target = _targetSaisieManuelle;
   if(!val) return;
   document.getElementById('modal-saisie-manuelle').remove();
   bipScan();
@@ -1872,6 +1901,7 @@ function onRvnScanFile(input) {
 }
 // stopScan alias
 function stopScan() { fermerScanner(); }
+function stopScanSaisie() { fermerScanner(); }
 
 // ══ RVN — fonctions neutralisées (page supprimée) ══
 let rvnData = { listes: { 'RVN 1': [] }, active: 'RVN 1' };
@@ -1885,7 +1915,6 @@ function rvnRemove() {}
 function rvnRenderCodes() {}
 function rvnExport() {}
 function rvnClearList() {}
-function rvnLancerScan() {}
 
 rvnInit();
 casseRender();
@@ -1930,10 +1959,7 @@ document.getElementById('inp-qprod').addEventListener('keydown', e=>{ if(e.key==
 document.getElementById('inp-uprice').addEventListener('keydown',e=>{ if(e.key==='Enter') addArticle(); });
 document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('cpt-price').focus(); });
 document.getElementById('cpt-price').addEventListener('keydown', e=>{ if(e.key==='Enter') cptAdd(); });
-</script>
-
 document.getElementById('caisse-code-input').addEventListener('keydown', e => { if(e.key==='Enter') caisseEnvoyer(); });
-
 </script>
 
 <!-- ══ FIREBASE CAISSE ══ -->
