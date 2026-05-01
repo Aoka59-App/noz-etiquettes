@@ -638,11 +638,11 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <button class="btn-danger" onclick="clearAll()" style="margin-top:8px;margin-bottom:20px;">Tout effacer</button>
 
       <!-- Étiquettes articles -->
-      <div class="section-hdr">Enregistrer — Articles</div>
+      <div class="section-hdr">Envoyer vers Fichero — Articles</div>
 
       <button class="btn-ios green" id="btn-save-normal" onclick="sauvegarderDansPhotos('normal')" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
-        Enregistrer dans Photos
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+        Envoyer vers Fichero
       </button>
 
       <div class="result-card" id="img-wrap-normal" style="display:none;">
@@ -657,11 +657,11 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </div>
 
       <!-- Série chaussures -->
-      <div class="section-hdr">Imprimer — Série chaussures</div>
+      <div class="section-hdr">Envoyer vers Fichero — Série chaussures</div>
 
       <button class="btn-ios green" id="btn-save-serie" onclick="sauvegarderDansPhotos('serie')" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
-        Enregistrer dans Photos
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+        Envoyer vers Fichero
       </button>
 
       <div class="result-card" id="img-wrap-serie" style="display:none;">
@@ -1305,39 +1305,59 @@ async function sauvegarderDansPhotos(type) {
   source.forEach(a => { for(let i = 0; i < a.qty; i++) labels.push(a); });
   if(!labels.length) { btn.disabled = false; btn.innerHTML = origHTML; return; }
 
+  // ── Génération grille PNG unique (toutes les étiquettes sur une feuille) ──
   const PX = 600/25.4, LW = Math.round(30*PX), LH = Math.round(14*PX);
+  const COLS = Math.min(4, labels.length), ROWS = Math.ceil(labels.length / COLS);
+  const MARGIN = Math.round(3*PX), GAP = Math.round(2*PX);
+  const W = COLS*LW + (COLS-1)*GAP + 2*MARGIN;
+  const H = ROWS*LH + (ROWS-1)*GAP + 2*MARGIN;
+
+  const canvas = document.getElementById('render-canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+
   const refs = [...new Set(labels.map(a => a.ref))];
   const bcMap = {};
   await Promise.all(refs.map(async r => { bcMap[r] = await barcodeToImg(r); }));
 
-  const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
-
-  // Télécharger chaque étiquette une par une avec délai
   for(let i = 0; i < labels.length; i++) {
-    const a = labels[i];
-    const canvas = document.createElement('canvas');
-    canvas.width = LW; canvas.height = LH;
-    const ctx = canvas.getContext('2d');
-    dessinerEtiquette(ctx, a, 0, 0, LW, LH, bcMap[a.ref] || null, PX);
-    const dataURL = canvas.toDataURL('image/png');
-    const fname = `NOZ_P854_${esc(a.ref)}_${String(i+1).padStart(2,'0')}_${ds}.png`;
-
-    // Créer lien de téléchargement
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = fname;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    btn.innerHTML = `<span class="spin"></span> ${i+1}/${labels.length}…`;
-    // Délai entre chaque téléchargement pour iOS
-    if(i < labels.length - 1) await new Promise(r => setTimeout(r, 800));
+    const a = labels[i], col = i % COLS, row = Math.floor(i / COLS);
+    dessinerEtiquette(ctx, a, MARGIN + col*(LW+GAP), MARGIN + row*(LH+GAP), LW, LH, bcMap[a.ref]||null, PX);
   }
 
-  showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} enregistrée${labels.length > 1 ? 's' : ''} !`);
-  btn.disabled = false;
-  btn.innerHTML = origHTML;
+  const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
+  const nom = type === 'serie' ? 'Serie_Chaussures' : 'Etiquettes_Articles';
+  const fname = `${nom}_NOZ_P854_${ds}.png`;
+
+  // ── Partage natif iOS/Android → ouvre directement Fichero ──
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const file = new File([blob], fname, { type: 'image/png' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Étiquettes NOZ P854' });
+      showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} envoyée${labels.length > 1 ? 's' : ''} !`);
+      btn.disabled = false; btn.innerHTML = origHTML;
+      return;
+    }
+  } catch(e) {
+    // AbortError = l'utilisateur a fermé la feuille de partage → ne rien faire
+    if(e.name === 'AbortError') { btn.disabled = false; btn.innerHTML = origHTML; return; }
+    // Autre erreur → fallback téléchargement
+  }
+
+  // ── Fallback téléchargement (navigateur de bureau ou iOS sans Share API) ──
+  const dataURL = canvas.toDataURL('image/png');
+  if(/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    showImgOverlay(dataURL);
+  } else {
+    const a = document.createElement('a');
+    a.href = dataURL; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast('PNG téléchargé !');
+  }
+
+  btn.disabled = false; btn.innerHTML = origHTML;
 }
 
 // ── Impression directe ──
