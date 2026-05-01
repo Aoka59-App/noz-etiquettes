@@ -12,6 +12,7 @@
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 :root {
   --accent: #1a2d5a;
@@ -1305,57 +1306,55 @@ async function sauvegarderDansPhotos(type) {
   source.forEach(a => { for(let i = 0; i < a.qty; i++) labels.push(a); });
   if(!labels.length) { btn.disabled = false; btn.innerHTML = origHTML; return; }
 
-  // ── Génération grille PNG unique (toutes les étiquettes sur une feuille) ──
+  // ── Génération des images canvas (1 par étiquette, 600 DPI, 30×14mm) ──
   const PX = 600/25.4, LW = Math.round(30*PX), LH = Math.round(14*PX);
-  const COLS = Math.min(4, labels.length), ROWS = Math.ceil(labels.length / COLS);
-  const MARGIN = Math.round(3*PX), GAP = Math.round(2*PX);
-  const W = COLS*LW + (COLS-1)*GAP + 2*MARGIN;
-  const H = ROWS*LH + (ROWS-1)*GAP + 2*MARGIN;
-
-  const canvas = document.getElementById('render-canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
-
   const refs = [...new Set(labels.map(a => a.ref))];
   const bcMap = {};
   await Promise.all(refs.map(async r => { bcMap[r] = await barcodeToImg(r); }));
 
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = LW; tmpCanvas.height = LH;
+  const tmpCtx = tmpCanvas.getContext('2d');
+
+  // ── Génération PDF — 1 page par étiquette, format exact 30×14mm ──
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [30, 14] });
+
   for(let i = 0; i < labels.length; i++) {
-    const a = labels[i], col = i % COLS, row = Math.floor(i / COLS);
-    dessinerEtiquette(ctx, a, MARGIN + col*(LW+GAP), MARGIN + row*(LH+GAP), LW, LH, bcMap[a.ref]||null, PX);
+    btn.innerHTML = `<span class="spin"></span> ${i+1}/${labels.length}…`;
+    if(i > 0) pdf.addPage([30, 14], 'landscape');
+    tmpCtx.clearRect(0, 0, LW, LH);
+    dessinerEtiquette(tmpCtx, labels[i], 0, 0, LW, LH, bcMap[labels[i].ref]||null, PX);
+    const imgData = tmpCanvas.toDataURL('image/png');
+    pdf.addImage(imgData, 'PNG', 0, 0, 30, 14);
   }
 
   const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
   const nom = type === 'serie' ? 'Serie_Chaussures' : 'Etiquettes_Articles';
-  const fname = `${nom}_NOZ_P854_${ds}.png`;
+  const fname = `${nom}_NOZ_P854_${ds}.pdf`;
+  const pdfBlob = pdf.output('blob');
+  const pdfFile = new File([pdfBlob], fname, { type: 'application/pdf' });
 
-  // ── Partage natif iOS/Android → ouvre directement Fichero ──
+  // ── Partage natif → Fichero apparaît car il supporte le PDF ──
   try {
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-    const file = new File([blob], fname, { type: 'image/png' });
-    if(navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Étiquettes NOZ P854' });
+    if(navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      await navigator.share({ files: [pdfFile], title: 'Étiquettes NOZ P854' });
       showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} envoyée${labels.length > 1 ? 's' : ''} !`);
       btn.disabled = false; btn.innerHTML = origHTML;
       return;
     }
   } catch(e) {
-    // AbortError = l'utilisateur a fermé la feuille de partage → ne rien faire
     if(e.name === 'AbortError') { btn.disabled = false; btn.innerHTML = origHTML; return; }
-    // Autre erreur → fallback téléchargement
   }
 
-  // ── Fallback téléchargement (navigateur de bureau ou iOS sans Share API) ──
-  const dataURL = canvas.toDataURL('image/png');
-  if(/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    showImgOverlay(dataURL);
-  } else {
-    const a = document.createElement('a');
-    a.href = dataURL; a.download = fname;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    showToast('PNG téléchargé !');
-  }
+  // ── Fallback : téléchargement direct du PDF ──
+  const url = URL.createObjectURL(pdfBlob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('PDF téléchargé !');
 
   btn.disabled = false; btn.innerHTML = origHTML;
 }
