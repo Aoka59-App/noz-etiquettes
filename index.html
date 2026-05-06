@@ -12,7 +12,6 @@
 <title>NOZ · Étiquettes P854</title>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 :root {
   --accent: #1a2d5a;
@@ -639,11 +638,11 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <button class="btn-danger" onclick="clearAll()" style="margin-top:8px;margin-bottom:20px;">Tout effacer</button>
 
       <!-- Étiquettes articles -->
-      <div class="section-hdr">Envoyer vers Fichero — Articles</div>
+      <div class="section-hdr">Enregistrer — Articles</div>
 
       <button class="btn-ios green" id="btn-save-normal" onclick="sauvegarderDansPhotos('normal')" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
-        Envoyer vers Fichero
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
+        Enregistrer dans Photos
       </button>
 
       <div class="result-card" id="img-wrap-normal" style="display:none;">
@@ -658,11 +657,11 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </div>
 
       <!-- Série chaussures -->
-      <div class="section-hdr">Envoyer vers Fichero — Série chaussures</div>
+      <div class="section-hdr">Imprimer — Série chaussures</div>
 
       <button class="btn-ios green" id="btn-save-serie" onclick="sauvegarderDansPhotos('serie')" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
-        Envoyer vers Fichero
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
+        Enregistrer dans Photos
       </button>
 
       <div class="result-card" id="img-wrap-serie" style="display:none;">
@@ -1306,57 +1305,36 @@ async function sauvegarderDansPhotos(type) {
   source.forEach(a => { for(let i = 0; i < a.qty; i++) labels.push(a); });
   if(!labels.length) { btn.disabled = false; btn.innerHTML = origHTML; return; }
 
-  // ── Génération des images canvas (1 par étiquette, 600 DPI, 30×14mm) ──
   const PX = 600/25.4, LW = Math.round(30*PX), LH = Math.round(14*PX);
   const refs = [...new Set(labels.map(a => a.ref))];
   const bcMap = {};
   await Promise.all(refs.map(async r => { bcMap[r] = await barcodeToImg(r); }));
 
-  const tmpCanvas = document.createElement('canvas');
-  tmpCanvas.width = LW; tmpCanvas.height = LH;
-  const tmpCtx = tmpCanvas.getContext('2d');
-
-  // ── Génération PDF — 1 page par étiquette, format exact 30×14mm ──
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [30, 14] });
+  const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
 
   for(let i = 0; i < labels.length; i++) {
+    const a = labels[i];
+    const canvas = document.createElement('canvas');
+    canvas.width = LW; canvas.height = LH;
+    const ctx = canvas.getContext('2d');
+    dessinerEtiquette(ctx, a, 0, 0, LW, LH, bcMap[a.ref] || null, PX);
+    const dataURL = canvas.toDataURL('image/png');
+    const fname = `NOZ_P854_${esc(a.ref)}_${String(i+1).padStart(2,'0')}_${ds}.png`;
+
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = fname;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
     btn.innerHTML = `<span class="spin"></span> ${i+1}/${labels.length}…`;
-    if(i > 0) pdf.addPage([30, 14], 'landscape');
-    tmpCtx.clearRect(0, 0, LW, LH);
-    dessinerEtiquette(tmpCtx, labels[i], 0, 0, LW, LH, bcMap[labels[i].ref]||null, PX);
-    const imgData = tmpCanvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 0, 30, 14);
+    if(i < labels.length - 1) await new Promise(r => setTimeout(r, 800));
   }
 
-  const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
-  const nom = type === 'serie' ? 'Serie_Chaussures' : 'Etiquettes_Articles';
-  const fname = `${nom}_NOZ_P854_${ds}.pdf`;
-  const pdfBlob = pdf.output('blob');
-  const pdfFile = new File([pdfBlob], fname, { type: 'application/pdf' });
-
-  // ── Partage natif → Fichero apparaît car il supporte le PDF ──
-  try {
-    if(navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-      await navigator.share({ files: [pdfFile], title: 'Étiquettes NOZ P854' });
-      showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} envoyée${labels.length > 1 ? 's' : ''} !`);
-      btn.disabled = false; btn.innerHTML = origHTML;
-      return;
-    }
-  } catch(e) {
-    if(e.name === 'AbortError') { btn.disabled = false; btn.innerHTML = origHTML; return; }
-  }
-
-  // ── Fallback : téléchargement direct du PDF ──
-  const url = URL.createObjectURL(pdfBlob);
-  const a = document.createElement('a');
-  a.href = url; a.download = fname;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  showToast('PDF téléchargé !');
-
-  btn.disabled = false; btn.innerHTML = origHTML;
+  showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} enregistrée${labels.length > 1 ? 's' : ''} !`);
+  btn.disabled = false;
+  btn.innerHTML = origHTML;
 }
 
 // ── Impression directe ──
