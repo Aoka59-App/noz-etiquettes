@@ -286,6 +286,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .lex-item:active { opacity:.7; }
 .lex-item-label { font-size:16px; font-weight:700; color:var(--text1); margin-bottom:4px; }
 .lex-item-code { font-size:12px; color:var(--text3); font-weight:600; letter-spacing:.5px; font-family:monospace; }
+.lex-item-price { font-size:15px; font-weight:800; color:var(--accent); }
 .lex-item-del { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--red,#e53e3e); color:#fff; border:none; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
 /* Modale code-barres */
 #lex-bc-modal { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,.85); display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; }
@@ -892,8 +893,9 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <input id="lex-inp-label" type="text" placeholder="Intitulé (nom du produit)" autocomplete="off"/>
         <div class="lex-add-row">
           <input id="lex-inp-code" type="text" inputmode="numeric" placeholder="Code article (EAN)" autocomplete="off"/>
-          <button class="btn-ios" style="flex-shrink:0;padding:10px 18px;margin:0;" onclick="lexiqueAjouter()">+ Ajouter</button>
+          <input id="lex-inp-price" type="text" inputmode="decimal" placeholder="Prix" autocomplete="off" style="max-width:90px;"/>
         </div>
+        <button class="btn-ios" style="margin:0;" onclick="lexiqueAjouter()">+ Ajouter</button>
       </div>
 
       <!-- Liste articles -->
@@ -992,6 +994,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
     <div id="lex-bc-modal-svg"><svg id="lex-bc-modal-barcode"></svg></div>
     <div id="lex-bc-modal-label"></div>
     <div id="lex-bc-modal-code"></div>
+    <div id="lex-bc-modal-price" style="font-size:22px;font-weight:800;color:var(--accent);display:none;"></div>
     <button id="lex-bc-modal-close" onclick="lexiqueFermerModal()">Fermer</button>
   </div>
 </div>
@@ -2036,7 +2039,8 @@ document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==
 document.getElementById('cpt-price').addEventListener('keydown', e=>{ if(e.key==='Enter') cptAdd(); });
 document.getElementById('caisse-code-input').addEventListener('keydown', e => { if(e.key==='Enter') caisseEnvoyer(); });
 document.getElementById('lex-inp-label').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lex-inp-code').focus(); });
-document.getElementById('lex-inp-code').addEventListener('keydown', e => { if(e.key==='Enter') lexiqueAjouter(); });
+document.getElementById('lex-inp-code').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lex-inp-price').focus(); });
+document.getElementById('lex-inp-price').addEventListener('keydown', e => { if(e.key==='Enter') lexiqueAjouter(); });
 
 // ── LEXIQUE ──
 const LEX_KEY = 'noz-lexique';
@@ -2057,11 +2061,13 @@ function lexiqueSelectCat(cat) {
 function lexiqueAjouter() {
   const label = document.getElementById('lex-inp-label').value.trim();
   const code  = document.getElementById('lex-inp-code').value.trim();
+  const price = document.getElementById('lex-inp-price').value.trim().replace(',','.');
   if(!label && !code) { showToast('Remplis au moins l\'intitulé'); return; }
-  _lexData[_lexCatActive].push({ label, code });
+  _lexData[_lexCatActive].push({ label, code, price });
   lexiqueSauvegarder();
   document.getElementById('lex-inp-label').value = '';
   document.getElementById('lex-inp-code').value  = '';
+  document.getElementById('lex-inp-price').value = '';
   lexiqueRendre();
   showToast('Article ajouté');
 }
@@ -2079,10 +2085,15 @@ function lexiqueRendre() {
   list.innerHTML = items.map((it, i) => {
     const labelEsc = (it.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
     const codeEsc  = (it.code||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const priceNum = parseFloat((it.price||'').replace(',','.'));
+    const priceTxt = !isNaN(priceNum) ? priceNum.toFixed(2).replace('.',',') + ' €' : '';
     return `<div class="lex-item" onclick="lexiqueOuvrirModal(${i})">
       <button class="lex-item-del" onclick="event.stopPropagation();lexiqueSupprimer('${_lexCatActive}',${i})" title="Supprimer">×</button>
       ${it.label ? `<div class="lex-item-label">${labelEsc}</div>` : ''}
-      ${it.code  ? `<div class="lex-item-code">${codeEsc}</div>`  : ''}
+      <div style="display:flex;gap:12px;align-items:center;margin-top:3px;">
+        ${it.code  ? `<div class="lex-item-code">${codeEsc}</div>` : ''}
+        ${priceTxt ? `<div class="lex-item-price">${priceTxt}</div>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -2090,11 +2101,17 @@ function lexiqueRendre() {
 function lexiqueOuvrirModal(idx) {
   const it = _lexData[_lexCatActive][idx];
   if(!it) return;
-  const modal = document.getElementById('lex-bc-modal');
   document.getElementById('lex-bc-modal-label').textContent = it.label || '';
   document.getElementById('lex-bc-modal-code').textContent  = it.code  || '';
+  const priceEl = document.getElementById('lex-bc-modal-price');
+  const priceNum = parseFloat((it.price||'').replace(',','.'));
+  if(!isNaN(priceNum)) {
+    priceEl.textContent = priceNum.toFixed(2).replace('.',',') + ' €';
+    priceEl.style.display = '';
+  } else {
+    priceEl.style.display = 'none';
+  }
   const svgEl = document.getElementById('lex-bc-modal-barcode');
-  // Vider le SVG
   svgEl.removeAttribute('data-jbarcode-done');
   if(it.code && /^\d{8,14}$/.test(it.code)) {
     try {
@@ -2105,7 +2122,7 @@ function lexiqueOuvrirModal(idx) {
   } else {
     svgEl.parentElement.style.display = 'none';
   }
-  modal.classList.add('open');
+  document.getElementById('lex-bc-modal').classList.add('open');
 }
 
 function lexiqueFermerModal() {
