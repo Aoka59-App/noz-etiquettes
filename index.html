@@ -614,38 +614,45 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
       <button class="btn-ios gold" onclick="addArticle()">Ajouter l'article</button>
 
-    </div>
+      <!-- Bouton Série -->
+      <button class="btn-ios outline" id="btn-toggle-serie" onclick="toggleSerie()" style="margin-top:4px;">
+        <svg width="18" height="18" viewBox="0 0 26 26" fill="none">
+          <circle cx="7" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="13" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="19" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="9.5" y1="13" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+          <line x1="15.5" y1="13" x2="16.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+        </svg>
+        Série
+      </button>
 
-    <!-- ══ SÉRIE ══ -->
-    <div class="page" id="page-serie">
-
-      <div class="section-hdr">Paramètres de la série</div>
-      <div class="form-card">
-        <div class="form-field">
-          <label>Semaine</label>
-          <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
+      <!-- Section Série intégrée -->
+      <div id="serie-panel" style="display:none;margin-top:4px;">
+        <div class="section-hdr">Paramètres de la série</div>
+        <div class="form-card">
+          <div class="form-field">
+            <label>Semaine</label>
+            <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
+          </div>
+          <div class="form-field">
+            <label>Nombre de paires</label>
+            <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
+          </div>
+          <div class="form-field">
+            <label>Exemplaires / paire</label>
+            <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
+          </div>
         </div>
-        <div class="form-field">
-          <label>Nombre de paires</label>
-          <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
+        <div class="ser-preview-txt" id="ser-preview">
+          <span id="ser-preview-txt"></span>
         </div>
-        <div class="form-field">
-          <label>Exemplaires / paire</label>
-          <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
-        </div>
-      </div>
-
-      <div class="ser-preview-txt" id="ser-preview">
-        <span id="ser-preview-txt"></span>
-      </div>
-
-      <button class="btn-ios gold" onclick="genererSerie()">Générer la série</button>
-
-      <div class="ser-result" id="ser-result">
-        <div style="font-size:14px;color:var(--text);margin-bottom:10px;" id="ser-result-txt"></div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu</button>
-          <button class="btn-ios sm outline" style="flex:1;margin-bottom:0;" onclick="viderSerie()">Vider</button>
+        <button class="btn-ios gold" onclick="genererSerie()">Générer la série</button>
+        <div class="ser-result" id="ser-result">
+          <div style="font-size:14px;color:var(--text);margin-bottom:10px;" id="ser-result-txt"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu</button>
+            <button class="btn-ios sm outline" style="flex:1;margin-bottom:0;" onclick="viderSerie()">Vider</button>
+          </div>
         </div>
       </div>
 
@@ -882,6 +889,12 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
     <!-- ══ LEXIQUE ══ -->
     <div class="page" id="page-lexique">
 
+      <!-- Statut sync -->
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+        <div id="lex-sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .4s;"></div>
+        <span style="font-size:12px;color:var(--text3);">Synchronisation cloud</span>
+      </div>
+
       <!-- Catégories -->
       <div class="lex-cats" id="lex-cats-bar">
         <button class="lex-cat-btn active" data-cat="alimentation" onclick="lexiqueSelectCat('alimentation')">Alimentation</button>
@@ -927,16 +940,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <line x1="8" y1="17" x2="14" y2="17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
       </svg>
       <span class="tb-label">Saisie</span>
-    </button>
-    <button class="tb-item" id="tb-serie" onclick="showTabById('serie')">
-      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <circle cx="7" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-        <circle cx="13" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-        <circle cx="19" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-        <line x1="9.5" y1="13" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
-        <line x1="15.5" y1="13" x2="16.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
-      </svg>
-      <span class="tb-label">Série</span>
     </button>
     <button class="tb-item" id="tb-liste" onclick="showTabById('liste')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
@@ -1054,7 +1057,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', lexique:'Lexique' };
+const TAB_TITLES = { saisie:'Saisie', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', lexique:'Lexique' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
@@ -1993,6 +1996,15 @@ function onRvnScanFile(input) {
 function stopScan() { fermerScanner(); }
 function stopScanSaisie() { fermerScanner(); }
 
+function toggleSerie() {
+  const panel = document.getElementById('serie-panel');
+  const btn   = document.getElementById('btn-toggle-serie');
+  const open  = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  btn.style.background = open ? 'var(--accent)' : '';
+  btn.style.color      = open ? '#fff' : '';
+}
+
 // ══ RVN — fonctions neutralisées (page supprimée) ══
 let rvnData = { listes: { 'RVN 1': [] }, active: 'RVN 1' };
 function rvnSave() {}
@@ -2068,7 +2080,20 @@ let _lexData = (function(){
   try { const d = JSON.parse(localStorage.getItem(LEX_KEY)||'{}'); LEX_CATS.forEach(c=>{ if(!d[c]) d[c]=[]; }); return d; } catch(e) { const d={}; LEX_CATS.forEach(c=>d[c]=[]); return d; }
 })();
 
-function lexiqueSauvegarder() { localStorage.setItem(LEX_KEY, JSON.stringify(_lexData)); }
+function lexiqueSauvegarder() {
+  localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
+  if(window.lexiqueFirebaseSave) window.lexiqueFirebaseSave(_lexData);
+}
+
+window.lexiqueFirebaseUpdate = function(data) {
+  LEX_CATS.forEach(c => { if(!data[c]) data[c] = []; });
+  _lexData = data;
+  localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
+  if(document.getElementById('page-lexique').classList.contains('active')) lexiqueRendre();
+  // Indicateur sync
+  const dot = document.getElementById('lex-sync-dot');
+  if(dot) { dot.style.background='#34c759'; dot.title='Synchronisé'; }
+};
 
 function lexiqueSelectCat(cat) {
   _lexCatActive = cat;
@@ -2173,7 +2198,7 @@ function lexiqueFermerModal() {
 <!-- ══ FIREBASE CAISSE ══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, push, onValue, remove, get, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 const firebaseConfig = {
   databaseURL: 'https://noz-etiquettes-default-rtdb.europe-west1.firebasedatabase.app'
@@ -2181,8 +2206,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
-const caisseRef = ref(db, 'caisse');
-const casseRef2 = ref(db, 'casse');
+const caisseRef  = ref(db, 'caisse');
+const casseRef2  = ref(db, 'casse');
+const lexiqueRef = ref(db, 'lexique');
+
+// ── SYNC LEXIQUE ──
+window.lexiqueFirebaseSave = (data) => set(lexiqueRef, data);
+
+onValue(lexiqueRef, snapshot => {
+  const data = snapshot.val();
+  if(window.lexiqueFirebaseUpdate) window.lexiqueFirebaseUpdate(data || {});
+});
 
 // ══ FIREBASE CASSE ══
 onValue(casseRef2, snapshot => {
