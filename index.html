@@ -1070,6 +1070,7 @@ function showTabById(name) {
   document.getElementById('tb-'+name).classList.add('active');
   document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
   if(name==='liste') renderPreview();
+  if(name==='lexique') lexiqueRendre();
   stopScan();
   stopScanSaisie();
 }
@@ -2086,11 +2087,17 @@ function lexiqueSauvegarder() {
 }
 
 window.lexiqueFirebaseUpdate = function(data) {
-  LEX_CATS.forEach(c => { if(!data[c]) data[c] = []; });
+  LEX_CATS.forEach(c => {
+    if(!data[c]) {
+      data[c] = [];
+    } else if(!Array.isArray(data[c])) {
+      // Firebase stocke les arrays en objets — on reconvertit
+      data[c] = Object.values(data[c]);
+    }
+  });
   _lexData = data;
   localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
   if(document.getElementById('page-lexique').classList.contains('active')) lexiqueRendre();
-  // Indicateur sync
   const dot = document.getElementById('lex-sync-dot');
   if(dot) { dot.style.background='#34c759'; dot.title='Synchronisé'; }
 };
