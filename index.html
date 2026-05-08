@@ -271,6 +271,18 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 @keyframes sp { to { transform:rotate(360deg); } }
 #render-canvas { display:none; }
 
+/* ── MODALE AJOUT LEXIQUE DEPUIS SAISIE ── */
+#lex-save-modal { position:fixed; inset:0; z-index:9997; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
+#lex-save-modal.open { display:flex; }
+#lex-save-inner { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(20px + var(--safe-bot)); width:100%; max-width:500px; display:flex; flex-direction:column; gap:12px; }
+#lex-save-inner h3 { font-size:17px; font-weight:700; color:var(--text1); margin:0; }
+#lex-save-inner .lex-info { font-size:13px; color:var(--text3); background:var(--bg); border-radius:10px; padding:10px 12px; }
+#lex-save-inner select, #lex-save-inner input { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:15px; color:var(--text1); width:100%; box-sizing:border-box; }
+.lex-save-btns { display:flex; gap:8px; }
+.lex-save-btns button { flex:1; padding:12px; border-radius:12px; border:none; font-size:15px; font-weight:700; cursor:pointer; }
+.lex-save-btns .btn-confirm { background:var(--accent); color:#fff; }
+.lex-save-btns .btn-skip { background:var(--bg); color:var(--text2); border:1.5px solid var(--border); }
+
 /* ── LEXIQUE ── */
 .lex-cats { display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; scrollbar-width:none; margin-bottom:14px; }
 .lex-cats::-webkit-scrollbar { display:none; }
@@ -1003,6 +1015,30 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
 </div>
 
+<!-- ══ MODALE SAUVEGARDER DANS LEXIQUE ══ -->
+<div id="lex-save-modal" onclick="lexSaveIgnorer()">
+  <div id="lex-save-inner" onclick="event.stopPropagation()">
+    <h3>📚 Ajouter au Lexique</h3>
+    <div class="lex-info" id="lex-save-info"></div>
+    <input id="lex-save-label" type="text" placeholder="Désignation du produit" autocomplete="off"/>
+    <select id="lex-save-cat" onchange="lexSaveCatChange()">
+      <option value="alimentation_nourriture">Alimentation — Nourriture</option>
+      <option value="alimentation_boisson">Alimentation — Boisson</option>
+      <option value="alimentation_surgeles">Alimentation — Surgelés</option>
+      <option value="dph">DPH</option>
+      <option value="bazar">Bazar</option>
+      <option value="plantes">Plantes</option>
+      <option value="saisonnier">Saisonnier</option>
+      <option value="tdm">TDM</option>
+      <option value="textile">Textile Futura</option>
+    </select>
+    <div class="lex-save-btns">
+      <button class="btn-skip" onclick="lexSaveIgnorer()">Ignorer</button>
+      <button class="btn-confirm" onclick="lexSaveConfirmer()">Ajouter ✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODALE CODE-BARRES LEXIQUE ══ -->
 <div id="lex-bc-modal" onclick="lexiqueFermerModal()">
   <div id="lex-bc-modal-inner" onclick="event.stopPropagation()">
@@ -1158,6 +1194,8 @@ function addArticle() {
   document.getElementById('inp-qty').value='1';
   document.getElementById('inp-ref').focus();
   showToast('Article ajouté !');
+  // Proposer d'ajouter au lexique
+  lexSaveOuvrir(ref, price);
 }
 function removeArticle(i){ articles.splice(i,1); save(); renderAll(); document.getElementById('img-wrap-normal').style.display='none'; }
 function clearAll(){
@@ -2080,6 +2118,35 @@ function lexiqueCleActif() {
 let _lexData = (function(){
   try { const d = JSON.parse(localStorage.getItem(LEX_KEY)||'{}'); LEX_CATS.forEach(c=>{ if(!d[c]) d[c]=[]; }); return d; } catch(e) { const d={}; LEX_CATS.forEach(c=>d[c]=[]); return d; }
 })();
+
+// ── SAUVEGARDER ARTICLE DANS LEXIQUE ──
+let _lexSaveCode = '';
+let _lexSavePrice = '';
+
+function lexSaveOuvrir(code, price) {
+  _lexSaveCode  = code;
+  _lexSavePrice = price;
+  const priceStr = (!isNaN(price) && price > 0) ? price.toFixed(2).replace('.',',') + ' €' : '—';
+  document.getElementById('lex-save-info').textContent = 'Code : ' + code + '   ·   Prix : ' + priceStr;
+  document.getElementById('lex-save-label').value = '';
+  document.getElementById('lex-save-modal').classList.add('open');
+  setTimeout(() => document.getElementById('lex-save-label').focus(), 200);
+}
+
+function lexSaveIgnorer() {
+  document.getElementById('lex-save-modal').classList.remove('open');
+}
+
+function lexSaveConfirmer() {
+  const label = document.getElementById('lex-save-label').value.trim();
+  const cle   = document.getElementById('lex-save-cat').value;
+  if(!label) { document.getElementById('lex-save-label').focus(); return; }
+  if(!_lexData[cle]) _lexData[cle] = [];
+  _lexData[cle].push({ label, code: _lexSaveCode, price: String(_lexSavePrice) });
+  lexiqueSauvegarder();
+  lexSaveIgnorer();
+  showToast('Ajouté au Lexique ✓');
+}
 
 function lexiqueSauvegarder() {
   localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
