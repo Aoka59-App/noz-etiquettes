@@ -308,6 +308,20 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .cmd-order-item-label { font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cmd-order-item-code { font-size:12px; color:var(--text3); font-family:monospace; margin-top:1px; }
 .cmd-bc-icon { color:var(--text3); flex-shrink:0; }
+/* qty val cliquable */
+.cmd-qty-val { cursor:pointer; min-width:30px; padding:2px 5px; border-radius:6px; }
+.cmd-qty-val:active { background:var(--sep); }
+/* ── Clavier quantité ── */
+#cmd-qty-modal { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.55); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
+#cmd-qty-modal.open { display:flex; }
+#cmd-qty-inner { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(16px + var(--safe-bot)); width:100%; max-width:360px; }
+#cmd-qty-title { font-size:13px; color:var(--text3); text-align:center; margin-bottom:10px; font-weight:600; }
+#cmd-qty-display { font-size:40px; font-weight:700; text-align:center; color:var(--text); padding:14px 20px; background:var(--bg); border-radius:14px; margin-bottom:14px; letter-spacing:6px; min-height:70px; }
+.cmd-qty-keys { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.cmd-qty-keys button { padding:17px 10px; font-size:22px; font-weight:700; border:none; border-radius:12px; background:var(--bg); color:var(--text); cursor:pointer; line-height:1; }
+.cmd-qty-keys button:active { background:var(--sep); transform:scale(.95); }
+.cmd-qty-ok { background:var(--accent) !important; color:var(--accent2) !important; font-size:20px !important; }
+.cmd-qty-del { font-size:18px !important; color:var(--text2) !important; }
 
 /* ── MODALE AJOUT LEXIQUE DEPUIS SAISIE ── */
 #lex-save-modal { position:fixed; inset:0; z-index:9997; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
@@ -706,6 +720,24 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         </div>
       </div>
 
+      <!-- Bouton Articles -->
+      <button class="btn-ios outline" id="btn-toggle-articles" onclick="toggleArticles()" style="margin-top:4px;">
+        <svg width="18" height="18" viewBox="0 0 26 26" fill="none">
+          <rect x="3" y="5" width="20" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="7" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="7" y1="14" x2="16" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Articles
+      </button>
+
+      <!-- Panel Articles -->
+      <div id="articles-panel" style="display:none;margin-top:6px;">
+        <div style="background:var(--card);border-radius:12px;overflow:hidden;margin-bottom:8px;">
+          <div id="articles-panel-list"><p class="empty-state" style="font-size:13px;padding:14px;">Aucun article</p></div>
+        </div>
+        <button class="btn-ios sm outline" style="width:100%;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu complet →</button>
+      </div>
+
     </div>
 
     <!-- ══ ARTICLES + APERÇU (fusionnés) ══ -->
@@ -1090,6 +1122,28 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
 </div>
 
+<!-- ══ CLAVIER QUANTITÉ COMMANDE ══ -->
+<div id="cmd-qty-modal" onclick="cmdQtyFermer()">
+  <div id="cmd-qty-inner" onclick="event.stopPropagation()">
+    <div id="cmd-qty-title">Quantité</div>
+    <div id="cmd-qty-display">1</div>
+    <div class="cmd-qty-keys">
+      <button onclick="cmdQtyKey('7')">7</button>
+      <button onclick="cmdQtyKey('8')">8</button>
+      <button onclick="cmdQtyKey('9')">9</button>
+      <button onclick="cmdQtyKey('4')">4</button>
+      <button onclick="cmdQtyKey('5')">5</button>
+      <button onclick="cmdQtyKey('6')">6</button>
+      <button onclick="cmdQtyKey('1')">1</button>
+      <button onclick="cmdQtyKey('2')">2</button>
+      <button onclick="cmdQtyKey('3')">3</button>
+      <button class="cmd-qty-del" onclick="cmdQtyDel()">⌫</button>
+      <button onclick="cmdQtyKey('0')">0</button>
+      <button class="cmd-qty-ok" onclick="cmdQtyValider()">✓</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MODALE SAUVEGARDER DANS LEXIQUE ══ -->
 <div id="lex-save-modal" onclick="lexSaveIgnorer()">
   <div id="lex-save-inner" onclick="event.stopPropagation()">
@@ -1269,11 +1323,12 @@ function addArticle() {
   ['inp-ref','inp-price','inp-code1','inp-code2','inp-uprice','inp-qprod'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('inp-qty').value='1';
   document.getElementById('inp-ref').focus();
+  renderArticlesPanel();
   showToast('Article ajouté !');
   // Proposer d'ajouter au lexique
   lexSaveOuvrir(ref, price);
 }
-function removeArticle(i){ articles.splice(i,1); save(); renderAll(); document.getElementById('img-wrap-normal').style.display='none'; }
+function removeArticle(i){ articles.splice(i,1); save(); renderAll(); document.getElementById('img-wrap-normal').style.display='none'; renderArticlesPanel(); }
 function clearAll(){
   if(!articles.length) return;
   if(!confirm('Effacer tous les articles ?')) return;
@@ -2210,7 +2265,7 @@ function cmdFormRendre() {
         oninput="_cmdFormLines[${i}].label=this.value"/>
       <div class="cmd-qty-ctrl">
         <button onclick="cmdFormQty(${i},-1)">−</button>
-        <span class="cmd-qty-val">${l.qty}</span>
+        <span class="cmd-qty-val" onclick="cmdQtyOuvrir(${i})">${l.qty}</span>
         <button onclick="cmdFormQty(${i},1)">+</button>
       </div>
       <button class="cmd-form-del" onclick="cmdFormSupprimerLigne(${i})">×</button>
@@ -2357,6 +2412,74 @@ window.cmdFirebaseUpdate = function(data) {
 
 // Init formulaire au chargement
 document.addEventListener('DOMContentLoaded', () => { cmdFormRendre(); });
+
+// ── CLAVIER QUANTITÉ ──
+let _cmdQtyLineIdx = -1;
+let _cmdQtyInput   = '1';
+
+function cmdQtyOuvrir(i) {
+  _cmdQtyLineIdx = i;
+  _cmdQtyInput   = String(_cmdFormLines[i].qty || 1);
+  document.getElementById('cmd-qty-display').textContent = _cmdQtyInput;
+  document.getElementById('cmd-qty-modal').classList.add('open');
+}
+
+function cmdQtyFermer() {
+  document.getElementById('cmd-qty-modal').classList.remove('open');
+}
+
+function cmdQtyKey(k) {
+  if(_cmdQtyInput === '0') { _cmdQtyInput = k; }
+  else if(_cmdQtyInput.length < 3) { _cmdQtyInput += k; }
+  document.getElementById('cmd-qty-display').textContent = _cmdQtyInput;
+}
+
+function cmdQtyDel() {
+  _cmdQtyInput = _cmdQtyInput.slice(0, -1) || '0';
+  document.getElementById('cmd-qty-display').textContent = _cmdQtyInput;
+}
+
+function cmdQtyValider() {
+  const val = Math.max(1, parseInt(_cmdQtyInput) || 1);
+  if(_cmdQtyLineIdx >= 0 && _cmdFormLines[_cmdQtyLineIdx]) {
+    _cmdFormLines[_cmdQtyLineIdx].qty = val;
+    const spans = document.querySelectorAll('#cmd-form-lines .cmd-qty-val');
+    if(spans[_cmdQtyLineIdx]) spans[_cmdQtyLineIdx].textContent = val;
+  }
+  cmdQtyFermer();
+}
+
+// ── PANEL ARTICLES DANS SAISIE ──
+function toggleArticles() {
+  const panel = document.getElementById('articles-panel');
+  const btn   = document.getElementById('btn-toggle-articles');
+  const open  = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  btn.style.background = open ? 'var(--accent)' : '';
+  btn.style.color      = open ? '#fff' : '';
+  if(open) renderArticlesPanel();
+}
+
+function renderArticlesPanel() {
+  const panel = document.getElementById('articles-panel');
+  if(!panel || panel.style.display === 'none') return;
+  const list = document.getElementById('articles-panel-list');
+  if(!articles || !articles.length) {
+    list.innerHTML = '<p class="empty-state" style="font-size:13px;padding:14px;">Aucun article</p>';
+    return;
+  }
+  list.innerHTML = articles.map((a, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--sep);">
+      <div class="art-dot ${a.isSerie?'serie':''}"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(a.ref)}</div>
+        ${a.code1 ? `<div style="font-size:11px;color:var(--text3);font-family:monospace;">${esc(a.code1)}</div>` : ''}
+      </div>
+      <span style="font-size:13px;font-weight:800;color:var(--accent);white-space:nowrap;">${a.isSerie?'—':fmt(a.price)}</span>
+      <span style="font-size:12px;font-weight:700;color:var(--text3);">×${a.qty}</span>
+      <button onclick="removeArticle(${i})" style="background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;padding:0;width:24px;height:24px;">×</button>
+    </div>`).join('');
+}
 
 // ── SAUVEGARDER ARTICLE DANS LEXIQUE ──
 let _lexSaveCode = '';
