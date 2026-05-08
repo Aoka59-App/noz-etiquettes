@@ -271,6 +271,22 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 @keyframes sp { to { transform:rotate(360deg); } }
 #render-canvas { display:none; }
 
+/* ── COMMANDE ── */
+.cmd-form { background:var(--card); border-radius:14px; padding:14px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px; }
+.cmd-form input { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:15px; color:var(--text1); width:100%; box-sizing:border-box; }
+.cmd-form input::placeholder { color:var(--text3); }
+.cmd-form-row { display:flex; gap:8px; }
+.cmd-form-row input { flex:1; }
+.cmd-items { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.cmd-item { background:var(--card); border-radius:12px; padding:13px 44px 13px 14px; position:relative; cursor:pointer; transition:opacity .15s; }
+.cmd-item:active { opacity:.7; }
+.cmd-item-label { font-size:15px; font-weight:700; color:var(--text1); margin-bottom:3px; }
+.cmd-item-sub { display:flex; gap:12px; font-size:12px; color:var(--text3); font-weight:600; }
+.cmd-item-price { color:var(--accent); font-weight:800; font-size:14px; }
+.cmd-item-del { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--red,#e53e3e); color:#fff; border:none; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.cmd-badge { display:inline-block; background:var(--accent); color:#fff; border-radius:20px; font-size:12px; font-weight:700; padding:2px 10px; margin-left:8px; vertical-align:middle; }
+.cmd-section-hdr { font-size:11px; font-weight:700; letter-spacing:.8px; color:var(--text3); text-transform:uppercase; margin:14px 0 8px; }
+
 /* ── MODALE AJOUT LEXIQUE DEPUIS SAISIE ── */
 #lex-save-modal { position:fixed; inset:0; z-index:9997; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
 #lex-save-modal.open { display:flex; }
@@ -898,6 +914,39 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
     </div>
 
+    <!-- ══ COMMANDE ══ -->
+    <div class="page" id="page-commande">
+
+      <!-- Statut -->
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+        <div id="cmd-sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .4s;"></div>
+        <span style="font-size:12px;color:var(--text3);">Commande partagée en temps réel</span>
+      </div>
+
+      <!-- Formulaire ajout -->
+      <div class="cmd-form">
+        <input id="cmd-inp-label" type="text" placeholder="Désignation du produit" autocomplete="off"/>
+        <div class="cmd-form-row">
+          <input id="cmd-inp-code" type="text" inputmode="numeric" placeholder="Code article" autocomplete="off"/>
+          <input id="cmd-inp-price" type="text" inputmode="decimal" placeholder="Prix" autocomplete="off" style="max-width:90px;"/>
+        </div>
+        <button class="btn-ios" style="margin:0;" onclick="cmdAjouter()">+ Ajouter à la commande</button>
+      </div>
+
+      <!-- Liste locale (brouillon) -->
+      <div class="cmd-section-hdr">Commande en cours <span id="cmd-count-badge" class="cmd-badge" style="display:none;">0</span></div>
+      <div class="cmd-items" id="cmd-items-list">
+        <p class="empty-state">Aucun article ajouté</p>
+      </div>
+
+      <!-- Actions -->
+      <button class="btn-ios gold" id="cmd-btn-envoyer" onclick="cmdEnvoyer()" disabled>
+        🛒 Envoyer à la caissière
+      </button>
+      <button class="btn-ios outline" style="margin-top:6px;" onclick="cmdVider()">🗑 Vider la commande</button>
+
+    </div>
+
     <!-- ══ LEXIQUE ══ -->
     <div class="page" id="page-lexique">
 
@@ -997,6 +1046,14 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Caisse</span>
     </button>
+    <button class="tb-item" id="tb-commande" onclick="showTabById('commande')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <path d="M4 5h2l2.5 11h10l2-7H8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="11" cy="20" r="1.5" fill="currentColor"/>
+        <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
+      </svg>
+      <span class="tb-label">Commande</span>
+    </button>
     <button class="tb-item" id="tb-lexique" onclick="showTabById('lexique')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
         <rect x="4" y="3" width="14" height="20" rx="2" stroke="currentColor" stroke-width="1.8"/>
@@ -1093,7 +1150,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', lexique:'Lexique' };
+const TAB_TITLES = { saisie:'Saisie', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', commande:'Commande', lexique:'Lexique' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
@@ -2119,6 +2176,94 @@ let _lexData = (function(){
   try { const d = JSON.parse(localStorage.getItem(LEX_KEY)||'{}'); LEX_CATS.forEach(c=>{ if(!d[c]) d[c]=[]; }); return d; } catch(e) { const d={}; LEX_CATS.forEach(c=>d[c]=[]); return d; }
 })();
 
+// ── COMMANDE ──
+let _cmdItems = [];
+
+function cmdAjouter() {
+  const label = document.getElementById('cmd-inp-label').value.trim();
+  const code  = document.getElementById('cmd-inp-code').value.trim();
+  const price = document.getElementById('cmd-inp-price').value.trim().replace(',','.');
+  if(!label && !code) { showToast('Remplis au moins la désignation'); return; }
+  _cmdItems.push({ label, code, price });
+  document.getElementById('cmd-inp-label').value = '';
+  document.getElementById('cmd-inp-code').value  = '';
+  document.getElementById('cmd-inp-price').value = '';
+  document.getElementById('cmd-inp-label').focus();
+  cmdRendre();
+}
+
+function cmdSupprimer(i) {
+  _cmdItems.splice(i, 1);
+  cmdRendre();
+}
+
+function cmdRendre() {
+  const list  = document.getElementById('cmd-items-list');
+  const badge = document.getElementById('cmd-count-badge');
+  const btn   = document.getElementById('cmd-btn-envoyer');
+  badge.textContent = _cmdItems.length;
+  badge.style.display = _cmdItems.length ? '' : 'none';
+  btn.disabled = _cmdItems.length === 0;
+  if(!_cmdItems.length) { list.innerHTML = '<p class="empty-state">Aucun article ajouté</p>'; return; }
+  list.innerHTML = _cmdItems.map((it, i) => {
+    const labelEsc = (it.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const codeEsc  = (it.code||'').replace(/&/g,'&amp;');
+    const priceNum = parseFloat(it.price||'');
+    const priceTxt = !isNaN(priceNum) ? priceNum.toFixed(2).replace('.',',') + ' €' : '';
+    return `<div class="cmd-item" onclick="cmdOuvrirBarcode(${i})">
+      <button class="cmd-item-del" onclick="event.stopPropagation();cmdSupprimer(${i})">×</button>
+      ${it.label ? `<div class="cmd-item-label">${labelEsc}</div>` : ''}
+      <div class="cmd-item-sub">
+        ${it.code  ? `<span>${codeEsc}</span>` : ''}
+        ${priceTxt ? `<span class="cmd-item-price">${priceTxt}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cmdEnvoyer() {
+  if(!_cmdItems.length) return;
+  if(window.cmdFirebaseEnvoyer) window.cmdFirebaseEnvoyer(_cmdItems);
+}
+
+function cmdVider() {
+  if(_cmdItems.length && !confirm('Vider la commande ?')) return;
+  _cmdItems = [];
+  cmdRendre();
+  if(window.cmdFirebaseVider) window.cmdFirebaseVider();
+}
+
+function cmdOuvrirBarcode(i) {
+  const it = _cmdItems[i];
+  if(!it) return;
+  document.getElementById('lex-bc-modal-label').textContent = it.label || '';
+  document.getElementById('lex-bc-modal-code').textContent  = '';
+  const priceEl  = document.getElementById('lex-bc-modal-price');
+  const priceNum = parseFloat(it.price||'');
+  if(!isNaN(priceNum)) { priceEl.textContent = priceNum.toFixed(2).replace('.',',') + ' €'; priceEl.style.display = ''; }
+  else { priceEl.style.display = 'none'; }
+  const svgEl = document.getElementById('lex-bc-modal-barcode');
+  svgEl.removeAttribute('data-jbarcode-done');
+  if(it.code && it.code.trim()) {
+    try {
+      let fmt, val = it.code.trim();
+      if(/^\d{13}$/.test(val)) fmt='EAN13'; else if(/^\d{8}$/.test(val)) fmt='EAN8'; else fmt='CODE128';
+      JsBarcode(svgEl, val, { format:fmt, width:2.2, height:90, displayValue:true, margin:8, fontSize:14, textMargin:6 });
+      svgEl.parentElement.style.display = '';
+    } catch(e) { svgEl.parentElement.style.display='none'; }
+  } else { svgEl.parentElement.style.display='none'; }
+  document.getElementById('lex-bc-modal').classList.add('open');
+}
+
+// Mise à jour depuis Firebase (reçue par la caissière)
+window.cmdFirebaseUpdate = function(items) {
+  if(!Array.isArray(items)) items = Object.values(items||{});
+  _cmdItems = items;
+  if(document.getElementById('page-commande').classList.contains('active')) cmdRendre();
+  const dot = document.getElementById('cmd-sync-dot');
+  if(dot) dot.style.background = '#34c759';
+};
+
 // ── SAUVEGARDER ARTICLE DANS LEXIQUE ──
 let _lexSaveCode = '';
 let _lexSavePrice = '';
@@ -2459,6 +2604,23 @@ window.caisseFromScan = function(code) {
     .then(() => { showToast('Envoyé à la caisse !'); bipScan(); })
     .catch(() => showToast('Erreur Firebase'));
 };
+
+// ── SYNC COMMANDE ──
+const cmdRef = ref(db, 'commande_p854');
+
+window.cmdFirebaseEnvoyer = (items) => set(cmdRef, items)
+  .then(() => showToast('Commande envoyée ✓'))
+  .catch(() => showToast('Erreur envoi commande'));
+
+window.cmdFirebaseVider = () => remove(cmdRef)
+  .catch(() => showToast('Erreur suppression commande'));
+
+onValue(cmdRef, snapshot => {
+  const data = snapshot.val();
+  if(window.cmdFirebaseUpdate) window.cmdFirebaseUpdate(data || []);
+  const dot = document.getElementById('cmd-sync-dot');
+  if(dot) dot.style.background = '#34c759';
+});
 </script>
 
 <script>
