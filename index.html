@@ -276,19 +276,20 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .cmd-order-form { background:var(--card); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; flex-direction:column; gap:10px; }
 .cmd-order-form > input { background:var(--bg); border:1.5px solid var(--sep); border-radius:10px; padding:11px 13px; font-size:16px; font-weight:600; color:var(--text); width:100%; }
 .cmd-order-form > input::placeholder { color:var(--text3); font-weight:400; }
-.cmd-form-lines { display:flex; flex-direction:column; gap:6px; }
-.cmd-form-line { display:flex; gap:6px; align-items:center; background:var(--bg); border-radius:10px; padding:7px 8px; }
-.cmd-fl-code { width:100px; flex-shrink:0; background:var(--card); border:1.5px solid var(--sep); border-radius:8px; padding:7px 9px; font-size:14px; color:var(--text); font-family:monospace; }
-.cmd-fl-label { flex:1; min-width:0; background:var(--card); border:1.5px solid var(--sep); border-radius:8px; padding:7px 9px; font-size:14px; color:var(--text); }
-.cmd-fl-code::placeholder, .cmd-fl-label::placeholder { color:var(--text3); }
-.cmd-qty-ctrl { display:flex; align-items:center; background:var(--card); border-radius:8px; border:1.5px solid var(--sep); overflow:hidden; flex-shrink:0; }
-.cmd-qty-ctrl button { background:none; border:none; width:28px; height:32px; font-size:17px; cursor:pointer; color:var(--text); font-weight:700; line-height:1; }
-.cmd-qty-ctrl button:active { background:var(--bg); }
-.cmd-qty-val { font-size:14px; font-weight:700; min-width:22px; text-align:center; color:var(--text); }
-.cmd-form-del { background:none; border:none; width:26px; height:26px; font-size:20px; cursor:pointer; color:var(--text3); flex-shrink:0; padding:0; }
+.cmd-form-lines { display:flex; flex-direction:column; gap:8px; }
+.cmd-form-line { background:var(--bg); border-radius:12px; padding:9px 10px; display:flex; flex-direction:column; gap:7px; }
+.cmd-form-row1 { display:flex; gap:7px; align-items:center; }
+.cmd-form-row2 { display:flex; gap:7px; align-items:center; }
+.cmd-scan-btn { background:var(--accent); border:none; border-radius:10px; width:44px; height:44px; min-width:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; color:var(--accent2); padding:0; }
+.cmd-scan-btn:active { opacity:.75; transform:scale(.94); }
+.cmd-fl-code { flex:1; background:var(--card); border:1.5px solid var(--sep); border-radius:9px; padding:10px 12px; font-size:15px; color:var(--text); font-family:monospace; letter-spacing:.5px; }
+.cmd-fl-label { flex:1; min-width:0; background:var(--card); border:1.5px solid var(--sep); border-radius:9px; padding:10px 12px; font-size:15px; color:var(--text); }
+.cmd-fl-code::placeholder,.cmd-fl-label::placeholder { color:var(--text3); font-family:-apple-system,sans-serif; letter-spacing:0; font-size:14px; }
+.cmd-fl-qty { width:58px; flex-shrink:0; background:var(--accent); border:none; border-radius:9px; padding:10px 6px; font-size:18px; font-weight:800; color:var(--accent2); text-align:center; -moz-appearance:textfield; }
+.cmd-fl-qty::-webkit-inner-spin-button,.cmd-fl-qty::-webkit-outer-spin-button { -webkit-appearance:none; }
+.cmd-fl-qty:focus { outline:2px solid var(--accent2); outline-offset:2px; }
+.cmd-form-del { background:none; border:none; width:32px; height:32px; font-size:22px; cursor:pointer; color:var(--text3); flex-shrink:0; padding:0; display:flex; align-items:center; justify-content:center; }
 .cmd-form-del:active { color:var(--red); }
-.cmd-scan-btn { background:var(--accent); border:none; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; color:var(--accent2); padding:0; }
-.cmd-scan-btn:active { opacity:.75; }
 /* ── COMMANDE — liste des commandes ── */
 .cmd-badge { display:inline-block; background:var(--accent); color:#fff; border-radius:20px; font-size:12px; font-weight:700; padding:2px 10px; margin-left:8px; vertical-align:middle; }
 .cmd-section-hdr { font-size:11px; font-weight:700; letter-spacing:.8px; color:var(--text3); text-transform:uppercase; margin:14px 0 8px; }
@@ -310,10 +311,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .cmd-order-item-label { font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cmd-order-item-code { font-size:12px; color:var(--text3); font-family:monospace; margin-top:1px; }
 .cmd-bc-icon { color:var(--text3); flex-shrink:0; }
-/* qty val cliquable */
-.cmd-qty-val { cursor:pointer; min-width:30px; padding:2px 5px; border-radius:6px; }
-.cmd-qty-val:active { background:var(--sep); }
-/* ── Clavier quantité ── */
+/* ── Clavier quantité (conservé pour compatibilité) ── */
 #cmd-qty-modal { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.55); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
 #cmd-qty-modal.open { display:flex; }
 #cmd-qty-inner { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(16px + var(--safe-bot)); width:100%; max-width:360px; }
@@ -1054,16 +1052,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Saisie</span>
     </button>
-    <button class="tb-item" id="tb-liste" onclick="showTabById('liste')">
-      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <rect x="4" y="4" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
-        <line x1="8" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <line x1="8" y1="14" x2="18" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <line x1="8" y1="18" x2="13" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      <span class="tb-label">Articles</span>
-    </button>
-
     <button class="tb-item" id="tb-rvn" onclick="showTabById('rvn')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
         <rect x="3" y="4" width="20" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/>
@@ -1234,7 +1222,8 @@ function showTabById(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tb-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('tb-'+name).classList.add('active');
+  const tbEl = document.getElementById('tb-'+name);
+  if(tbEl) tbEl.classList.add('active');
   document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
   if(name==='liste') renderPreview();
   if(name==='lexique') lexiqueRendre();
@@ -1838,9 +1827,10 @@ function dispatcherCode(code) {
       _cmdFormLines[_cmdScanLineIdx].code = code;
       cmdFormRendre();
       setTimeout(() => {
+        // Focus désignation de cette ligne après scan
         const labels = document.querySelectorAll('#cmd-form-lines .cmd-fl-label');
         if(labels[_cmdScanLineIdx]) labels[_cmdScanLineIdx].focus();
-      }, 100);
+      }, 80);
     }
   } else {
     afficherPanneauScan(code, null, null);
@@ -2276,26 +2266,27 @@ function cmdFormRendre() {
   if(!c) return;
   c.innerHTML = _cmdFormLines.map((l, i) => `
     <div class="cmd-form-line">
-      <button class="cmd-scan-btn" onclick="cmdScanLigne(${i})" type="button" title="Scanner le code-barres">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M2 7V4a1 1 0 0 1 1-1h3M22 7V4a1 1 0 0 0-1-1h-3M2 17v3a1 1 0 0 0 1 1h3M22 17v3a1 1 0 0 1-1 1h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="6" y1="8" x2="6" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="9" y1="8" x2="9" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="15" y1="8" x2="15" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="18" y1="8" x2="18" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <input class="cmd-fl-code" type="text" inputmode="numeric" placeholder="Code" value="${esc(l.code)}"
-        oninput="_cmdFormLines[${i}].code=this.value"/>
-      <input class="cmd-fl-label" type="text" placeholder="Désignation" value="${esc(l.label)}"
-        oninput="_cmdFormLines[${i}].label=this.value"/>
-      <div class="cmd-qty-ctrl">
-        <button onclick="cmdFormQty(${i},-1)">−</button>
-        <span class="cmd-qty-val" onclick="cmdQtyOuvrir(${i})">${l.qty}</span>
-        <button onclick="cmdFormQty(${i},1)">+</button>
+      <div class="cmd-form-row1">
+        <button class="cmd-scan-btn" onclick="cmdScanLigne(${i})" type="button" title="Scanner le code-barres">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M2 7V4a1 1 0 0 1 1-1h3M22 7V4a1 1 0 0 0-1-1h-3M2 17v3a1 1 0 0 0 1 1h3M22 17v3a1 1 0 0 1-1 1h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="6" y1="8" x2="6" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="9.5" y1="8" x2="9.5" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12.5" y1="8" x2="12.5" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="15.5" y1="8" x2="15.5" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="18" y1="8" x2="18" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <input class="cmd-fl-code" type="text" inputmode="numeric" placeholder="Code article" value="${esc(l.code)}"
+          oninput="_cmdFormLines[${i}].code=this.value"/>
       </div>
-      <button class="cmd-form-del" onclick="cmdFormSupprimerLigne(${i})">×</button>
+      <div class="cmd-form-row2">
+        <input class="cmd-fl-label" type="text" placeholder="Désignation" value="${esc(l.label)}"
+          oninput="_cmdFormLines[${i}].label=this.value"/>
+        <input class="cmd-fl-qty" type="number" inputmode="numeric" min="1" max="999" value="${l.qty}"
+          oninput="cmdQtyInput(${i},this.value)" onfocus="this.select()"/>
+        <button class="cmd-form-del" onclick="cmdFormSupprimerLigne(${i})">×</button>
+      </div>
     </div>`).join('');
 }
 
@@ -2304,9 +2295,9 @@ function cmdFormAjouterLigne() {
   cmdFormRendre();
   // focus last code input
   setTimeout(() => {
-    const inputs = document.querySelectorAll('#cmd-form-lines .cmd-fl-code');
-    if(inputs.length) inputs[inputs.length-1].focus();
-  }, 50);
+    const rows = document.querySelectorAll('#cmd-form-lines .cmd-fl-code');
+    if(rows.length) rows[rows.length-1].focus();
+  }, 60);
 }
 
 function cmdFormSupprimerLigne(i) {
@@ -2315,10 +2306,9 @@ function cmdFormSupprimerLigne(i) {
   cmdFormRendre();
 }
 
-function cmdFormQty(i, delta) {
-  _cmdFormLines[i].qty = Math.max(1, (_cmdFormLines[i].qty||1) + delta);
-  const vals = document.querySelectorAll('#cmd-form-lines .cmd-qty-val');
-  if(vals[i]) vals[i].textContent = _cmdFormLines[i].qty;
+function cmdQtyInput(i, val) {
+  const n = parseInt(val);
+  if(!isNaN(n) && n >= 1) _cmdFormLines[i].qty = n;
 }
 
 function cmdValiderOrdre() {
@@ -2440,41 +2430,7 @@ window.cmdFirebaseUpdate = function(data) {
 // Init formulaire au chargement
 document.addEventListener('DOMContentLoaded', () => { cmdFormRendre(); });
 
-// ── CLAVIER QUANTITÉ ──
-let _cmdQtyLineIdx = -1;
-let _cmdQtyInput   = '1';
-
-function cmdQtyOuvrir(i) {
-  _cmdQtyLineIdx = i;
-  _cmdQtyInput   = String(_cmdFormLines[i].qty || 1);
-  document.getElementById('cmd-qty-display').textContent = _cmdQtyInput;
-  document.getElementById('cmd-qty-modal').classList.add('open');
-}
-
-function cmdQtyFermer() {
-  document.getElementById('cmd-qty-modal').classList.remove('open');
-}
-
-function cmdQtyKey(k) {
-  if(_cmdQtyInput === '0') { _cmdQtyInput = k; }
-  else if(_cmdQtyInput.length < 3) { _cmdQtyInput += k; }
-  document.getElementById('cmd-qty-display').textContent = _cmdQtyInput;
-}
-
-function cmdQtyDel() {
-  _cmdQtyInput = _cmdQtyInput.slice(0, -1) || '0';
-  document.getElementById('cmd-qty-display').textContent = _cmdQtyInput;
-}
-
-function cmdQtyValider() {
-  const val = Math.max(1, parseInt(_cmdQtyInput) || 1);
-  if(_cmdQtyLineIdx >= 0 && _cmdFormLines[_cmdQtyLineIdx]) {
-    _cmdFormLines[_cmdQtyLineIdx].qty = val;
-    const spans = document.querySelectorAll('#cmd-form-lines .cmd-qty-val');
-    if(spans[_cmdQtyLineIdx]) spans[_cmdQtyLineIdx].textContent = val;
-  }
-  cmdQtyFermer();
-}
+// (clavier quantité remplacé par input natif)
 
 // ── PANEL ARTICLES DANS SAISIE ──
 function toggleArticles() {
