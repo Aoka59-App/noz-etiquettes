@@ -2793,6 +2793,17 @@ function lexiqueOuvrirModal(idx) {
 function lexiqueFermerModal() {
   document.getElementById('lex-bc-modal').classList.remove('open');
 }
+
+// ── Identification : ouverture caméra (hors module — pas besoin Firebase) ──
+function identifOuvrirCamera() {
+  const shutter = document.getElementById('scanner-shutter');
+  if(shutter) shutter.style.display = 'block';
+  const hint = document.querySelector('.scanner-hint');
+  if(hint) hint.textContent = 'Cadrez l\'article puis appuyez sur ⚪';
+  const status = document.getElementById('scanner-status');
+  if(status) status.style.display = 'none';
+  ouvrirScanner('photo-identif');
+}
 </script>
 
 <!-- ══ FIREBASE CAISSE ══ -->
@@ -2996,18 +3007,7 @@ onValue(identifRef, snap => {
   identifRendre();
 });
 
-function identifOuvrirCamera() {
-  // Réutilise l'overlay scanner existant en mode photo
-  const shutter = document.getElementById('scanner-shutter');
-  if(shutter) shutter.style.display = 'block';
-  const hint = document.querySelector('.scanner-hint');
-  if(hint) hint.textContent = 'Cadrez l\'article puis appuyez sur ⚪';
-  const status = document.getElementById('scanner-status');
-  if(status) status.style.display = 'none';
-  ouvrirScanner('photo-identif');
-}
-
-function identifCapturerPhoto() {
+window.identifCapturerPhoto = function() {
   const video = document.getElementById('scanner-video');
   const MAX = 800;
   const canvas = document.createElement('canvas');
@@ -3023,7 +3023,24 @@ function identifCapturerPhoto() {
   push(identifRef, { photo: b64, code: '', date })
     .then(() => showToast('📷 Photo envoyée !'))
     .catch(() => showToast('Erreur envoi photo'));
-}
+};
+
+window.identifOuvrirModal = function(key) {
+  const it = _identifData[key];
+  if(!it) return;
+  _identifCurrentKey = key;
+  document.getElementById('identif-modal-img').src = it.photo;
+  document.getElementById('identif-modal-date').textContent = it.date || '';
+  const inp = document.getElementById('identif-modal-code');
+  inp.value = it.code || '';
+  document.getElementById('identif-modal').classList.add('open');
+  setTimeout(() => inp.focus(), 250);
+};
+
+window.identifFermerModal = function() {
+  document.getElementById('identif-modal').classList.remove('open');
+  _identifCurrentKey = null;
+};
 
 function identifRendre() {
   const list = document.getElementById('identif-list');
@@ -3050,23 +3067,6 @@ function identifRendre() {
         style="background:#fdecea;border:none;border-radius:8px;color:var(--red);font-size:13px;font-weight:700;padding:6px 10px;cursor:pointer;">✕</button>
     </div>`;
   }).join('');
-}
-
-function identifOuvrirModal(key) {
-  const it = _identifData[key];
-  if(!it) return;
-  _identifCurrentKey = key;
-  document.getElementById('identif-modal-img').src = it.photo;
-  document.getElementById('identif-modal-date').textContent = it.date || '';
-  const inp = document.getElementById('identif-modal-code');
-  inp.value = it.code || '';
-  document.getElementById('identif-modal').classList.add('open');
-  setTimeout(() => inp.focus(), 250);
-}
-
-function identifFermerModal() {
-  document.getElementById('identif-modal').classList.remove('open');
-  _identifCurrentKey = null;
 }
 
 window.identifValiderCode = function() {
