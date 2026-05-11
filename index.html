@@ -385,14 +385,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .overlay-sub { color:rgba(255,255,255,.55); font-size:13px; margin-top:6px; text-align:center; padding:0 20px; }
 .overlay-close { margin:20px auto; padding:14px 48px; background:var(--accent); color:var(--accent2); border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; display:block; }
 
-/* ── CAMÉRA PHOTO IDENTIFICATION ── */
-#identif-cam-overlay { position:fixed; inset:0; z-index:10001; background:#000; display:none; flex-direction:column; }
-#identif-cam-overlay.active { display:flex; }
-#identif-cam-video { width:100%; flex:1; object-fit:cover; display:block; }
-#identif-cam-bar { padding:24px 32px calc(24px + var(--safe-bot,0px)); background:#000; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-shrink:0; }
-#identif-cam-shutter { width:72px; height:72px; border-radius:50%; background:#fff; border:5px solid rgba(255,255,255,.4); cursor:pointer; flex-shrink:0; margin:0 auto; }
-#identif-cam-cancel { color:rgba(255,255,255,.75); background:none; border:none; font-size:16px; cursor:pointer; padding:8px; min-width:72px; }
-
 /* ── SCANNER PLEIN ÉCRAN ── */
 #scanner-overlay {
   position: fixed; inset: 0; z-index: 9999;
@@ -1208,16 +1200,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   </div>
 </div>
 
-<!-- ══ OVERLAY CAMÉRA IDENTIFICATION ══ -->
-<div id="identif-cam-overlay">
-  <video id="identif-cam-video" playsinline autoplay muted></video>
-  <div id="identif-cam-bar">
-    <button id="identif-cam-cancel" onclick="identifFermerCamera()">Annuler</button>
-    <button id="identif-cam-shutter" onclick="identifCapturerPhoto()"></button>
-    <div style="min-width:72px;"></div>
-  </div>
-</div>
-
 <!-- ══ MODALE IDENTIFICATION ARTICLES ══ -->
 <div id="identif-modal" onclick="identifFermerModal()">
   <div id="identif-modal-sheet" onclick="event.stopPropagation()">
@@ -1267,6 +1249,8 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   </div>
   <div class="scanner-status" id="scanner-status">Recherche d'un code-barres…</div>
   <div class="scanner-result-flash" id="scanner-flash"></div>
+  <!-- Bouton capture photo (mode identif uniquement) -->
+  <button id="scanner-shutter" onclick="identifCapturerPhoto()" style="display:none;position:absolute;bottom:calc(32px + var(--safe-bot,0px));left:50%;transform:translateX(-50%);width:76px;height:76px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);cursor:pointer;z-index:10;"></button>
   <button class="scanner-close-btn" onclick="fermerScanner()">Annuler</button>
 </div>
 
@@ -1922,6 +1906,8 @@ function dispatcherCode(code) {
   } else if(scannerTarget === 'identif') {
     const inp = document.getElementById('identif-modal-code');
     if(inp) { inp.value = code; bipScan(); }
+  } else if(scannerTarget === 'photo-identif') {
+    // mode photo : ne rien faire sur détection code, juste capturer au shutter
   } else {
     afficherPanneauScan(code, null, null);
   }
@@ -2059,6 +2045,12 @@ function fermerScanner() {
   const video = document.getElementById('scanner-video');
   if(video) video.srcObject = null;
   document.getElementById('scanner-overlay').classList.remove('active');
+  const shutter = document.getElementById('scanner-shutter');
+  if(shutter) shutter.style.display = 'none';
+  const hint = document.querySelector('.scanner-hint');
+  if(hint) hint.textContent = 'Placez le code-barres dans le cadre';
+  const status = document.getElementById('scanner-status');
+  if(status) status.style.display = '';
 }
 
 
@@ -3004,29 +2996,19 @@ onValue(identifRef, snap => {
   identifRendre();
 });
 
-let _identifStream = null;
-
-async function identifOuvrirCamera() {
-  try {
-    _identifStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } },
-      audio: false
-    });
-    const video = document.getElementById('identif-cam-video');
-    video.srcObject = _identifStream;
-    document.getElementById('identif-cam-overlay').classList.add('active');
-  } catch(e) {
-    showToast('Caméra non disponible');
-  }
-}
-
-function identifFermerCamera() {
-  if(_identifStream) { _identifStream.getTracks().forEach(t => t.stop()); _identifStream = null; }
-  document.getElementById('identif-cam-overlay').classList.remove('active');
+function identifOuvrirCamera() {
+  // Réutilise l'overlay scanner existant en mode photo
+  const shutter = document.getElementById('scanner-shutter');
+  if(shutter) shutter.style.display = 'block';
+  const hint = document.querySelector('.scanner-hint');
+  if(hint) hint.textContent = 'Cadrez l\'article puis appuyez sur ⚪';
+  const status = document.getElementById('scanner-status');
+  if(status) status.style.display = 'none';
+  ouvrirScanner('photo-identif');
 }
 
 function identifCapturerPhoto() {
-  const video = document.getElementById('identif-cam-video');
+  const video = document.getElementById('scanner-video');
   const MAX = 800;
   const canvas = document.createElement('canvas');
   let w = video.videoWidth, h = video.videoHeight;
@@ -3034,7 +3016,7 @@ function identifCapturerPhoto() {
   canvas.width = w; canvas.height = h;
   canvas.getContext('2d').drawImage(video, 0, 0, w, h);
   const b64 = canvas.toDataURL('image/jpeg', 0.7);
-  identifFermerCamera();
+  fermerScanner();
   const now = new Date();
   const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
              + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
