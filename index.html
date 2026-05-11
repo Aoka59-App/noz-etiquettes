@@ -3052,9 +3052,12 @@ window.identifOuvrirModal = function(key) {
   document.getElementById('identif-modal-date').textContent = it.date || '';
   const inp = document.getElementById('identif-modal-code');
   inp.value = it.code || '';
-  identifPreviewCode(it.code || '');
   document.getElementById('identif-modal').classList.add('open');
-  setTimeout(() => inp.focus(), 250);
+  // Attendre que la modale soit visible avant de rendre le code-barres
+  setTimeout(() => {
+    identifPreviewCode(it.code || '');
+    inp.focus();
+  }, 80);
 };
 
 window.identifFermerModal = function() {
