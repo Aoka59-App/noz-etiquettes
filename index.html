@@ -1220,7 +1220,10 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
           <line x1="4" y1="13" x2="22" y2="13" stroke="var(--accent2)" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
       </button>
-      <input id="identif-modal-code" type="text" inputmode="numeric" placeholder="Code-barres…" autocomplete="off"/>
+      <input id="identif-modal-code" type="text" inputmode="numeric" placeholder="Code-barres…" autocomplete="off" oninput="identifPreviewCode(this.value)"/>
+    </div>
+    <div id="identif-modal-bc-wrap" style="display:none;background:#fff;border-radius:12px;padding:10px 8px;">
+      <svg id="identif-modal-barcode" style="width:100%;display:block;"></svg>
     </div>
     <button class="btn-ios gold" onclick="identifValiderCode()" style="font-size:16px;">✓ Valider le code</button>
     <button onclick="identifFermerModal()" style="background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:4px;">Annuler</button>
@@ -2794,6 +2797,22 @@ function lexiqueFermerModal() {
   document.getElementById('lex-bc-modal').classList.remove('open');
 }
 
+// ── Identification : preview code-barres live ──
+function identifPreviewCode(val) {
+  const wrap = document.getElementById('identif-modal-bc-wrap');
+  const code = val.trim();
+  if(!code || code.length < 4) { wrap.style.display = 'none'; return; }
+  try {
+    const fmt = code.length === 8 ? 'EAN8' : code.length === 13 ? 'EAN13' : 'CODE128';
+    JsBarcode('#identif-modal-barcode', code, {
+      format: fmt, displayValue: true, fontSize: 14,
+      margin: 6, background: '#ffffff', lineColor: '#000000',
+      width: 2, height: 60
+    });
+    wrap.style.display = 'block';
+  } catch(e) { wrap.style.display = 'none'; }
+}
+
 // ── Identification : ouverture caméra (hors module — pas besoin Firebase) ──
 function identifOuvrirCamera() {
   const shutter = document.getElementById('scanner-shutter');
@@ -3033,6 +3052,7 @@ window.identifOuvrirModal = function(key) {
   document.getElementById('identif-modal-date').textContent = it.date || '';
   const inp = document.getElementById('identif-modal-code');
   inp.value = it.code || '';
+  identifPreviewCode(it.code || '');
   document.getElementById('identif-modal').classList.add('open');
   setTimeout(() => inp.focus(), 250);
 };
