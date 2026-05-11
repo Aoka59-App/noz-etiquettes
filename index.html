@@ -979,14 +979,14 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
       <!-- ── Identification articles ── -->
       <div class="section-hdr" style="margin-top:4px;">🔍 Identification articles</div>
-      <button class="scan-btn-main" onclick="identifPrendrePhoto()" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
+      <label for="identif-input" class="scan-btn-main" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);cursor:pointer;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
         </svg>
         Photographier un article inconnu
-      </button>
-      <input type="file" id="identif-input" accept="image/*" capture="environment" style="display:none;" onchange="identifTraiterPhoto(this)"/>
+      </label>
+      <input type="file" id="identif-input" accept="image/*" capture="environment" style="position:absolute;width:0;height:0;opacity:0;" onchange="identifTraiterPhoto(this)"/>
       <div id="identif-list"><p class="empty-state">Aucune demande en cours</p></div>
 
     </div>
