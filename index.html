@@ -1222,7 +1222,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </button>
       <input id="identif-modal-code" type="text" inputmode="numeric" placeholder="Code-barres…" autocomplete="off" oninput="identifPreviewCode(this.value)"/>
     </div>
-    <div id="identif-modal-bc-wrap" style="display:none;background:#fff;border-radius:12px;padding:10px 8px;">
+    <div id="identif-modal-bc-wrap" style="display:none;background:#fff;border-radius:12px;padding:12px 4px;">
       <svg id="identif-modal-barcode" style="width:100%;display:block;"></svg>
     </div>
     <button class="btn-ios gold" onclick="identifValiderCode()" style="font-size:16px;">✓ Valider le code</button>
@@ -2805,9 +2805,9 @@ function identifPreviewCode(val) {
   try {
     const fmt = code.length === 8 ? 'EAN8' : code.length === 13 ? 'EAN13' : 'CODE128';
     JsBarcode('#identif-modal-barcode', code, {
-      format: fmt, displayValue: true, fontSize: 14,
-      margin: 6, background: '#ffffff', lineColor: '#000000',
-      width: 2, height: 60
+      format: fmt, displayValue: true, fontSize: 18,
+      margin: 10, background: '#ffffff', lineColor: '#000000',
+      width: 3, height: 90
     });
     wrap.style.display = 'block';
   } catch(e) { wrap.style.display = 'none'; }
