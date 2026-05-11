@@ -360,6 +360,15 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .lex-item-price { font-size:15px; font-weight:800; color:var(--accent); }
 .lex-item-del { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--red,#e53e3e); color:#fff; border:none; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
 /* Modale code-barres */
+#identif-modal { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.94); display:none; flex-direction:column; align-items:center; justify-content:flex-end; padding:0; }
+#identif-modal.open { display:flex; }
+#identif-modal-sheet { background:var(--bg); border-radius:22px 22px 0 0; width:100%; max-width:480px; padding:20px 20px calc(20px + var(--safe-bot,0px)); display:flex; flex-direction:column; gap:12px; }
+#identif-modal-img-wrap { width:100%; border-radius:14px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; max-height:52vh; }
+#identif-modal-img { width:100%; max-height:52vh; object-fit:contain; display:block; }
+#identif-modal-code-row { display:flex; gap:8px; align-items:center; }
+#identif-modal-code { flex:1; background:var(--card); border:1.5px solid var(--sep); border-radius:12px; padding:12px 14px; font-size:18px; font-weight:700; color:var(--accent); text-align:center; letter-spacing:1px; }
+.identif-item { background:var(--card); border-radius:14px; padding:12px; display:flex; gap:12px; align-items:center; margin-bottom:8px; cursor:pointer; transition:opacity .15s; }
+.identif-item:active { opacity:.7; }
 #lex-bc-modal { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,.85); display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; }
 #lex-bc-modal.open { display:flex; }
 #lex-bc-modal-inner { background:#fff; border-radius:20px; padding:28px 24px; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px; }
@@ -968,6 +977,18 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <button onclick="caisseVider()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Tout vider</button>
       </div>
 
+      <!-- ── Identification articles ── -->
+      <div class="section-hdr" style="margin-top:4px;">🔍 Identification articles</div>
+      <button class="scan-btn-main" onclick="identifPrendrePhoto()" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        Photographier un article inconnu
+      </button>
+      <input type="file" id="identif-input" accept="image/*" capture="environment" style="display:none;" onchange="identifTraiterPhoto(this)"/>
+      <div id="identif-list"><p class="empty-state">Aucune demande en cours</p></div>
+
     </div>
 
     <!-- ══ COMMANDE ══ -->
@@ -1177,6 +1198,33 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <button class="btn-skip" onclick="lexSaveIgnorer()">Ignorer</button>
       <button class="btn-confirm" onclick="lexSaveConfirmer()">Ajouter ✓</button>
     </div>
+  </div>
+</div>
+
+<!-- ══ MODALE IDENTIFICATION ARTICLES ══ -->
+<div id="identif-modal" onclick="identifFermerModal()">
+  <div id="identif-modal-sheet" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+      <div style="font-size:16px;font-weight:700;color:var(--text);">🔍 Identifier l'article</div>
+      <div id="identif-modal-date" style="font-size:12px;color:var(--text3);"></div>
+    </div>
+    <div id="identif-modal-img-wrap">
+      <img id="identif-modal-img" src="" alt="Photo article"/>
+    </div>
+    <div id="identif-modal-code-row">
+      <button onclick="ouvrirScanner('identif')" style="background:var(--accent);border:none;border-radius:12px;width:48px;height:48px;min-width:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
+          <line x1="4" y1="13" x2="22" y2="13" stroke="var(--accent2)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <input id="identif-modal-code" type="text" inputmode="numeric" placeholder="Code-barres…" autocomplete="off"/>
+    </div>
+    <button class="btn-ios gold" onclick="identifValiderCode()" style="font-size:16px;">✓ Valider le code</button>
+    <button onclick="identifFermerModal()" style="background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:4px;">Annuler</button>
   </div>
 </div>
 
@@ -1854,6 +1902,9 @@ function dispatcherCode(code) {
         if(labels[_cmdScanLineIdx]) labels[_cmdScanLineIdx].focus();
       }, 80);
     }
+  } else if(scannerTarget === 'identif') {
+    const inp = document.getElementById('identif-modal-code');
+    if(inp) { inp.value = code; bipScan(); }
   } else {
     afficherPanneauScan(code, null, null);
   }
@@ -2924,6 +2975,105 @@ window.caisseFromScan = function(code) {
   push(caisseRef, { code, date })
     .then(() => { showToast('Envoyé à la caisse !'); bipScan(); })
     .catch(() => showToast('Erreur Firebase'));
+};
+
+// ── IDENTIFICATION ARTICLES ──
+const identifRef = ref(db, 'identification_p854');
+let _identifData = {};
+let _identifCurrentKey = null;
+
+onValue(identifRef, snap => {
+  _identifData = snap.val() || {};
+  identifRendre();
+});
+
+function identifPrendrePhoto() {
+  document.getElementById('identif-input').click();
+}
+
+function identifTraiterPhoto(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const imgEl = new Image();
+    imgEl.onload = () => {
+      const MAX = 700;
+      const canvas = document.createElement('canvas');
+      let w = imgEl.width, h = imgEl.height;
+      if(w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+      const b64 = canvas.toDataURL('image/jpeg', 0.65);
+      const now = new Date();
+      const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
+                 + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+      push(identifRef, { photo: b64, code: '', date })
+        .then(() => showToast('📷 Photo envoyée !'))
+        .catch(() => showToast('Erreur envoi photo'));
+    };
+    imgEl.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function identifRendre() {
+  const list = document.getElementById('identif-list');
+  if(!list) return;
+  const entries = Object.entries(_identifData)
+    .sort((a, b) => (b[1].date || '') > (a[1].date || '') ? 1 : -1);
+  if(!entries.length) {
+    list.innerHTML = '<p class="empty-state">Aucune demande en cours</p>';
+    return;
+  }
+  list.innerHTML = entries.map(([key, it]) => {
+    const solved = it.code && it.code.trim() !== '';
+    const border = solved ? '#38a169' : 'var(--sep)';
+    return `<div class="identif-item" onclick="identifOuvrirModal('${key}')" style="border:2px solid ${border};">
+      <img src="${it.photo}" style="width:72px;height:72px;border-radius:10px;object-fit:cover;flex-shrink:0;"/>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${it.date || ''}</div>
+        ${solved
+          ? `<div style="font-size:16px;font-weight:800;color:#38a169;">✓ &nbsp;${it.code}</div>`
+          : `<div style="font-size:13px;color:var(--text3);font-style:italic;">En attente d'identification…</div>`
+        }
+      </div>
+      <button onclick="event.stopPropagation();identifSupprimer('${key}')"
+        style="background:#fdecea;border:none;border-radius:8px;color:var(--red);font-size:13px;font-weight:700;padding:6px 10px;cursor:pointer;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function identifOuvrirModal(key) {
+  const it = _identifData[key];
+  if(!it) return;
+  _identifCurrentKey = key;
+  document.getElementById('identif-modal-img').src = it.photo;
+  document.getElementById('identif-modal-date').textContent = it.date || '';
+  const inp = document.getElementById('identif-modal-code');
+  inp.value = it.code || '';
+  document.getElementById('identif-modal').classList.add('open');
+  setTimeout(() => inp.focus(), 250);
+}
+
+function identifFermerModal() {
+  document.getElementById('identif-modal').classList.remove('open');
+  _identifCurrentKey = null;
+}
+
+window.identifValiderCode = function() {
+  const code = document.getElementById('identif-modal-code').value.trim();
+  if(!code) { showToast('Entrez un code d\'abord'); return; }
+  if(!_identifCurrentKey) return;
+  set(ref(db, 'identification_p854/' + _identifCurrentKey + '/code'), code)
+    .then(() => { showToast('✓ Code enregistré !'); bipScan(); identifFermerModal(); })
+    .catch(() => showToast('Erreur Firebase'));
+};
+
+window.identifSupprimer = function(key) {
+  remove(ref(db, 'identification_p854/' + key))
+    .catch(() => showToast('Erreur suppression'));
 };
 
 // ── SYNC COMMANDE ──
