@@ -385,6 +385,14 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .overlay-sub { color:rgba(255,255,255,.55); font-size:13px; margin-top:6px; text-align:center; padding:0 20px; }
 .overlay-close { margin:20px auto; padding:14px 48px; background:var(--accent); color:var(--accent2); border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; display:block; }
 
+/* ── CAMÉRA PHOTO IDENTIFICATION ── */
+#identif-cam-overlay { position:fixed; inset:0; z-index:10001; background:#000; display:none; flex-direction:column; }
+#identif-cam-overlay.active { display:flex; }
+#identif-cam-video { width:100%; flex:1; object-fit:cover; display:block; }
+#identif-cam-bar { padding:24px 32px calc(24px + var(--safe-bot,0px)); background:#000; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-shrink:0; }
+#identif-cam-shutter { width:72px; height:72px; border-radius:50%; background:#fff; border:5px solid rgba(255,255,255,.4); cursor:pointer; flex-shrink:0; margin:0 auto; }
+#identif-cam-cancel { color:rgba(255,255,255,.75); background:none; border:none; font-size:16px; cursor:pointer; padding:8px; min-width:72px; }
+
 /* ── SCANNER PLEIN ÉCRAN ── */
 #scanner-overlay {
   position: fixed; inset: 0; z-index: 9999;
@@ -979,14 +987,13 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
       <!-- ── Identification articles ── -->
       <div class="section-hdr" style="margin-top:4px;">🔍 Identification articles</div>
-      <label for="identif-input" class="scan-btn-main" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);cursor:pointer;">
+      <button class="scan-btn-main" onclick="identifOuvrirCamera()" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
         </svg>
         Photographier un article inconnu
-      </label>
-      <input type="file" id="identif-input" accept="image/*" capture="environment" style="position:absolute;width:0;height:0;opacity:0;" onchange="identifTraiterPhoto(this)"/>
+      </button>
       <div id="identif-list"><p class="empty-state">Aucune demande en cours</p></div>
 
     </div>
@@ -1198,6 +1205,16 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       <button class="btn-skip" onclick="lexSaveIgnorer()">Ignorer</button>
       <button class="btn-confirm" onclick="lexSaveConfirmer()">Ajouter ✓</button>
     </div>
+  </div>
+</div>
+
+<!-- ══ OVERLAY CAMÉRA IDENTIFICATION ══ -->
+<div id="identif-cam-overlay">
+  <video id="identif-cam-video" playsinline autoplay muted></video>
+  <div id="identif-cam-bar">
+    <button id="identif-cam-cancel" onclick="identifFermerCamera()">Annuler</button>
+    <button id="identif-cam-shutter" onclick="identifCapturerPhoto()"></button>
+    <div style="min-width:72px;"></div>
   </div>
 </div>
 
@@ -2987,35 +3004,43 @@ onValue(identifRef, snap => {
   identifRendre();
 });
 
-function identifPrendrePhoto() {
-  document.getElementById('identif-input').click();
+let _identifStream = null;
+
+async function identifOuvrirCamera() {
+  try {
+    _identifStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    });
+    const video = document.getElementById('identif-cam-video');
+    video.srcObject = _identifStream;
+    document.getElementById('identif-cam-overlay').classList.add('active');
+  } catch(e) {
+    showToast('Caméra non disponible');
+  }
 }
 
-function identifTraiterPhoto(input) {
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const imgEl = new Image();
-    imgEl.onload = () => {
-      const MAX = 700;
-      const canvas = document.createElement('canvas');
-      let w = imgEl.width, h = imgEl.height;
-      if(w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
-      const b64 = canvas.toDataURL('image/jpeg', 0.65);
-      const now = new Date();
-      const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
-                 + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-      push(identifRef, { photo: b64, code: '', date })
-        .then(() => showToast('📷 Photo envoyée !'))
-        .catch(() => showToast('Erreur envoi photo'));
-    };
-    imgEl.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-  input.value = '';
+function identifFermerCamera() {
+  if(_identifStream) { _identifStream.getTracks().forEach(t => t.stop()); _identifStream = null; }
+  document.getElementById('identif-cam-overlay').classList.remove('active');
+}
+
+function identifCapturerPhoto() {
+  const video = document.getElementById('identif-cam-video');
+  const MAX = 800;
+  const canvas = document.createElement('canvas');
+  let w = video.videoWidth, h = video.videoHeight;
+  if(w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+  const b64 = canvas.toDataURL('image/jpeg', 0.7);
+  identifFermerCamera();
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
+             + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  push(identifRef, { photo: b64, code: '', date })
+    .then(() => showToast('📷 Photo envoyée !'))
+    .catch(() => showToast('Erreur envoi photo'));
 }
 
 function identifRendre() {
