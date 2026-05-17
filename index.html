@@ -372,6 +372,21 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 #identif-modal-code { flex:1; background:var(--card); border:1.5px solid var(--sep); border-radius:12px; padding:12px 14px; font-size:18px; font-weight:700; color:var(--accent); text-align:center; letter-spacing:1px; }
 .identif-item { background:var(--card); border-radius:14px; padding:12px; display:flex; gap:12px; align-items:center; margin-bottom:8px; cursor:pointer; transition:opacity .15s; }
 .identif-item:active { opacity:.7; }
+/* ── Chaussures ── */
+.chaussures-item { background:var(--card); border-radius:14px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.chaussures-code { font-size:32px; font-weight:900; color:var(--accent); letter-spacing:2px; }
+.chaussures-date { font-size:11px; color:var(--text3); margin-top:2px; }
+.chaussures-del { background:var(--red,#e53e3e); color:#fff; border:none; border-radius:10px; width:36px; height:36px; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+/* Clavier numérique */
+#chaussures-modal { position:fixed; inset:0; z-index:9990; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; }
+#chaussures-modal.open { display:flex; }
+#chaussures-modal-sheet { background:var(--bg); border-radius:22px 22px 0 0; width:100%; max-width:420px; padding:24px 20px calc(24px + var(--safe-bot,0px)); }
+#chaussures-display { background:var(--card); border-radius:14px; padding:18px; text-align:center; font-size:42px; font-weight:900; color:var(--accent); letter-spacing:4px; min-height:76px; margin-bottom:20px; }
+.kp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.kp-btn { background:var(--card); border:none; border-radius:14px; height:64px; font-size:26px; font-weight:700; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:opacity .1s; }
+.kp-btn:active { opacity:.6; }
+.kp-btn.del { background:var(--bg); font-size:22px; }
+.kp-btn.ok { background:var(--accent); color:var(--accent2); font-size:20px; font-weight:800; }
 #lex-bc-modal { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,.85); display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; }
 #lex-bc-modal.open { display:flex; }
 #lex-bc-modal-inner { background:#fff; border-radius:20px; padding:28px 24px; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px; }
@@ -980,6 +995,14 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <button onclick="caisseVider()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Tout vider</button>
       </div>
 
+      <!-- ── Chaussures ── -->
+      <div class="section-hdr" style="margin-top:4px;">👟 Paires à chercher</div>
+      <div id="chaussures-list"></div>
+      <button class="scan-btn-main" onclick="ouvrirClavierChaussure()" style="margin-bottom:16px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Ajouter une paire
+      </button>
+
       <!-- ── Identification articles ── -->
       <div class="section-hdr" style="margin-top:4px;">🔍 Identification articles</div>
       <button class="scan-btn-main" onclick="identifOuvrirCamera()" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
@@ -1207,6 +1230,28 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
     <div class="lex-save-btns">
       <button class="btn-skip" onclick="lexSaveIgnorer()">Ignorer</button>
       <button class="btn-confirm" onclick="lexSaveConfirmer()">Ajouter ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALE CLAVIER CHAUSSURES ══ -->
+<div id="chaussures-modal" onclick="fermerClavierChaussure()">
+  <div id="chaussures-modal-sheet" onclick="event.stopPropagation()">
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;">👟 Code de la paire</div>
+    <div id="chaussures-display">—</div>
+    <div class="kp-grid">
+      <button class="kp-btn" onclick="kpTap('1')">1</button>
+      <button class="kp-btn" onclick="kpTap('2')">2</button>
+      <button class="kp-btn" onclick="kpTap('3')">3</button>
+      <button class="kp-btn" onclick="kpTap('4')">4</button>
+      <button class="kp-btn" onclick="kpTap('5')">5</button>
+      <button class="kp-btn" onclick="kpTap('6')">6</button>
+      <button class="kp-btn" onclick="kpTap('7')">7</button>
+      <button class="kp-btn" onclick="kpTap('8')">8</button>
+      <button class="kp-btn" onclick="kpTap('9')">9</button>
+      <button class="kp-btn del" onclick="kpDel()">⌫</button>
+      <button class="kp-btn" onclick="kpTap('0')">0</button>
+      <button class="kp-btn ok" onclick="kpValider()">✓</button>
     </div>
   </div>
 </div>
@@ -2822,6 +2867,31 @@ function lexiqueFermerModal() {
   document.getElementById('lex-bc-modal').classList.remove('open');
 }
 
+// ── Chaussures : clavier numérique ──
+let _kpVal = '';
+function ouvrirClavierChaussure() {
+  _kpVal = '';
+  document.getElementById('chaussures-display').textContent = '—';
+  document.getElementById('chaussures-modal').classList.add('open');
+}
+function fermerClavierChaussure() {
+  document.getElementById('chaussures-modal').classList.remove('open');
+}
+function kpTap(d) {
+  if(_kpVal.length >= 6) return;
+  _kpVal += d;
+  document.getElementById('chaussures-display').textContent = _kpVal;
+}
+function kpDel() {
+  _kpVal = _kpVal.slice(0, -1);
+  document.getElementById('chaussures-display').textContent = _kpVal || '—';
+}
+function kpValider() {
+  if(!_kpVal) return;
+  if(window.chaussuresAjouter) window.chaussuresAjouter(_kpVal);
+  fermerClavierChaussure();
+}
+
 // ── Identification : preview code-barres live ──
 function identifPreviewCode(val) {
   const wrap = document.getElementById('identif-modal-bc-wrap');
@@ -3084,6 +3154,43 @@ window.caisseFromScan = function(code) {
 };
 
 // ── IDENTIFICATION ARTICLES ──
+// ── CHAUSSURES ──
+const chaussuresRef = ref(db, 'chaussures_p854');
+let _chaussuresData = {};
+
+onValue(chaussuresRef, snap => {
+  _chaussuresData = snap.val() || {};
+  chaussuresRendre();
+});
+
+window.chaussuresAjouter = function(code) {
+  const now = new Date();
+  const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
+             + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  push(chaussuresRef, { code, date })
+    .then(() => showToast('👟 Paire ajoutée !'))
+    .catch(() => showToast('Erreur'));
+};
+
+window.chaussuresSupprimer = function(key) {
+  remove(ref(db, 'chaussures_p854/' + key)).catch(() => {});
+};
+
+function chaussuresRendre() {
+  const list = document.getElementById('chaussures-list');
+  if(!list) return;
+  const entries = Object.entries(_chaussuresData);
+  if(!entries.length) { list.innerHTML = '<p class="empty-state" style="margin-bottom:8px;">Aucune paire en attente</p>'; return; }
+  list.innerHTML = entries.map(([key, it]) => `
+    <div class="chaussures-item">
+      <div>
+        <div class="chaussures-code">${it.code}</div>
+        <div class="chaussures-date">${it.date || ''}</div>
+      </div>
+      <button class="chaussures-del" onclick="chaussuresSupprimer('${key}')">✕</button>
+    </div>`).join('');
+}
+
 const identifRef = ref(db, 'identification_p854');
 let _identifData = {};
 let _identifCurrentKey = null;
