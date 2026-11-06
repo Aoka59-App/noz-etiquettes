@@ -270,131 +270,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .spin { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:sp .7s linear infinite; }
 @keyframes sp { to { transform:rotate(360deg); } }
 #render-canvas { display:none; }
-
-/* ── COMMANDE ── */
-/* ── COMMANDE — formulaire ── */
-.cmd-order-form { background:var(--card); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; flex-direction:column; gap:10px; }
-.cmd-order-form > input { background:var(--bg); border:1.5px solid var(--sep); border-radius:10px; padding:11px 13px; font-size:16px; font-weight:600; color:var(--text); width:100%; }
-.cmd-order-form > input::placeholder { color:var(--text3); font-weight:400; }
-.cmd-form-lines { display:flex; flex-direction:column; gap:8px; }
-.cmd-form-line { background:var(--bg); border-radius:12px; padding:9px 10px; display:flex; flex-direction:column; gap:7px; }
-.cmd-form-row1 { display:flex; gap:7px; align-items:center; }
-.cmd-form-row2 { display:flex; gap:7px; align-items:center; }
-.cmd-scan-btn { background:var(--accent); border:none; border-radius:10px; width:44px; height:44px; min-width:44px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; color:var(--accent2); padding:0; }
-.cmd-scan-btn:active { opacity:.75; transform:scale(.94); }
-.cmd-fl-code { flex:1; background:var(--card); border:1.5px solid var(--sep); border-radius:9px; padding:10px 12px; font-size:15px; color:var(--text); font-family:monospace; letter-spacing:.5px; }
-.cmd-fl-label { flex:1; min-width:0; background:var(--card); border:1.5px solid var(--sep); border-radius:9px; padding:10px 12px; font-size:15px; color:var(--text); }
-.cmd-fl-code::placeholder,.cmd-fl-label::placeholder { color:var(--text3); font-family:-apple-system,sans-serif; letter-spacing:0; font-size:14px; }
-.cmd-fl-qty { width:58px; flex-shrink:0; background:var(--accent); border:none; border-radius:9px; padding:10px 6px; font-size:18px; font-weight:800; color:var(--accent2); text-align:center; -moz-appearance:textfield; }
-.cmd-fl-qty::-webkit-inner-spin-button,.cmd-fl-qty::-webkit-outer-spin-button { -webkit-appearance:none; }
-.cmd-fl-qty:focus { outline:2px solid var(--accent2); outline-offset:2px; }
-.cmd-form-del { background:none; border:none; width:32px; height:32px; font-size:22px; cursor:pointer; color:var(--text3); flex-shrink:0; padding:0; display:flex; align-items:center; justify-content:center; }
-.cmd-form-del:active { color:var(--red); }
-/* ── COMMANDE — liste des commandes ── */
-.cmd-badge { display:inline-block; background:var(--accent); color:#fff; border-radius:20px; font-size:12px; font-weight:700; padding:2px 10px; margin-left:8px; vertical-align:middle; }
-.cmd-section-hdr { font-size:11px; font-weight:700; letter-spacing:.8px; color:var(--text3); text-transform:uppercase; margin:14px 0 8px; }
-.cmd-order-card { background:var(--card); border-radius:14px; margin-bottom:8px; overflow:hidden; }
-.cmd-order-hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; cursor:pointer; gap:10px; user-select:none; }
-.cmd-order-hdr:active { background:var(--bg); }
-.cmd-order-name { font-size:17px; font-weight:700; color:var(--text); }
-.cmd-order-meta { font-size:12px; color:var(--text3); margin-top:2px; }
-.cmd-order-del { background:none; border:none; width:28px; height:28px; border-radius:50%; font-size:18px; cursor:pointer; color:var(--text3); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.cmd-order-del:active { background:var(--red); color:#fff; }
-.cmd-chevron { width:18px; height:18px; color:var(--text3); flex-shrink:0; transition:transform .2s; }
-.cmd-chevron.open { transform:rotate(180deg); }
-.cmd-order-items { border-top:0.5px solid var(--sep); }
-.cmd-order-item { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; border-bottom:0.5px solid var(--sep); }
-.cmd-order-item:last-child { border-bottom:none; }
-.cmd-order-item:active { background:var(--bg); }
-.cmd-qty-pill { background:var(--accent); color:var(--accent2); font-size:12px; font-weight:800; border-radius:20px; padding:3px 8px; flex-shrink:0; min-width:30px; text-align:center; }
-.cmd-order-item-info { flex:1; min-width:0; }
-.cmd-order-item-label { font-size:14px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.cmd-order-item-code { font-size:12px; color:var(--text3); font-family:monospace; margin-top:1px; }
-.cmd-bc-icon { color:var(--text3); flex-shrink:0; }
-/* ── Clavier quantité (conservé pour compatibilité) ── */
-#cmd-qty-modal { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.55); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
-#cmd-qty-modal.open { display:flex; }
-#cmd-qty-inner { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(16px + var(--safe-bot)); width:100%; max-width:360px; }
-#cmd-qty-title { font-size:13px; color:var(--text3); text-align:center; margin-bottom:10px; font-weight:600; }
-#cmd-qty-display { font-size:40px; font-weight:700; text-align:center; color:var(--text); padding:14px 20px; background:var(--bg); border-radius:14px; margin-bottom:14px; letter-spacing:6px; min-height:70px; }
-.cmd-qty-keys { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-.cmd-qty-keys button { padding:17px 10px; font-size:22px; font-weight:700; border:none; border-radius:12px; background:var(--bg); color:var(--text); cursor:pointer; line-height:1; }
-.cmd-qty-keys button:active { background:var(--sep); transform:scale(.95); }
-.cmd-qty-ok { background:var(--accent) !important; color:var(--accent2) !important; font-size:20px !important; }
-.cmd-qty-del { font-size:18px !important; color:var(--text2) !important; }
-
-/* ── MODALE AJOUT LEXIQUE DEPUIS SAISIE ── */
-#lex-save-modal { position:fixed; inset:0; z-index:9997; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
-#lex-save-modal.open { display:flex; }
-#lex-save-inner { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(20px + var(--safe-bot)); width:100%; max-width:500px; display:flex; flex-direction:column; gap:12px; }
-#lex-save-inner h3 { font-size:17px; font-weight:700; color:var(--text1); margin:0; }
-#lex-save-inner .lex-info { font-size:13px; color:var(--text3); background:var(--bg); border-radius:10px; padding:10px 12px; }
-#lex-save-inner select, #lex-save-inner input { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:15px; color:var(--text1); width:100%; box-sizing:border-box; }
-.lex-save-btns { display:flex; gap:8px; }
-.lex-save-btns button { flex:1; padding:12px; border-radius:12px; border:none; font-size:15px; font-weight:700; cursor:pointer; }
-.lex-save-btns .btn-confirm { background:var(--accent); color:#fff; }
-.lex-save-btns .btn-skip { background:var(--bg); color:var(--text2); border:1.5px solid var(--border); }
-
-/* ── LEXIQUE ── */
-.lex-cats { display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; scrollbar-width:none; margin-bottom:14px; }
-.lex-cats::-webkit-scrollbar { display:none; }
-.lex-cat-btn { flex-shrink:0; padding:7px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--card); color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .18s; }
-.lex-cat-btn.active { background:var(--accent); color:var(--accent2); border-color:var(--accent); }
-.lex-subcats { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; scrollbar-width:none; margin-bottom:14px; }
-.lex-subcats::-webkit-scrollbar { display:none; }
-.lex-subcats.hidden { display:none; }
-.lex-subcat-btn { flex-shrink:0; padding:6px 13px; border-radius:16px; border:1.5px solid var(--border); background:var(--bg); color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .18s; }
-.lex-subcat-btn.active { background:var(--accent2); color:var(--accent); border-color:var(--accent2); }
-.lex-sort-btn { flex:1; padding:7px 6px; border-radius:10px; border:1.5px solid var(--sep); background:var(--card); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .15s; }
-.lex-sort-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-.lex-add-form { background:var(--card); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; flex-direction:column; gap:10px; }
-.lex-add-form input { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:15px; color:var(--text1); width:100%; box-sizing:border-box; }
-.lex-add-form input::placeholder { color:var(--text3); }
-.lex-add-row { display:flex; gap:8px; align-items:stretch; }
-.lex-add-row input { flex:1; }
-.lex-items { display:flex; flex-direction:column; gap:10px; }
-.lex-item { background:var(--card); border-radius:14px; padding:14px 44px 14px 14px; position:relative; cursor:pointer; active-opacity:.7; }
-.lex-item:active { opacity:.7; }
-.lex-item-label { font-size:16px; font-weight:700; color:var(--text1); margin-bottom:4px; }
-.lex-item-code { font-size:12px; color:var(--text3); font-weight:600; letter-spacing:.5px; font-family:monospace; }
-.lex-item-price { font-size:15px; font-weight:800; color:var(--accent); }
-.lex-item-del { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--red,#e53e3e); color:#fff; border:none; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
-.lex-item-thumb { width:56px; height:56px; border-radius:9px; object-fit:cover; flex-shrink:0; }
-#lex-add-photo-preview { width:64px; height:64px; border-radius:10px; object-fit:cover; display:none; flex-shrink:0; }
-#lex-bc-modal-img { width:100%; max-height:200px; object-fit:contain; border-radius:12px; display:none; }
-/* Modale code-barres */
-#identif-modal { position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.94); display:none; flex-direction:column; align-items:center; justify-content:flex-end; padding:0; }
-#identif-modal.open { display:flex; }
-#identif-modal-sheet { background:var(--bg); border-radius:22px 22px 0 0; width:100%; max-width:480px; padding:20px 20px calc(20px + var(--safe-bot,0px)); display:flex; flex-direction:column; gap:12px; }
-#identif-modal-img-wrap { width:100%; border-radius:14px; overflow:hidden; background:#000; display:flex; align-items:center; justify-content:center; max-height:52vh; }
-#identif-modal-img { width:100%; max-height:52vh; object-fit:contain; display:block; }
-#identif-modal-code-row { display:flex; gap:8px; align-items:center; }
-#identif-modal-code { flex:1; background:var(--card); border:1.5px solid var(--sep); border-radius:12px; padding:12px 14px; font-size:18px; font-weight:700; color:var(--accent); text-align:center; letter-spacing:1px; }
-.identif-item { background:var(--card); border-radius:14px; padding:12px; display:flex; gap:12px; align-items:center; margin-bottom:8px; cursor:pointer; transition:opacity .15s; }
-.identif-item:active { opacity:.7; }
-/* ── Chaussures ── */
-.chaussures-item { background:var(--card); border-radius:14px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.chaussures-code { font-size:32px; font-weight:900; color:var(--accent); letter-spacing:2px; }
-.chaussures-date { font-size:11px; color:var(--text3); margin-top:2px; }
-.chaussures-del { background:var(--red,#e53e3e); color:#fff; border:none; border-radius:10px; width:36px; height:36px; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-/* Clavier numérique */
-#chaussures-modal { position:fixed; inset:0; z-index:9990; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; }
-#chaussures-modal.open { display:flex; }
-#chaussures-modal-sheet { background:var(--bg); border-radius:22px 22px 0 0; width:100%; max-width:420px; padding:24px 20px calc(24px + var(--safe-bot,0px)); }
-#chaussures-display { background:var(--card); border-radius:14px; padding:18px; text-align:center; font-size:42px; font-weight:900; color:var(--accent); letter-spacing:4px; min-height:76px; margin-bottom:20px; }
-.kp-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-.kp-btn { background:var(--card); border:none; border-radius:14px; height:64px; font-size:26px; font-weight:700; color:var(--text); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:opacity .1s; }
-.kp-btn:active { opacity:.6; }
-.kp-btn.del { background:var(--bg); font-size:22px; }
-.kp-btn.ok { background:var(--accent); color:var(--accent2); font-size:20px; font-weight:800; }
-#lex-bc-modal { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,.85); display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; }
-#lex-bc-modal.open { display:flex; }
-#lex-bc-modal-inner { background:#fff; border-radius:20px; padding:28px 24px; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px; }
-#lex-bc-modal-svg { width:100%; }
-#lex-bc-modal-svg svg { width:100%; height:auto; display:block; }
-#lex-bc-modal-label { font-size:17px; font-weight:700; color:#1a2d5a; text-align:center; }
-#lex-bc-modal-code { font-size:13px; color:#888; font-family:monospace; letter-spacing:.5px; }
-#lex-bc-modal-close { margin-top:4px; padding:12px 40px; background:#1a2d5a; color:#f0c040; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
 .img-overlay { position:fixed; inset:0; z-index:1000; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .img-overlay-img-wrap { width:100%; background:#fff; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0; }
 .img-overlay img { width:100%; height:auto; display:block; image-rendering:crisp-edges; }
@@ -508,6 +383,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   height: 2px; background: var(--accent2); opacity: .8;
   animation: scanline 1.8s ease-in-out infinite;
 }
+@keyframes scanline { 0%,100%{top:4px} 50%{top:calc(100% - 6px)} }
 
 .scan-hint {
   position: absolute; bottom: 12px; left: 0; right: 0;
@@ -707,64 +583,39 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
       <button class="btn-ios gold" onclick="addArticle()">Ajouter l'article</button>
 
-      <!-- Bouton Série -->
-      <button class="btn-ios outline" id="btn-toggle-serie" onclick="toggleSerie()" style="margin-top:4px;">
-        <svg width="18" height="18" viewBox="0 0 26 26" fill="none">
-          <circle cx="7" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-          <circle cx="13" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-          <circle cx="19" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-          <line x1="9.5" y1="13" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
-          <line x1="15.5" y1="13" x2="16.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
-        </svg>
-        Série
-      </button>
+    </div>
 
-      <!-- Section Série intégrée -->
-      <div id="serie-panel" style="display:none;margin-top:4px;">
-        <div class="section-hdr">Paramètres de la série</div>
-        <div class="form-card">
-          <div class="form-field">
-            <label>Semaine</label>
-            <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
-          </div>
-          <div class="form-field">
-            <label>Nombre de paires</label>
-            <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
-          </div>
-          <div class="form-field">
-            <label>Exemplaires / paire</label>
-            <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
-          </div>
+    <!-- ══ SÉRIE ══ -->
+    <div class="page" id="page-serie">
+
+      <div class="section-hdr">Paramètres de la série</div>
+      <div class="form-card">
+        <div class="form-field">
+          <label>Semaine</label>
+          <input id="ser-semaine" type="number" placeholder="16" min="1" max="53" inputmode="numeric"/>
         </div>
-        <div class="ser-preview-txt" id="ser-preview">
-          <span id="ser-preview-txt"></span>
+        <div class="form-field">
+          <label>Nombre de paires</label>
+          <input id="ser-nb" type="number" placeholder="50" min="1" max="999" inputmode="numeric"/>
         </div>
-        <button class="btn-ios gold" onclick="genererSerie()">Générer la série</button>
-        <div class="ser-result" id="ser-result">
-          <div style="font-size:14px;color:var(--text);margin-bottom:10px;" id="ser-result-txt"></div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu</button>
-            <button class="btn-ios sm outline" style="flex:1;margin-bottom:0;" onclick="viderSerie()">Vider</button>
-          </div>
+        <div class="form-field">
+          <label>Exemplaires / paire</label>
+          <input id="ser-qty" type="number" value="2" min="1" max="10" inputmode="numeric"/>
         </div>
       </div>
 
-      <!-- Bouton Articles -->
-      <button class="btn-ios outline" id="btn-toggle-articles" onclick="toggleArticles()" style="margin-top:4px;">
-        <svg width="18" height="18" viewBox="0 0 26 26" fill="none">
-          <rect x="3" y="5" width="20" height="16" rx="3" stroke="currentColor" stroke-width="1.8"/>
-          <line x1="7" y1="10" x2="19" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          <line x1="7" y1="14" x2="16" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
-        Articles
-      </button>
+      <div class="ser-preview-txt" id="ser-preview">
+        <span id="ser-preview-txt"></span>
+      </div>
 
-      <!-- Panel Articles -->
-      <div id="articles-panel" style="display:none;margin-top:6px;">
-        <div style="background:var(--card);border-radius:12px;overflow:hidden;margin-bottom:8px;">
-          <div id="articles-panel-list"><p class="empty-state" style="font-size:13px;padding:14px;">Aucun article</p></div>
+      <button class="btn-ios gold" onclick="genererSerie()">Générer la série</button>
+
+      <div class="ser-result" id="ser-result">
+        <div style="font-size:14px;color:var(--text);margin-bottom:10px;" id="ser-result-txt"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-ios sm" style="flex:1;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu</button>
+          <button class="btn-ios sm outline" style="flex:1;margin-bottom:0;" onclick="viderSerie()">Vider</button>
         </div>
-        <button class="btn-ios sm outline" style="width:100%;margin-bottom:0;" onclick="showTabById('liste')">Voir l'aperçu complet →</button>
       </div>
 
     </div>
@@ -995,126 +846,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <button onclick="caisseVider()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">Tout vider</button>
       </div>
 
-      <!-- ── Chaussures ── -->
-      <div class="section-hdr" style="margin-top:4px;">👟 Paires à chercher</div>
-      <div id="chaussures-list"></div>
-      <button class="scan-btn-main" onclick="ouvrirClavierChaussure()" style="margin-bottom:16px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Ajouter une paire
-      </button>
-
-      <!-- ── Identification articles ── -->
-      <div class="section-hdr" style="margin-top:4px;">🔍 Identification articles</div>
-      <button class="scan-btn-main" onclick="identifOuvrirCamera()" style="margin-bottom:10px;background:var(--card);color:var(--text);border:1.5px dashed var(--sep);">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        Photographier un article inconnu
-      </button>
-      <div id="identif-list"><p class="empty-state">Aucune demande en cours</p></div>
-
-    </div>
-
-    <!-- ══ COMMANDE ══ -->
-    <div class="page" id="page-commande">
-
-      <!-- Statut sync -->
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px;">
-        <div id="cmd-sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .4s;"></div>
-        <span style="font-size:12px;color:var(--text3);">Commandes partagées en temps réel</span>
-      </div>
-
-      <!-- Formulaire nouvelle commande -->
-      <div class="cmd-section-hdr">Nouvelle commande</div>
-      <div class="cmd-order-form">
-        <input id="cmd-inp-name" type="text" placeholder="Nom de la personne" autocomplete="off"/>
-        <div class="cmd-form-lines" id="cmd-form-lines"></div>
-        <button class="btn-ios outline" style="margin:0;font-size:14px;padding:10px;" onclick="cmdFormAjouterLigne()">+ Ajouter un produit</button>
-        <button class="btn-ios" style="margin:0;" onclick="cmdValiderOrdre()">✓ Valider la commande</button>
-      </div>
-
-      <!-- Liste des commandes -->
-      <div class="cmd-section-hdr">Commandes en attente <span id="cmd-count-badge" class="cmd-badge" style="display:none;">0</span></div>
-      <div id="cmd-orders-list">
-        <p class="empty-state">Aucune commande</p>
-      </div>
-
-      <!-- Vider -->
-      <button class="btn-ios outline" style="margin-top:6px;" onclick="cmdVider()">🗑 Vider tout</button>
-
-    </div>
-
-    <!-- ══ LEXIQUE ══ -->
-    <div class="page" id="page-lexique">
-
-      <!-- Statut sync -->
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
-        <div id="lex-sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .4s;"></div>
-        <span style="font-size:12px;color:var(--text3);">Synchronisation cloud</span>
-      </div>
-
-      <!-- Catégories -->
-      <div class="lex-cats" id="lex-cats-bar">
-        <button class="lex-cat-btn active" data-cat="alimentation" onclick="lexiqueSelectCat('alimentation')">Alimentation</button>
-        <button class="lex-cat-btn" data-cat="dph" onclick="lexiqueSelectCat('dph')">DPH</button>
-        <button class="lex-cat-btn" data-cat="bazar" onclick="lexiqueSelectCat('bazar')">Bazar</button>
-        <button class="lex-cat-btn" data-cat="plantes" onclick="lexiqueSelectCat('plantes')">Plantes</button>
-        <button class="lex-cat-btn" data-cat="saisonnier" onclick="lexiqueSelectCat('saisonnier')">Saisonnier</button>
-        <button class="lex-cat-btn" data-cat="tdm" onclick="lexiqueSelectCat('tdm')">TDM</button>
-        <button class="lex-cat-btn" data-cat="textile" onclick="lexiqueSelectCat('textile')">Textile Futura</button>
-      </div>
-
-      <!-- Sous-catégories Alimentation -->
-      <div class="lex-subcats" id="lex-subcats-bar">
-        <button class="lex-subcat-btn active" data-sub="nourriture" onclick="lexiqueSelectSub('nourriture')">🍽 Nourriture</button>
-        <button class="lex-subcat-btn" data-sub="boisson" onclick="lexiqueSelectSub('boisson')">🥤 Boisson</button>
-        <button class="lex-subcat-btn" data-sub="surgeles" onclick="lexiqueSelectSub('surgeles')">❄️ Surgelés</button>
-      </div>
-
-      <!-- Recherche -->
-      <div style="position:relative;margin-bottom:10px;">
-        <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="var(--text3)" stroke-width="2"/>
-          <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="var(--text3)" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <input id="lex-search" type="search" placeholder="Rechercher un produit ou un code…"
-          autocomplete="off" oninput="lexiqueRendre()"
-          style="width:100%;background:var(--card);border:1.5px solid var(--sep);border-radius:12px;padding:10px 36px 10px 36px;font-size:15px;color:var(--text);"/>
-        <button id="lex-search-clear" onclick="lexiqueEffacerRecherche()"
-          style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;padding:0;width:24px;height:24px;">×</button>
-      </div>
-
-      <!-- Tri -->
-      <div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="lex-sort-btn active" id="lex-sort-default" onclick="lexiqueSetTri('default')">Par défaut</button>
-        <button class="lex-sort-btn" id="lex-sort-az" onclick="lexiqueSetTri('az')">A → Z</button>
-        <button class="lex-sort-btn" id="lex-sort-price" onclick="lexiqueSetTri('price')">Prix ↑</button>
-      </div>
-
-      <!-- Formulaire ajout -->
-      <div class="lex-add-form">
-        <div style="display:flex;gap:10px;align-items:center;">
-          <button type="button" onclick="lexiqueOuvrirCameraAjout()" style="background:var(--bg);border:1.5px dashed var(--sep);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/></svg>
-            Photo
-          </button>
-          <img id="lex-add-photo-preview" src="" alt=""/>
-          <button type="button" id="lex-add-photo-del" onclick="lexiqueEffacerPhotoAjout()" style="display:none;background:var(--red,#e53e3e);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:5px 9px;cursor:pointer;">✕</button>
-        </div>
-        <input id="lex-inp-label" type="text" placeholder="Intitulé (nom du produit)" autocomplete="off"/>
-        <div class="lex-add-row">
-          <input id="lex-inp-code" type="text" inputmode="numeric" placeholder="Code article (EAN)" autocomplete="off"/>
-          <input id="lex-inp-price" type="text" inputmode="decimal" placeholder="Prix" autocomplete="off" style="max-width:90px;"/>
-        </div>
-        <button class="btn-ios" style="margin:0;" onclick="lexiqueAjouter()">+ Ajouter</button>
-      </div>
-
-      <!-- Liste articles -->
-      <div class="lex-items" id="lex-list">
-        <p class="empty-state">Aucun article dans cette catégorie</p>
-      </div>
-
     </div>
 
 
@@ -1128,6 +859,26 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Saisie</span>
     </button>
+    <button class="tb-item" id="tb-serie" onclick="showTabById('serie')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <circle cx="7" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="13" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="19" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="9.5" y1="13" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+        <line x1="15.5" y1="13" x2="16.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+      </svg>
+      <span class="tb-label">Série</span>
+    </button>
+    <button class="tb-item" id="tb-liste" onclick="showTabById('liste')">
+      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
+        <rect x="4" y="4" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.8"/>
+        <line x1="8" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8" y1="14" x2="18" y2="14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="8" y1="18" x2="13" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="tb-label">Articles</span>
+    </button>
+
     <button class="tb-item" id="tb-rvn" onclick="showTabById('rvn')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
         <rect x="3" y="4" width="20" height="18" rx="3" stroke="currentColor" stroke-width="1.8"/>
@@ -1162,140 +913,10 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Caisse</span>
     </button>
-    <button class="tb-item" id="tb-commande" onclick="showTabById('commande')">
-      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <path d="M4 5h2l2.5 11h10l2-7H8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="11" cy="20" r="1.5" fill="currentColor"/>
-        <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
-      </svg>
-      <span class="tb-label">Commande</span>
-    </button>
-    <button class="tb-item" id="tb-lexique" onclick="showTabById('lexique')">
-      <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <rect x="4" y="3" width="14" height="20" rx="2" stroke="currentColor" stroke-width="1.8"/>
-        <line x1="7" y1="9" x2="14" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="7" y1="13" x2="14" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <line x1="7" y1="17" x2="11" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <circle cx="20" cy="20" r="4" fill="var(--accent)" stroke="none"/>
-        <line x1="20" y1="18" x2="20" y2="22" stroke="var(--accent2)" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="18" y1="20" x2="22" y2="20" stroke="var(--accent2)" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <span class="tb-label">Lexique</span>
-    </button>
 
   </div>
 
 
-</div>
-
-<!-- ══ CLAVIER QUANTITÉ COMMANDE ══ -->
-<div id="cmd-qty-modal" onclick="cmdQtyFermer()">
-  <div id="cmd-qty-inner" onclick="event.stopPropagation()">
-    <div id="cmd-qty-title">Quantité</div>
-    <div id="cmd-qty-display">1</div>
-    <div class="cmd-qty-keys">
-      <button onclick="cmdQtyKey('7')">7</button>
-      <button onclick="cmdQtyKey('8')">8</button>
-      <button onclick="cmdQtyKey('9')">9</button>
-      <button onclick="cmdQtyKey('4')">4</button>
-      <button onclick="cmdQtyKey('5')">5</button>
-      <button onclick="cmdQtyKey('6')">6</button>
-      <button onclick="cmdQtyKey('1')">1</button>
-      <button onclick="cmdQtyKey('2')">2</button>
-      <button onclick="cmdQtyKey('3')">3</button>
-      <button class="cmd-qty-del" onclick="cmdQtyDel()">⌫</button>
-      <button onclick="cmdQtyKey('0')">0</button>
-      <button class="cmd-qty-ok" onclick="cmdQtyValider()">✓</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODALE SAUVEGARDER DANS LEXIQUE ══ -->
-<div id="lex-save-modal" onclick="lexSaveIgnorer()">
-  <div id="lex-save-inner" onclick="event.stopPropagation()">
-    <h3>📚 Ajouter au Lexique</h3>
-    <div class="lex-info" id="lex-save-info"></div>
-    <input id="lex-save-label" type="text" placeholder="Désignation du produit" autocomplete="off"/>
-    <select id="lex-save-cat" onchange="lexSaveCatChange()">
-      <option value="alimentation_nourriture">Alimentation — Nourriture</option>
-      <option value="alimentation_boisson">Alimentation — Boisson</option>
-      <option value="alimentation_surgeles">Alimentation — Surgelés</option>
-      <option value="dph">DPH</option>
-      <option value="bazar">Bazar</option>
-      <option value="plantes">Plantes</option>
-      <option value="saisonnier">Saisonnier</option>
-      <option value="tdm">TDM</option>
-      <option value="textile">Textile Futura</option>
-    </select>
-    <div class="lex-save-btns">
-      <button class="btn-skip" onclick="lexSaveIgnorer()">Ignorer</button>
-      <button class="btn-confirm" onclick="lexSaveConfirmer()">Ajouter ✓</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODALE CLAVIER CHAUSSURES ══ -->
-<div id="chaussures-modal" onclick="fermerClavierChaussure()">
-  <div id="chaussures-modal-sheet" onclick="event.stopPropagation()">
-    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;">👟 Code de la paire</div>
-    <div id="chaussures-display">—</div>
-    <div class="kp-grid">
-      <button class="kp-btn" onclick="kpTap('1')">1</button>
-      <button class="kp-btn" onclick="kpTap('2')">2</button>
-      <button class="kp-btn" onclick="kpTap('3')">3</button>
-      <button class="kp-btn" onclick="kpTap('4')">4</button>
-      <button class="kp-btn" onclick="kpTap('5')">5</button>
-      <button class="kp-btn" onclick="kpTap('6')">6</button>
-      <button class="kp-btn" onclick="kpTap('7')">7</button>
-      <button class="kp-btn" onclick="kpTap('8')">8</button>
-      <button class="kp-btn" onclick="kpTap('9')">9</button>
-      <button class="kp-btn del" onclick="kpDel()">⌫</button>
-      <button class="kp-btn" onclick="kpTap('0')">0</button>
-      <button class="kp-btn ok" onclick="kpValider()">✓</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODALE IDENTIFICATION ARTICLES ══ -->
-<div id="identif-modal" onclick="identifFermerModal()">
-  <div id="identif-modal-sheet" onclick="event.stopPropagation()">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-      <div style="font-size:16px;font-weight:700;color:var(--text);">🔍 Identifier l'article</div>
-      <div id="identif-modal-date" style="font-size:12px;color:var(--text3);"></div>
-    </div>
-    <div id="identif-modal-img-wrap">
-      <img id="identif-modal-img" src="" alt="Photo article"/>
-    </div>
-    <div id="identif-modal-code-row">
-      <button onclick="ouvrirScanner('identif')" style="background:var(--accent);border:none;border-radius:12px;width:48px;height:48px;min-width:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-        <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
-          <path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
-          <path d="M22 9V5.5A1.5 1.5 0 0 0 20.5 4H17" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
-          <path d="M4 17v3.5A1.5 1.5 0 0 0 5.5 22H9" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
-          <path d="M22 17v3.5A1.5 1.5 0 0 1 20.5 22H17" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round"/>
-          <line x1="4" y1="13" x2="22" y2="13" stroke="var(--accent2)" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <input id="identif-modal-code" type="text" inputmode="numeric" placeholder="Code-barres…" autocomplete="off" oninput="identifPreviewCode(this.value)"/>
-    </div>
-    <div id="identif-modal-bc-wrap" style="display:none;background:#fff;border-radius:12px;padding:12px 4px;">
-      <svg id="identif-modal-barcode" style="width:100%;display:block;"></svg>
-    </div>
-    <button class="btn-ios gold" onclick="identifValiderCode()" style="font-size:16px;">✓ Valider le code</button>
-    <button onclick="identifFermerModal()" style="background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:4px;">Annuler</button>
-  </div>
-</div>
-
-<!-- ══ MODALE CODE-BARRES LEXIQUE ══ -->
-<div id="lex-bc-modal" onclick="lexiqueFermerModal()">
-  <div id="lex-bc-modal-inner" onclick="event.stopPropagation()">
-    <img id="lex-bc-modal-img" src="" alt=""/>
-    <div id="lex-bc-modal-svg"><svg id="lex-bc-modal-barcode"></svg></div>
-    <div id="lex-bc-modal-label"></div>
-    <div id="lex-bc-modal-code"></div>
-    <div id="lex-bc-modal-price" style="font-size:22px;font-weight:800;color:var(--accent);display:none;"></div>
-    <button id="lex-bc-modal-close" onclick="lexiqueFermerModal()">Fermer</button>
-  </div>
 </div>
 
 <!-- ══ SCANNER PLEIN ÉCRAN ══ -->
@@ -1309,8 +930,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   </div>
   <div class="scanner-status" id="scanner-status">Recherche d'un code-barres…</div>
   <div class="scanner-result-flash" id="scanner-flash"></div>
-  <!-- Bouton capture photo (mode identif uniquement) -->
-  <button id="scanner-shutter" onclick="scannerShutterCapture()" style="display:none;position:absolute;bottom:calc(32px + var(--safe-bot,0px));left:50%;transform:translateX(-50%);width:76px;height:76px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);cursor:pointer;z-index:10;"></button>
   <button class="scanner-close-btn" onclick="fermerScanner()">Annuler</button>
 </div>
 
@@ -1343,7 +962,7 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', commande:'Commande', lexique:'Lexique' };
+const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse' };
 
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
@@ -1353,12 +972,9 @@ function showTabById(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tb-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const tbEl = document.getElementById('tb-'+name);
-  if(tbEl) tbEl.classList.add('active');
+  document.getElementById('tb-'+name).classList.add('active');
   document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
   if(name==='liste') renderPreview();
-  if(name==='lexique') lexiqueRendre();
-  if(name==='commande') { cmdRendre(); cmdFormRendre(); }
   stopScan();
   stopScanSaisie();
 }
@@ -1445,12 +1061,9 @@ function addArticle() {
   ['inp-ref','inp-price','inp-code1','inp-code2','inp-uprice','inp-qprod'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('inp-qty').value='1';
   document.getElementById('inp-ref').focus();
-  renderArticlesPanel();
   showToast('Article ajouté !');
-  // Proposer d'ajouter au lexique
-  lexSaveOuvrir(ref, price);
 }
-function removeArticle(i){ articles.splice(i,1); save(); renderAll(); document.getElementById('img-wrap-normal').style.display='none'; renderArticlesPanel(); }
+function removeArticle(i){ articles.splice(i,1); save(); renderAll(); document.getElementById('img-wrap-normal').style.display='none'; }
 function clearAll(){
   if(!articles.length) return;
   if(!confirm('Effacer tous les articles ?')) return;
@@ -1680,49 +1293,77 @@ async function generatePNG(type) {
   btn.disabled=false; btn.innerHTML='PNG grille';
 }
 
-// ── Enregistrer dans Photos (1 étiquette à la fois) ──
+// ── Enregistrer dans Photos (feuille de partage iOS, toutes les étiquettes d'un coup) ──
+function canvasToFile(canvas, name) {
+  return new Promise(res => canvas.toBlob(blob => res(new File([blob], name, {type:'image/png'})), 'image/png'));
+}
+
 async function sauvegarderDansPhotos(type) {
   const btnId = type === 'serie' ? 'btn-save-serie' : 'btn-save-normal';
   const btn = document.getElementById(btnId);
-  btn.disabled = true;
   const origHTML = btn.innerHTML;
+  btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> Génération…';
+  const reset = () => { btn.disabled = false; btn.innerHTML = origHTML; };
 
-  const source = type === 'serie' ? articles.filter(a => a.isSerie) : articles.filter(a => !a.isSerie);
-  const labels = [];
-  source.forEach(a => { for(let i = 0; i < a.qty; i++) labels.push(a); });
-  if(!labels.length) { btn.disabled = false; btn.innerHTML = origHTML; return; }
+  try {
+    const source = type === 'serie' ? articles.filter(a => a.isSerie) : articles.filter(a => !a.isSerie);
+    const labels = [];
+    source.forEach(a => { for(let i = 0; i < a.qty; i++) labels.push(a); });
+    if(!labels.length) { reset(); return; }
 
-  const PX = 600/25.4, LW = Math.round(30*PX), LH = Math.round(14*PX);
-  const refs = [...new Set(labels.map(a => a.ref))];
-  const bcMap = {};
-  await Promise.all(refs.map(async r => { bcMap[r] = await barcodeToImg(r); }));
+    const PX = 600/25.4, LW = Math.round(30*PX), LH = Math.round(14*PX);
+    const refs = [...new Set(labels.map(a => a.ref))];
+    const bcMap = {};
+    await Promise.all(refs.map(async r => { bcMap[r] = await barcodeToImg(r); }));
+    const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
 
-  const ds = new Date().toLocaleDateString('fr-FR').replace(/\//g,'');
+    const files = [], urls = [];
+    for(let i = 0; i < labels.length; i++) {
+      const a = labels[i];
+      const canvas = document.createElement('canvas');
+      canvas.width = LW; canvas.height = LH;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, LW, LH);
+      dessinerEtiquette(ctx, a, 0, 0, LW, LH, bcMap[a.ref] || null, PX);
+      urls.push(canvas.toDataURL('image/png'));
+      files.push(await canvasToFile(canvas, `NOZ_${a.ref}_${String(i+1).padStart(2,'0')}_${ds}.png`));
+    }
 
-  for(let i = 0; i < labels.length; i++) {
-    const a = labels[i];
-    const canvas = document.createElement('canvas');
-    canvas.width = LW; canvas.height = LH;
-    const ctx = canvas.getContext('2d');
-    dessinerEtiquette(ctx, a, 0, 0, LW, LH, bcMap[a.ref] || null, PX);
-    const dataURL = canvas.toDataURL('image/png');
-    const fname = `NOZ_P854_${esc(a.ref)}_${String(i+1).padStart(2,'0')}_${ds}.png`;
-
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = fname;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    btn.innerHTML = `<span class="spin"></span> ${i+1}/${labels.length}…`;
-    if(i < labels.length - 1) await new Promise(r => setTimeout(r, 800));
+    // 1) Feuille de partage native → "Enregistrer N images"
+    if(navigator.canShare && navigator.canShare({files})) {
+      try {
+        await navigator.share({files});
+        showToast(`${files.length} étiquette${files.length>1?'s':''} prête${files.length>1?'s':''} !`);
+        reset(); return;
+      } catch(e) {
+        if(e && e.name === 'AbortError') { reset(); return; } // annulé par l'utilisateur
+        // sinon : on passe au plan B
+      }
+    }
+    // 2) Plan B : écran plein écran avec bouton + appui long
+    showSaveOverlay(urls, files);
+  } catch(e) {
+    showToast('Erreur lors de la génération');
   }
+  reset();
+}
 
-  showToast(`${labels.length} étiquette${labels.length > 1 ? 's' : ''} enregistrée${labels.length > 1 ? 's' : ''} !`);
-  btn.disabled = false;
-  btn.innerHTML = origHTML;
+function showSaveOverlay(urls, files) {
+  const old = document.getElementById('img-overlay'); if(old) old.remove();
+  const ov = document.createElement('div'); ov.className = 'img-overlay'; ov.id = 'img-overlay';
+  ov.innerHTML = `
+    <button class="overlay-close" id="ov-close" style="position:sticky;top:0;z-index:2;margin:0;width:100%;border-radius:0;">Fermer</button>
+    <button class="btn-ios green" id="ov-share" style="margin:12px 16px;width:calc(100% - 32px);">Enregistrer dans Photos</button>
+    <div class="overlay-tip">Ou appui long sur une étiquette<br>→ <span>"Enregistrer dans Photos"</span></div>
+    ${urls.map(u => `<div class="img-overlay-img-wrap" style="margin-bottom:10px;"><img src="${u}" alt="Étiquette"/></div>`).join('')}
+  `;
+  document.body.appendChild(ov);
+  document.getElementById('ov-close').onclick = () => ov.remove();
+  document.getElementById('ov-share').onclick = async () => {
+    try { await navigator.share({files}); }
+    catch(e) { if(!(e && e.name === 'AbortError')) showToast('Partage indisponible — utilisez l\'appui long'); }
+  };
 }
 
 // ── Impression directe ──
@@ -1924,80 +1565,27 @@ function decoderCodeBarres(file, onSuccess, onError) {
 }
 
 
-// ══ SCANNER VIDÉO — BarcodeDetector natif + ZXing fallback ══
-let scannerStream  = null;
-let scannerRunning = false;
-let scannerTarget  = null;
-let zxingReader    = null;
-let dernierLu      = '';
-let dernierLuTime  = 0;
-let _nativeDetector = null;
-let _scanCanvas     = null; // canvas réutilisé (évite la pression mémoire)
-
-// ── Normalisation EAN-13 / UPC-A ──
-// ZXing lit parfois un EAN-13 (13 chiffres) comme UPC-A (12 chiffres, sans le 0 initial)
-// ce qui provoque le "chiffre manquant". On restitue le 0.
-function normaliserCode(text, fmt) {
-  if(fmt === ZXing.BarcodeFormat.UPC_A && /^\d{12}$/.test(text)) {
-    return '0' + text;
-  }
-  return text;
-}
-
-function dispatcherCode(code) {
-  if(scannerTarget === 'rvn') {
-    document.getElementById('rvn-code').value = code;
-    rvnAdd();
-  } else if(scannerTarget === 'casse') {
-    document.getElementById('casse-code').value = code;
-    casseAdd();
-  } else if(scannerTarget === 'caisse-sync') {
-    if(typeof caisseFromScan === 'function') caisseFromScan(code);
-  } else if(scannerTarget === 'commande') {
-    if(_cmdFormLines[_cmdScanLineIdx] !== undefined) {
-      _cmdFormLines[_cmdScanLineIdx].code = code;
-      cmdFormRendre();
-      setTimeout(() => {
-        // Focus désignation de cette ligne après scan
-        const labels = document.querySelectorAll('#cmd-form-lines .cmd-fl-label');
-        if(labels[_cmdScanLineIdx]) labels[_cmdScanLineIdx].focus();
-      }, 80);
-    }
-  } else if(scannerTarget === 'identif') {
-    const inp = document.getElementById('identif-modal-code');
-    if(inp) { inp.value = code; bipScan(); }
-  } else if(scannerTarget === 'photo-identif') {
-    // mode photo : ne rien faire sur détection code, juste capturer au shutter
-  } else if(scannerTarget === 'photo-lexique') {
-    // mode photo lexique : ne rien faire sur détection code
-  } else {
-    afficherPanneauScan(code, null, null);
-  }
-}
+// ══ SCANNER VIDÉO — ZXing (lecture code-barres temps réel) ══
+let scannerStream   = null;
+let scannerRunning  = false;
+let scannerTarget   = null;
+let zxingReader     = null;
+let dernierLu       = '';
+let dernierLuTime   = 0;
 
 async function ouvrirScanner(target) {
-  scannerTarget  = target;
+  scannerTarget = target;
+  const overlay = document.getElementById('scanner-overlay');
+  const video   = document.getElementById('scanner-video');
+  overlay.classList.add('active');
   scannerRunning = true;
   dernierLu      = '';
 
-  document.getElementById('scanner-overlay').classList.add('active');
-  const video = document.getElementById('scanner-video');
-
-  // ── Initialiser BarcodeDetector natif (Chrome Android, Safari 17+) ──
-  if('BarcodeDetector' in window && !_nativeDetector) {
-    try {
-      const supported = await BarcodeDetector.getSupportedFormats();
-      const wanted    = ['ean_13','ean_8','code_128','code_39','upc_a','upc_e','itf'];
-      const formats   = wanted.filter(f => supported.includes(f));
-      _nativeDetector = new BarcodeDetector({ formats: formats.length ? formats : supported });
-    } catch(e) { _nativeDetector = null; }
-  }
-
-  // ── Initialiser ZXing (fallback) ──
+  // Initialiser ZXing si pas encore fait
   if(!zxingReader) {
     try {
       const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      const formats = [
         ZXing.BarcodeFormat.EAN_13,
         ZXing.BarcodeFormat.EAN_8,
         ZXing.BarcodeFormat.CODE_128,
@@ -2005,10 +1593,12 @@ async function ouvrirScanner(target) {
         ZXing.BarcodeFormat.UPC_A,
         ZXing.BarcodeFormat.UPC_E,
         ZXing.BarcodeFormat.ITF,
-      ]);
+      ];
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
       hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
       zxingReader = new ZXing.BrowserMultiFormatReader(hints);
     } catch(e) {
+      console.error('ZXing init error:', e);
       fermerScanner();
       afficherSaisieManuelle(target);
       return;
@@ -2017,7 +1607,7 @@ async function ouvrirScanner(target) {
 
   try {
     scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode:{ideal:'environment'}, width:{ideal:1280}, height:{ideal:720} },
       audio: false
     });
     video.srcObject = scannerStream;
@@ -2030,75 +1620,84 @@ async function ouvrirScanner(target) {
   }
 }
 
-// Capture frames en continu — BarcodeDetector natif en priorité, ZXing en fallback
-async function scannerLoop() {
+// Capture frames en continu et lit le code-barres avec ZXing
+function scannerLoop() {
   if(!scannerRunning) return;
   const video = document.getElementById('scanner-video');
-  if(video.readyState < 2) { setTimeout(scannerLoop, 200); return; }
-
-  const vw = video.videoWidth, vh = video.videoHeight;
-  const CADRE_W = 0.80, CADRE_H = CADRE_W / 2.1;
-  const sx = Math.round(vw * (1 - CADRE_W) / 2);
-  const sy = Math.round(vh * (1 - CADRE_H) / 2);
-  const sw = Math.round(vw * CADRE_W);
-  const sh = Math.round(vh * CADRE_H);
-
-  let code = null;
-
-  // ── 1. BarcodeDetector natif (plus rapide, plus précis, pas de problème de chiffre) ──
-  if(_nativeDetector) {
-    try {
-      const barcodes = await _nativeDetector.detect(video);
-      if(barcodes.length > 0) code = barcodes[0].rawValue;
-    } catch(e) { _nativeDetector = null; } // désactiver si erreur persistante
-  }
-
-  // ── 2. ZXing fallback — 2 passes avec canvas réutilisé ──
-  if(!code && zxingReader) {
-    if(!_scanCanvas) _scanCanvas = document.createElement('canvas');
-    const passes = [
-      { scale: 2.5, filter: 'contrast(1.4) brightness(1.05)' },
-      { scale: 2.5, filter: 'grayscale(1) contrast(2.2)'     },
-    ];
-    for(const pass of passes) {
-      if(!scannerRunning) return;
-      try {
-        _scanCanvas.width  = Math.round(sw * pass.scale);
-        _scanCanvas.height = Math.round(sh * pass.scale);
-        const ctx = _scanCanvas.getContext('2d');
-        ctx.filter = pass.filter;
-        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, _scanCanvas.width, _scanCanvas.height);
-        const result = zxingReader.decodeBitmap(
-          new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(_scanCanvas)))
-        );
-        if(result && result.getText()) {
-          code = normaliserCode(result.getText(), result.getBarcodeFormat());
-          break;
-        }
-      } catch(e) { /* pas de code dans cette passe */ }
-    }
-  }
-
-  if(code) {
-    const now = Date.now();
-    // Anti-doublon : même code lu dans les 3 dernières secondes → ignorer
-    if(code === dernierLu && now - dernierLuTime < 3000) {
-      if(scannerRunning) setTimeout(scannerLoop, 300);
-      return;
-    }
-    dernierLu = code; dernierLuTime = now;
-
-    const flash = document.getElementById('scanner-flash');
-    flash.classList.add('flash');
-    setTimeout(() => flash.classList.remove('flash'), 200);
-    bipScan();
-    fermerScanner();
-    dispatcherCode(code);
+  if(video.readyState < 2) {
+    setTimeout(scannerLoop, 200);
     return;
   }
 
+  const vw = video.videoWidth, vh = video.videoHeight;
+
+  // ── Le cadre visuel occupe 80% de la largeur écran, ratio 2.1:1 ──
+  // On découpe la même zone dans le flux vidéo, upscalée ×2.5 pour ZXing
+  const CADRE_W = 0.80;                       // 80% de la largeur vidéo
+  const CADRE_H = CADRE_W / 2.1;             // ratio 2.1:1
+  const sx = vw * (1 - CADRE_W) / 2;
+  const sy = vh * (1 - CADRE_H) / 2;
+  const sw = vw * CADRE_W;
+  const sh = vh * CADRE_H;
+
+  // Stratégie : 3 passes avec zoom croissant sur la même zone centrale
+  const passes = [
+    { scale: 2.5, filter: 'contrast(1.5) brightness(1.05)' }, // normal + contraste
+    { scale: 3.5, filter: 'contrast(2.0) brightness(1.10)' }, // forte densification
+    { scale: 2.5, filter: 'grayscale(1) contrast(2.5)'     }, // N&B pur si fond coloré
+  ];
+
+  for(const pass of passes) {
+    if(!scannerRunning) return;
+    try {
+      const c = document.createElement('canvas');
+      c.width  = Math.round(sw * pass.scale);
+      c.height = Math.round(sh * pass.scale);
+      const ctx = c.getContext('2d');
+      ctx.filter = pass.filter;
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
+
+      const luminanceSource = new ZXing.HTMLCanvasElementLuminanceSource(c);
+      const binarizer       = new ZXing.HybridBinarizer(luminanceSource);
+      const bitmap          = new ZXing.BinaryBitmap(binarizer);
+      const result          = zxingReader.decodeBitmap(bitmap);
+
+      if(result && result.getText()) {
+        const code = result.getText();
+        const now  = Date.now();
+        if(code === dernierLu && now - dernierLuTime < 3000) {
+          if(scannerRunning) setTimeout(scannerLoop, 300);
+          return;
+        }
+        dernierLu     = code;
+        dernierLuTime = now;
+
+        const flash = document.getElementById('scanner-flash');
+        flash.classList.add('flash');
+        setTimeout(()=>flash.classList.remove('flash'), 200);
+        bipScan();
+        fermerScanner();
+
+        if(scannerTarget === 'rvn') {
+          document.getElementById('rvn-code').value = code;
+          rvnAdd();
+        } else if(scannerTarget === 'casse') {
+          document.getElementById('casse-code').value = code;
+          casseAdd();
+        } else if(scannerTarget === 'caisse-sync') {
+          if(typeof caisseFromScan === 'function') caisseFromScan(code);
+        } else {
+          afficherPanneauScan(code, null, null);
+        }
+        return;
+      }
+    } catch(e) {
+      // Pas de code dans cette passe — continuer
+    }
+  }
+
   document.getElementById('scanner-status').textContent = 'Centrez le code-barres dans le cadre';
-  if(scannerRunning) setTimeout(scannerLoop, 150);
+  if(scannerRunning) requestAnimationFrame(scannerLoop);
 }
 
 function fermerScanner() {
@@ -2107,12 +1706,6 @@ function fermerScanner() {
   const video = document.getElementById('scanner-video');
   if(video) video.srcObject = null;
   document.getElementById('scanner-overlay').classList.remove('active');
-  const shutter = document.getElementById('scanner-shutter');
-  if(shutter) shutter.style.display = 'none';
-  const hint = document.querySelector('.scanner-hint');
-  if(hint) hint.textContent = 'Placez le code-barres dans le cadre';
-  const status = document.getElementById('scanner-status');
-  if(status) status.style.display = '';
 }
 
 
@@ -2129,13 +1722,9 @@ function onCodeDetecte(code, target) {
   afficherPanneauScan(code, null, null);
 }
 
-let _codeScanEnCours = '';
-
 function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
   const old = document.getElementById('modal-scan-complet');
   if(old) old.remove();
-
-  _codeScanEnCours = code;
 
   const prixVal  = prixDetecte  ? prixDetecte.toFixed(2) : '';
   const iflsVal  = iflsDetecte  ? iflsDetecte : '';
@@ -2178,7 +1767,7 @@ function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
         </div>
       </div>
 
-      <button onclick="validerScanModal()"
+      <button onclick="validerScanModal('${esc(code)}')"
         style="width:100%;height:52px;background:#1a2d5a;color:#c8a96e;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;">
         Ajouter l'article
       </button>
@@ -2186,6 +1775,7 @@ function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
     </div>`;
   document.body.appendChild(modal);
 
+  // Focus sur prix si pas détecté, sinon sur IFLS, sinon prêt à valider
   setTimeout(() => {
     if(!prixOK) document.getElementById('scan-modal-price').focus();
     else if(!iflsOK) document.getElementById('scan-modal-ifls').focus();
@@ -2195,12 +1785,11 @@ function afficherPanneauScan(code, prixDetecte, iflsDetecte) {
     if(e.key === 'Enter') document.getElementById('scan-modal-ifls').focus();
   });
   document.getElementById('scan-modal-ifls').addEventListener('keydown', e => {
-    if(e.key === 'Enter') validerScanModal();
+    if(e.key === 'Enter') validerScanModal(code);
   });
 }
 
-function validerScanModal() {
-  const code  = _codeScanEnCours;
+function validerScanModal(code) {
   const price = parseFloat(document.getElementById('scan-modal-price').value);
   const ifls  = document.getElementById('scan-modal-ifls').value.trim();
 
@@ -2212,10 +1801,12 @@ function validerScanModal() {
 
   document.getElementById('modal-scan-complet').remove();
 
+  // Remplir les champs de la page Saisie et ajouter directement
   document.getElementById('inp-ref').value   = code;
   document.getElementById('inp-price').value = price;
   document.getElementById('inp-qprod').value = ifls;
   document.getElementById('inp-qty').value   = '1';
+  // Vider les codes optionnels
   document.getElementById('inp-code1').value = '';
   document.getElementById('inp-code2').value = '';
 
@@ -2228,11 +1819,8 @@ function fallbackInputFile(target) {
   afficherSaisieManuelle(target);
 }
 
-let _targetSaisieManuelle = '';
-
 function afficherSaisieManuelle(target) {
-  _targetSaisieManuelle = target;
-
+  // Supprimer ancien modal si présent
   const old = document.getElementById('modal-saisie-manuelle');
   if(old) old.remove();
 
@@ -2248,21 +1836,21 @@ function afficherSaisieManuelle(target) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
         <button onclick="document.getElementById('modal-saisie-manuelle').remove()"
           style="height:48px;border:1.5px solid #ccc;border-radius:12px;background:#fff;font-size:16px;cursor:pointer;">Annuler</button>
-        <button onclick="validerSaisieManuelle()"
+        <button onclick="validerSaisieManuelle('${target}')"
           style="height:48px;border:none;border-radius:12px;background:#1a2d5a;color:#c8a96e;font-size:16px;font-weight:700;cursor:pointer;">Valider</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
   setTimeout(() => document.getElementById('saisie-manuelle-input').focus(), 100);
 
+  // Valider sur Entrée
   document.getElementById('saisie-manuelle-input').addEventListener('keydown', e => {
-    if(e.key === 'Enter') validerSaisieManuelle();
+    if(e.key === 'Enter') validerSaisieManuelle(target);
   });
 }
 
-function validerSaisieManuelle() {
-  const val    = document.getElementById('saisie-manuelle-input').value.trim();
-  const target = _targetSaisieManuelle;
+function validerSaisieManuelle(target) {
+  const val = document.getElementById('saisie-manuelle-input').value.trim();
   if(!val) return;
   document.getElementById('modal-saisie-manuelle').remove();
   bipScan();
@@ -2309,16 +1897,6 @@ function onRvnScanFile(input) {
 }
 // stopScan alias
 function stopScan() { fermerScanner(); }
-function stopScanSaisie() { fermerScanner(); }
-
-function toggleSerie() {
-  const panel = document.getElementById('serie-panel');
-  const btn   = document.getElementById('btn-toggle-serie');
-  const open  = panel.style.display === 'none';
-  panel.style.display = open ? 'block' : 'none';
-  btn.style.background = open ? 'var(--accent)' : '';
-  btn.style.color      = open ? '#fff' : '';
-}
 
 // ══ RVN — fonctions neutralisées (page supprimée) ══
 let rvnData = { listes: { 'RVN 1': [] }, active: 'RVN 1' };
@@ -2332,6 +1910,7 @@ function rvnRemove() {}
 function rvnRenderCodes() {}
 function rvnExport() {}
 function rvnClearList() {}
+function rvnLancerScan() {}
 
 rvnInit();
 casseRender();
@@ -2376,596 +1955,16 @@ document.getElementById('inp-qprod').addEventListener('keydown', e=>{ if(e.key==
 document.getElementById('inp-uprice').addEventListener('keydown',e=>{ if(e.key==='Enter') addArticle(); });
 document.getElementById('cpt-qty').addEventListener('keydown',   e=>{ if(e.key==='Enter') document.getElementById('cpt-price').focus(); });
 document.getElementById('cpt-price').addEventListener('keydown', e=>{ if(e.key==='Enter') cptAdd(); });
+</script>
+
 document.getElementById('caisse-code-input').addEventListener('keydown', e => { if(e.key==='Enter') caisseEnvoyer(); });
-document.getElementById('lex-inp-label').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lex-inp-code').focus(); });
-document.getElementById('lex-inp-code').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lex-inp-price').focus(); });
-document.getElementById('lex-inp-price').addEventListener('keydown', e => { if(e.key==='Enter') lexiqueAjouter(); });
 
-// ── LEXIQUE ──
-const LEX_KEY = 'noz-lexique';
-const LEX_CATS = ['alimentation_nourriture','alimentation_boisson','alimentation_surgeles','dph','bazar','plantes','saisonnier','tdm','textile'];
-let _lexCatActive = 'alimentation';
-let _lexSubActive = 'nourriture';
-let _lexSort      = 'default';
-
-function lexiqueCleActif() {
-  return _lexCatActive === 'alimentation' ? 'alimentation_' + _lexSubActive : _lexCatActive;
-}
-
-let _lexData = (function(){
-  try { const d = JSON.parse(localStorage.getItem(LEX_KEY)||'{}'); LEX_CATS.forEach(c=>{ if(!d[c]) d[c]=[]; }); return d; } catch(e) { const d={}; LEX_CATS.forEach(c=>d[c]=[]); return d; }
-})();
-
-// ── COMMANDE ──
-let _cmdOrders    = [];   // [{name, items:[{label,code,qty}]}]
-let _cmdFormLines = [{ label:'', code:'', qty:1 }];
-let _cmdScanLineIdx = 0;
-
-function cmdScanLigne(i) {
-  _cmdScanLineIdx = i;
-  ouvrirScanner('commande');
-}
-
-function cmdFormRendre() {
-  const c = document.getElementById('cmd-form-lines');
-  if(!c) return;
-  c.innerHTML = _cmdFormLines.map((l, i) => `
-    <div class="cmd-form-line">
-      <div class="cmd-form-row1">
-        <button class="cmd-scan-btn" onclick="cmdScanLigne(${i})" type="button" title="Scanner le code-barres">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M2 7V4a1 1 0 0 1 1-1h3M22 7V4a1 1 0 0 0-1-1h-3M2 17v3a1 1 0 0 0 1 1h3M22 17v3a1 1 0 0 1-1 1h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="6" y1="8" x2="6" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="9.5" y1="8" x2="9.5" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="12.5" y1="8" x2="12.5" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="15.5" y1="8" x2="15.5" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="18" y1="8" x2="18" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <input class="cmd-fl-code" type="text" inputmode="numeric" placeholder="Code article" value="${esc(l.code)}"
-          oninput="_cmdFormLines[${i}].code=this.value"/>
-      </div>
-      <div class="cmd-form-row2">
-        <input class="cmd-fl-label" type="text" placeholder="Désignation" value="${esc(l.label)}"
-          oninput="_cmdFormLines[${i}].label=this.value"/>
-        <input class="cmd-fl-qty" type="number" inputmode="numeric" min="1" max="999" value="${l.qty}"
-          oninput="cmdQtyInput(${i},this.value)" onfocus="this.select()"/>
-        <button class="cmd-form-del" onclick="cmdFormSupprimerLigne(${i})">×</button>
-      </div>
-    </div>`).join('');
-}
-
-function cmdFormAjouterLigne() {
-  _cmdFormLines.push({ label:'', code:'', qty:1 });
-  cmdFormRendre();
-  // focus last code input
-  setTimeout(() => {
-    const rows = document.querySelectorAll('#cmd-form-lines .cmd-fl-code');
-    if(rows.length) rows[rows.length-1].focus();
-  }, 60);
-}
-
-function cmdFormSupprimerLigne(i) {
-  _cmdFormLines.splice(i, 1);
-  if(!_cmdFormLines.length) _cmdFormLines.push({ label:'', code:'', qty:1 });
-  cmdFormRendre();
-}
-
-function cmdQtyInput(i, val) {
-  const n = parseInt(val);
-  if(!isNaN(n) && n >= 1) _cmdFormLines[i].qty = n;
-}
-
-function cmdValiderOrdre() {
-  const name  = (document.getElementById('cmd-inp-name').value.trim()) || 'Sans nom';
-  const items = _cmdFormLines.filter(l => l.label || l.code).map(l => ({ label:l.label, code:l.code, qty:l.qty }));
-  if(!items.length) { showToast('Ajoute au moins un produit'); return; }
-  _cmdOrders.push({ name, items });
-  document.getElementById('cmd-inp-name').value = '';
-  _cmdFormLines = [{ label:'', code:'', qty:1 }];
-  cmdFormRendre();
-  cmdRendre();
-  if(window.cmdFirebaseEnvoyer) window.cmdFirebaseEnvoyer(_cmdOrders);
-  showToast('Commande de ' + name + ' ajoutée ✓');
-}
-
-function cmdRendre() {
-  const list  = document.getElementById('cmd-orders-list');
-  const badge = document.getElementById('cmd-count-badge');
-  badge.textContent = _cmdOrders.length;
-  badge.style.display = _cmdOrders.length ? '' : 'none';
-  if(!_cmdOrders.length) { list.innerHTML = '<p class="empty-state">Aucune commande</p>'; return; }
-  list.innerHTML = _cmdOrders.map((ord, i) => {
-    const nameEsc = esc(ord.name);
-    const count   = ord.items.length;
-    return `<div class="cmd-order-card">
-      <div class="cmd-order-hdr" onclick="cmdToggle(${i})">
-        <div style="flex:1;min-width:0;">
-          <div class="cmd-order-name">${nameEsc}</div>
-          <div class="cmd-order-meta">${count} article${count>1?'s':''}</div>
-        </div>
-        <button class="cmd-order-del" onclick="event.stopPropagation();cmdSupprimerOrdre(${i})">×</button>
-        <svg class="cmd-chevron" id="cmd-chev-${i}" viewBox="0 0 20 20" fill="none">
-          <polyline points="4,7 10,13 16,7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="cmd-order-items" id="cmd-ord-${i}" style="display:none;">
-        ${ord.items.map((it, j) => `
-          <div class="cmd-order-item" onclick="cmdOuvrirBarcode(${i},${j})">
-            <span class="cmd-qty-pill">×${it.qty||1}</span>
-            <div class="cmd-order-item-info">
-              ${it.label ? `<div class="cmd-order-item-label">${esc(it.label)}</div>` : ''}
-              ${it.code  ? `<div class="cmd-order-item-code">${esc(it.code)}</div>` : ''}
-            </div>
-            <svg class="cmd-bc-icon" viewBox="0 0 24 24" width="18" height="18" fill="none">
-              <rect x="2" y="3" width="3" height="18" rx="1" fill="currentColor"/>
-              <rect x="7" y="3" width="1.5" height="18" rx=".5" fill="currentColor"/>
-              <rect x="10.5" y="3" width="3" height="18" rx="1" fill="currentColor"/>
-              <rect x="15.5" y="3" width="1.5" height="18" rx=".5" fill="currentColor"/>
-              <rect x="19" y="3" width="3" height="18" rx="1" fill="currentColor"/>
-            </svg>
-          </div>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function cmdToggle(i) {
-  const panel = document.getElementById('cmd-ord-' + i);
-  const chev  = document.getElementById('cmd-chev-' + i);
-  if(!panel) return;
-  const open = panel.style.display !== 'none';
-  panel.style.display = open ? 'none' : 'block';
-  if(chev) chev.classList.toggle('open', !open);
-}
-
-function cmdSupprimerOrdre(i) {
-  _cmdOrders.splice(i, 1);
-  cmdRendre();
-  if(window.cmdFirebaseEnvoyer) window.cmdFirebaseEnvoyer(_cmdOrders.length ? _cmdOrders : null);
-  if(!_cmdOrders.length && window.cmdFirebaseVider) window.cmdFirebaseVider();
-}
-
-function cmdVider() {
-  if(_cmdOrders.length && !confirm('Vider toutes les commandes ?')) return;
-  _cmdOrders = [];
-  cmdRendre();
-  if(window.cmdFirebaseVider) window.cmdFirebaseVider();
-}
-
-function cmdOuvrirBarcode(i, j) {
-  const ord = _cmdOrders[i];
-  if(!ord) return;
-  const it = ord.items[j];
-  if(!it) return;
-  document.getElementById('lex-bc-modal-label').textContent = ord.name + (it.label ? ' — ' + it.label : '');
-  document.getElementById('lex-bc-modal-code').textContent  = it.code || '';
-  const priceEl = document.getElementById('lex-bc-modal-price');
-  priceEl.textContent = 'Quantité : ' + (it.qty||1);
-  priceEl.style.display = '';
-  const svgEl = document.getElementById('lex-bc-modal-barcode');
-  svgEl.removeAttribute('data-jbarcode-done');
-  if(it.code && it.code.trim()) {
-    try {
-      let fmt, val = it.code.trim();
-      if(/^\d{13}$/.test(val)) fmt='EAN13'; else if(/^\d{8}$/.test(val)) fmt='EAN8'; else fmt='CODE128';
-      JsBarcode(svgEl, val, { format:fmt, width:2.2, height:90, displayValue:true, margin:8, fontSize:14, textMargin:6 });
-      svgEl.parentElement.style.display = '';
-    } catch(e) { svgEl.parentElement.style.display='none'; }
-  } else { svgEl.parentElement.style.display='none'; }
-  document.getElementById('lex-bc-modal').classList.add('open');
-}
-
-// Mise à jour Firebase → rendu (caissière reçoit les commandes)
-window.cmdFirebaseUpdate = function(data) {
-  let orders = data;
-  if(!orders) { _cmdOrders = []; }
-  else {
-    if(!Array.isArray(orders)) orders = Object.values(orders);
-    _cmdOrders = orders.map(ord => ({
-      name: ord.name || '',
-      items: Array.isArray(ord.items) ? ord.items : Object.values(ord.items||{})
-    }));
-  }
-  if(document.getElementById('page-commande').classList.contains('active')) cmdRendre();
-  const dot = document.getElementById('cmd-sync-dot');
-  if(dot) dot.style.background = '#34c759';
-};
-
-// Init formulaire au chargement
-document.addEventListener('DOMContentLoaded', () => { cmdFormRendre(); });
-
-// (clavier quantité remplacé par input natif)
-
-// ── PANEL ARTICLES DANS SAISIE ──
-function toggleArticles() {
-  const panel = document.getElementById('articles-panel');
-  const btn   = document.getElementById('btn-toggle-articles');
-  const open  = panel.style.display === 'none';
-  panel.style.display = open ? 'block' : 'none';
-  btn.style.background = open ? 'var(--accent)' : '';
-  btn.style.color      = open ? '#fff' : '';
-  if(open) renderArticlesPanel();
-}
-
-function renderArticlesPanel() {
-  const panel = document.getElementById('articles-panel');
-  if(!panel || panel.style.display === 'none') return;
-  const list = document.getElementById('articles-panel-list');
-  if(!articles || !articles.length) {
-    list.innerHTML = '<p class="empty-state" style="font-size:13px;padding:14px;">Aucun article</p>';
-    return;
-  }
-  list.innerHTML = articles.map((a, i) => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--sep);">
-      <div class="art-dot ${a.isSerie?'serie':''}"></div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(a.ref)}</div>
-        ${a.code1 ? `<div style="font-size:11px;color:var(--text3);font-family:monospace;">${esc(a.code1)}</div>` : ''}
-      </div>
-      <span style="font-size:13px;font-weight:800;color:var(--accent);white-space:nowrap;">${a.isSerie?'—':fmt(a.price)}</span>
-      <span style="font-size:12px;font-weight:700;color:var(--text3);">×${a.qty}</span>
-      <button onclick="removeArticle(${i})" style="background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;padding:0;width:24px;height:24px;">×</button>
-    </div>`).join('');
-}
-
-// ── SAUVEGARDER ARTICLE DANS LEXIQUE ──
-let _lexSaveCode = '';
-let _lexSavePrice = '';
-
-function lexSaveOuvrir(code, price) {
-  _lexSaveCode  = code;
-  _lexSavePrice = price;
-  const priceStr = (!isNaN(price) && price > 0) ? price.toFixed(2).replace('.',',') + ' €' : '—';
-  document.getElementById('lex-save-info').textContent = 'Code : ' + code + '   ·   Prix : ' + priceStr;
-  document.getElementById('lex-save-label').value = '';
-  document.getElementById('lex-save-modal').classList.add('open');
-  setTimeout(() => document.getElementById('lex-save-label').focus(), 200);
-}
-
-function lexSaveIgnorer() {
-  document.getElementById('lex-save-modal').classList.remove('open');
-}
-
-function lexSaveConfirmer() {
-  const label = document.getElementById('lex-save-label').value.trim();
-  const cle   = document.getElementById('lex-save-cat').value;
-  if(!label) { document.getElementById('lex-save-label').focus(); return; }
-  if(!_lexData[cle]) _lexData[cle] = [];
-  _lexData[cle].push({ label, code: _lexSaveCode, price: String(_lexSavePrice) });
-  lexiqueSauvegarder();
-  lexSaveIgnorer();
-  showToast('Ajouté au Lexique ✓');
-}
-
-function lexiqueSauvegarder() {
-  localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
-  if(window.lexiqueFirebaseSave) window.lexiqueFirebaseSave(_lexData);
-}
-
-window.lexiqueFirebaseUpdate = function(data) {
-  LEX_CATS.forEach(c => {
-    if(!data[c]) {
-      data[c] = [];
-    } else if(!Array.isArray(data[c])) {
-      // Firebase stocke les arrays en objets — on reconvertit
-      data[c] = Object.values(data[c]);
-    }
-  });
-  _lexData = data;
-  localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
-  if(document.getElementById('page-lexique').classList.contains('active')) lexiqueRendre();
-  const dot = document.getElementById('lex-sync-dot');
-  if(dot) { dot.style.background='#34c759'; dot.title='Synchronisé'; }
-};
-
-function lexiqueSelectCat(cat) {
-  _lexCatActive = cat;
-  document.querySelectorAll('.lex-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
-  const subBar = document.getElementById('lex-subcats-bar');
-  if(cat === 'alimentation') subBar.classList.remove('hidden');
-  else subBar.classList.add('hidden');
-  const s = document.getElementById('lex-search'); if(s) s.value = '';
-  lexiqueRendre();
-}
-
-function lexiqueSelectSub(sub) {
-  _lexSubActive = sub;
-  document.querySelectorAll('.lex-subcat-btn').forEach(b => b.classList.toggle('active', b.dataset.sub === sub));
-  const s = document.getElementById('lex-search'); if(s) s.value = '';
-  lexiqueRendre();
-}
-
-function lexiqueAjouter() {
-  const label = document.getElementById('lex-inp-label').value.trim();
-  const code  = document.getElementById('lex-inp-code').value.trim();
-  const price = document.getElementById('lex-inp-price').value.trim().replace(',','.');
-  if(!label && !code) { showToast('Remplis au moins l\'intitulé'); return; }
-  const cle   = lexiqueCleActif();
-  const entry = { label, code, price };
-  if(_lexPendingPhoto) entry.photo = _lexPendingPhoto;
-  if(!_lexData[cle]) _lexData[cle] = [];
-  _lexData[cle].push(entry);
-  lexiqueSauvegarder();
-  document.getElementById('lex-inp-label').value = '';
-  document.getElementById('lex-inp-code').value  = '';
-  document.getElementById('lex-inp-price').value = '';
-  lexiqueEffacerPhotoAjout();
-  lexiqueRendre();
-  showToast('Article ajouté');
-}
-
-function lexiqueSupprimer(cle, idx) {
-  _lexData[cle].splice(idx, 1);
-  lexiqueSauvegarder();
-  lexiqueRendre();
-}
-
-function lexiqueSetTri(tri) {
-  _lexSort = tri;
-  document.querySelectorAll('.lex-sort-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById('lex-sort-' + tri);
-  if(btn) btn.classList.add('active');
-  lexiqueRendre();
-}
-
-function lexiqueAppliquerTri(items) {
-  if(_lexSort === 'az') {
-    return [...items].sort((a, b) => (a.label||'').localeCompare(b.label||'', 'fr', {sensitivity:'base'}));
-  }
-  if(_lexSort === 'price') {
-    return [...items].sort((a, b) => {
-      const pa = parseFloat((a.price||'0').replace(',','.')) || 0;
-      const pb = parseFloat((b.price||'0').replace(',','.')) || 0;
-      return pa - pb;
-    });
-  }
-  return items; // default = ordre d'ajout
-}
-
-function lexiqueRendre() {
-  const list      = document.getElementById('lex-list');
-  const searchEl  = document.getElementById('lex-search');
-  const clearBtn  = document.getElementById('lex-search-clear');
-  const q         = searchEl ? searchEl.value.trim().toLowerCase() : '';
-
-  // Afficher / cacher le bouton ×
-  if(clearBtn) clearBtn.style.display = q ? '' : 'none';
-
-  // ── Mode recherche : toutes catégories ──
-  if(q) {
-    const CAT_LABELS = {
-      alimentation_nourriture:'Alimentation · Nourriture', alimentation_boisson:'Alimentation · Boisson',
-      alimentation_surgeles:'Alimentation · Surgelés', dph:'DPH', bazar:'Bazar',
-      plantes:'Plantes', saisonnier:'Saisonnier', tdm:'TDM', textile:'Textile Futura'
-    };
-    let html = '';
-    let total = 0;
-    LEX_CATS.forEach(cle => {
-      const items = lexiqueAppliquerTri((_lexData[cle] || []).filter(it => {
-        return (it.label||'').toLowerCase().includes(q) || (it.code||'').toLowerCase().includes(q);
-      }));
-      if(!items.length) return;
-      html += `<div style="font-size:11px;font-weight:700;letter-spacing:.7px;color:var(--text3);text-transform:uppercase;margin:10px 0 6px;">${CAT_LABELS[cle]||cle}</div>`;
-      items.forEach((it, localIdx) => {
-        const realIdx = (_lexData[cle]||[]).indexOf(it);
-        const labelEsc = (it.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-        const codeEsc  = (it.code||'').replace(/&/g,'&amp;');
-        const priceNum = parseFloat((it.price||'').replace(',','.'));
-        const priceTxt = !isNaN(priceNum) ? priceNum.toFixed(2).replace('.',',') + ' €' : '';
-        const cleEsc   = cle.replace(/'/g,"\\'");
-        // Surligner le terme trouvé
-        const hl = (str) => str.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'), '<mark style="background:var(--accent2);border-radius:2px;padding:0 1px;">$1</mark>');
-        html += `<div class="lex-item" onclick="lexiqueOuvrirModalByCle('${cleEsc}',${realIdx})">
-          <button class="lex-item-del" onclick="event.stopPropagation();lexiqueSupprimer('${cleEsc}',${realIdx});lexiqueRendre();" title="Supprimer">×</button>
-          ${it.label ? `<div class="lex-item-label">${hl(labelEsc)}</div>` : ''}
-          <div style="display:flex;gap:12px;align-items:center;margin-top:3px;">
-            ${it.code  ? `<div class="lex-item-code">${hl(codeEsc)}</div>` : ''}
-            ${priceTxt ? `<div class="lex-item-price">${priceTxt}</div>` : ''}
-          </div>
-        </div>`;
-        total++;
-      });
-    });
-    list.innerHTML = html || `<p class="empty-state">Aucun résultat pour « ${esc(q)} »</p>`;
-    return;
-  }
-
-  // ── Mode normal : catégorie active ──
-  const cle   = lexiqueCleActif();
-  const items = lexiqueAppliquerTri(_lexData[cle] || []);
-  if(!items.length) { list.innerHTML = '<p class="empty-state">Aucun article dans cette catégorie</p>'; return; }
-  const cleEsc = cle.replace(/'/g,"\\'");
-  list.innerHTML = items.map((it, i) => {
-    const realIdx  = (_lexData[cle]||[]).indexOf(it);
-    const labelEsc = (it.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    const codeEsc  = (it.code||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    const priceNum = parseFloat((it.price||'').replace(',','.'));
-    const priceTxt = !isNaN(priceNum) ? priceNum.toFixed(2).replace('.',',') + ' €' : '';
-    const photoSrc = it.photoUrl || it.photo || '';
-    return `<div class="lex-item" onclick="lexiqueOuvrirModal(${realIdx})" style="${photoSrc ? 'display:flex;gap:10px;align-items:center;padding:10px 44px 10px 10px;' : ''}">
-      <button class="lex-item-del" onclick="event.stopPropagation();lexiqueSupprimer('${cleEsc}',${realIdx})" title="Supprimer">×</button>
-      ${photoSrc ? `<img class="lex-item-thumb" src="${photoSrc}" alt=""/>` : ''}
-      <div style="flex:1;min-width:0;">
-        ${it.label ? `<div class="lex-item-label">${labelEsc}</div>` : ''}
-        <div style="display:flex;gap:12px;align-items:center;margin-top:3px;">
-          ${it.code  ? `<div class="lex-item-code">${codeEsc}</div>` : ''}
-          ${priceTxt ? `<div class="lex-item-price">${priceTxt}</div>` : ''}
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function lexiqueEffacerRecherche() {
-  const el = document.getElementById('lex-search');
-  if(el) { el.value = ''; el.focus(); }
-  lexiqueRendre();
-}
-
-function lexiqueOuvrirModalByCle(cle, idx) {
-  const it = (_lexData[cle] || [])[idx];
-  if(!it) return;
-  // Réutilise la même modale que lexiqueOuvrirModal
-  const imgEl = document.getElementById('lex-bc-modal-img');
-  const _ps = it.photoUrl || it.photo || ''; if(imgEl) { if(_ps) { imgEl.src = _ps; imgEl.style.display = 'block'; } else { imgEl.src=''; imgEl.style.display='none'; } }
-  document.getElementById('lex-bc-modal-label').textContent = it.label || '';
-  document.getElementById('lex-bc-modal-code').textContent  = '';
-  const priceEl  = document.getElementById('lex-bc-modal-price');
-  const priceNum = parseFloat((it.price||'').replace(',','.'));
-  if(!isNaN(priceNum)) { priceEl.textContent = priceNum.toFixed(2).replace('.',',') + ' €'; priceEl.style.display = ''; }
-  else { priceEl.style.display = 'none'; }
-  const svgEl = document.getElementById('lex-bc-modal-barcode');
-  svgEl.removeAttribute('data-jbarcode-done');
-  if(it.code && it.code.trim()) {
-    try {
-      let fmt, val = it.code.trim();
-      if(/^\d{13}$/.test(val)) fmt='EAN13'; else if(/^\d{8}$/.test(val)) fmt='EAN8'; else fmt='CODE128';
-      JsBarcode(svgEl, val, { format:fmt, width:2.2, height:90, displayValue:true, margin:8, fontSize:14, textMargin:6 });
-      svgEl.parentElement.style.display = '';
-    } catch(e) { svgEl.parentElement.style.display='none'; }
-  } else { svgEl.parentElement.style.display='none'; }
-  document.getElementById('lex-bc-modal').classList.add('open');
-}
-
-function lexiqueOuvrirModal(idx) {
-  const it = (_lexData[lexiqueCleActif()] || [])[idx];
-  if(!it) return;
-  const imgEl = document.getElementById('lex-bc-modal-img');
-  const _ps = it.photoUrl || it.photo || ''; if(imgEl) { if(_ps) { imgEl.src = _ps; imgEl.style.display = 'block'; } else { imgEl.src=''; imgEl.style.display='none'; } }
-  document.getElementById('lex-bc-modal-label').textContent = it.label || '';
-  document.getElementById('lex-bc-modal-code').textContent  = '';
-  const priceEl = document.getElementById('lex-bc-modal-price');
-  const priceNum = parseFloat((it.price||'').replace(',','.'));
-  if(!isNaN(priceNum)) {
-    priceEl.textContent = priceNum.toFixed(2).replace('.',',') + ' €';
-    priceEl.style.display = '';
-  } else {
-    priceEl.style.display = 'none';
-  }
-  const svgEl = document.getElementById('lex-bc-modal-barcode');
-  svgEl.removeAttribute('data-jbarcode-done');
-  if(it.code && it.code.trim()) {
-    try {
-      let fmt, val = it.code.trim();
-      if(/^\d{13}$/.test(val))      fmt = 'EAN13';
-      else if(/^\d{8}$/.test(val))  fmt = 'EAN8';
-      else                           fmt = 'CODE128';
-      JsBarcode(svgEl, val, { format: fmt, width: 2.2, height: 90, displayValue: true, margin: 8, fontSize: 14, textMargin: 6 });
-      svgEl.parentElement.style.display = '';
-    } catch(e) {
-      svgEl.parentElement.style.display = 'none';
-      document.getElementById('lex-bc-modal-code').textContent = it.code;
-    }
-  } else {
-    svgEl.parentElement.style.display = 'none';
-  }
-  document.getElementById('lex-bc-modal').classList.add('open');
-}
-
-function lexiqueFermerModal() {
-  document.getElementById('lex-bc-modal').classList.remove('open');
-}
-
-// ── Chaussures : clavier numérique ──
-let _kpVal = '';
-function ouvrirClavierChaussure() {
-  _kpVal = '';
-  document.getElementById('chaussures-display').textContent = '—';
-  document.getElementById('chaussures-modal').classList.add('open');
-}
-function fermerClavierChaussure() {
-  document.getElementById('chaussures-modal').classList.remove('open');
-}
-function kpTap(d) {
-  if(_kpVal.length >= 6) return;
-  _kpVal += d;
-  document.getElementById('chaussures-display').textContent = _kpVal;
-}
-function kpDel() {
-  _kpVal = _kpVal.slice(0, -1);
-  document.getElementById('chaussures-display').textContent = _kpVal || '—';
-}
-function kpValider() {
-  if(!_kpVal) return;
-  if(window.chaussuresAjouter) window.chaussuresAjouter(_kpVal);
-  fermerClavierChaussure();
-}
-
-// ── Identification : preview code-barres live ──
-function identifPreviewCode(val) {
-  const wrap = document.getElementById('identif-modal-bc-wrap');
-  const code = val.trim();
-  if(!code || code.length < 4) { wrap.style.display = 'none'; return; }
-  try {
-    const fmt = code.length === 8 ? 'EAN8' : code.length === 13 ? 'EAN13' : 'CODE128';
-    JsBarcode('#identif-modal-barcode', code, {
-      format: fmt, displayValue: true, fontSize: 18,
-      margin: 10, background: '#ffffff', lineColor: '#000000',
-      width: 3, height: 90
-    });
-    wrap.style.display = 'block';
-  } catch(e) { wrap.style.display = 'none'; }
-}
-
-// ── Identification : ouverture caméra (hors module — pas besoin Firebase) ──
-function identifOuvrirCamera() {
-  const shutter = document.getElementById('scanner-shutter');
-  if(shutter) shutter.style.display = 'block';
-  const hint = document.querySelector('.scanner-hint');
-  if(hint) hint.textContent = 'Cadrez l\'article puis appuyez sur ⚪';
-  const status = document.getElementById('scanner-status');
-  if(status) status.style.display = 'none';
-  ouvrirScanner('photo-identif');
-}
-
-function scannerShutterCapture() {
-  if(scannerTarget === 'photo-lexique') lexiqueCapturePhoto();
-  else identifCapturerPhoto();
-}
-
-// ── Lexique : photo article ──
-let _lexPendingPhoto = null;
-
-function lexiqueOuvrirCameraAjout() {
-  const shutter = document.getElementById('scanner-shutter');
-  if(shutter) shutter.style.display = 'block';
-  const hint = document.querySelector('.scanner-hint');
-  if(hint) hint.textContent = 'Cadrez l\'article puis appuyez sur ⚪';
-  const status = document.getElementById('scanner-status');
-  if(status) status.style.display = 'none';
-  ouvrirScanner('photo-lexique');
-}
-
-function lexiqueCapturePhoto() {
-  const video = document.getElementById('scanner-video');
-  const MAX = 200;
-  const canvas = document.createElement('canvas');
-  let w = video.videoWidth, h = video.videoHeight;
-  if(w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-  canvas.width = w; canvas.height = h;
-  canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-  _lexPendingPhoto = canvas.toDataURL('image/jpeg', 0.4);
-  fermerScanner();
-  const prev = document.getElementById('lex-add-photo-preview');
-  const del  = document.getElementById('lex-add-photo-del');
-  if(prev) { prev.src = _lexPendingPhoto; prev.style.display = 'block'; }
-  if(del)  { del.style.display = ''; }
-}
-
-function lexiqueEffacerPhotoAjout() {
-  _lexPendingPhoto = null;
-  const prev = document.getElementById('lex-add-photo-preview');
-  const del  = document.getElementById('lex-add-photo-del');
-  if(prev) { prev.src = ''; prev.style.display = 'none'; }
-  if(del)  { del.style.display = 'none'; }
-}
 </script>
 
 <!-- ══ FIREBASE CAISSE ══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push, onValue, remove, get, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 const firebaseConfig = {
   databaseURL: 'https://noz-etiquettes-default-rtdb.europe-west1.firebasedatabase.app'
@@ -2973,17 +1972,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
-const caisseRef  = ref(db, 'caisse');
-const casseRef2  = ref(db, 'casse');
-const lexiqueRef = ref(db, 'lexique');
-
-// ── SYNC LEXIQUE ──
-window.lexiqueFirebaseSave = (data) => set(lexiqueRef, data);
-
-onValue(lexiqueRef, snapshot => {
-  const data = snapshot.val();
-  if(window.lexiqueFirebaseUpdate) window.lexiqueFirebaseUpdate(data || {});
-});
+const caisseRef = ref(db, 'caisse');
+const casseRef2 = ref(db, 'casse');
 
 // ══ FIREBASE CASSE ══
 onValue(casseRef2, snapshot => {
@@ -3152,151 +2142,6 @@ window.caisseFromScan = function(code) {
     .then(() => { showToast('Envoyé à la caisse !'); bipScan(); })
     .catch(() => showToast('Erreur Firebase'));
 };
-
-// ── IDENTIFICATION ARTICLES ──
-// ── CHAUSSURES ──
-const chaussuresRef = ref(db, 'chaussures_p854');
-let _chaussuresData = {};
-
-onValue(chaussuresRef, snap => {
-  _chaussuresData = snap.val() || {};
-  chaussuresRendre();
-});
-
-window.chaussuresAjouter = function(code) {
-  const now = new Date();
-  const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
-             + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  push(chaussuresRef, { code, date })
-    .then(() => showToast('👟 Paire ajoutée !'))
-    .catch(() => showToast('Erreur'));
-};
-
-window.chaussuresSupprimer = function(key) {
-  remove(ref(db, 'chaussures_p854/' + key)).catch(() => {});
-};
-
-function chaussuresRendre() {
-  const list = document.getElementById('chaussures-list');
-  if(!list) return;
-  const entries = Object.entries(_chaussuresData);
-  if(!entries.length) { list.innerHTML = '<p class="empty-state" style="margin-bottom:8px;">Aucune paire en attente</p>'; return; }
-  list.innerHTML = entries.map(([key, it]) => `
-    <div class="chaussures-item">
-      <div>
-        <div class="chaussures-code">${it.code}</div>
-        <div class="chaussures-date">${it.date || ''}</div>
-      </div>
-      <button class="chaussures-del" onclick="chaussuresSupprimer('${key}')">✕</button>
-    </div>`).join('');
-}
-
-const identifRef = ref(db, 'identification_p854');
-let _identifData = {};
-let _identifCurrentKey = null;
-
-onValue(identifRef, snap => {
-  _identifData = snap.val() || {};
-  identifRendre();
-});
-
-window.identifCapturerPhoto = function() {
-  const video = document.getElementById('scanner-video');
-  const MAX = 800;
-  const canvas = document.createElement('canvas');
-  let w = video.videoWidth, h = video.videoHeight;
-  if(w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-  canvas.width = w; canvas.height = h;
-  canvas.getContext('2d').drawImage(video, 0, 0, w, h);
-  const b64 = canvas.toDataURL('image/jpeg', 0.7);
-  fermerScanner();
-  const now = new Date();
-  const date = now.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})
-             + ' ' + now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  push(identifRef, { photo: b64, code: '', date })
-    .then(() => showToast('📷 Photo envoyée !'))
-    .catch(() => showToast('Erreur envoi photo'));
-};
-
-window.identifOuvrirModal = function(key) {
-  const it = _identifData[key];
-  if(!it) return;
-  _identifCurrentKey = key;
-  document.getElementById('identif-modal-img').src = it.photo;
-  document.getElementById('identif-modal-date').textContent = it.date || '';
-  const inp = document.getElementById('identif-modal-code');
-  inp.value = it.code || '';
-  document.getElementById('identif-modal').classList.add('open');
-  // Attendre que la modale soit visible avant de rendre le code-barres
-  setTimeout(() => {
-    identifPreviewCode(it.code || '');
-    inp.focus();
-  }, 80);
-};
-
-window.identifFermerModal = function() {
-  document.getElementById('identif-modal').classList.remove('open');
-  _identifCurrentKey = null;
-};
-
-function identifRendre() {
-  const list = document.getElementById('identif-list');
-  if(!list) return;
-  const entries = Object.entries(_identifData)
-    .sort((a, b) => (b[1].date || '') > (a[1].date || '') ? 1 : -1);
-  if(!entries.length) {
-    list.innerHTML = '<p class="empty-state">Aucune demande en cours</p>';
-    return;
-  }
-  list.innerHTML = entries.map(([key, it]) => {
-    const solved = it.code && it.code.trim() !== '';
-    const border = solved ? '#38a169' : 'var(--sep)';
-    return `<div class="identif-item" onclick="identifOuvrirModal('${key}')" style="border:2px solid ${border};">
-      <img src="${it.photo}" style="width:72px;height:72px;border-radius:10px;object-fit:cover;flex-shrink:0;"/>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">${it.date || ''}</div>
-        ${solved
-          ? `<div style="font-size:16px;font-weight:800;color:#38a169;">✓ &nbsp;${it.code}</div>`
-          : `<div style="font-size:13px;color:var(--text3);font-style:italic;">En attente d'identification…</div>`
-        }
-      </div>
-      <button onclick="event.stopPropagation();identifSupprimer('${key}')"
-        style="background:#fdecea;border:none;border-radius:8px;color:var(--red);font-size:13px;font-weight:700;padding:6px 10px;cursor:pointer;">✕</button>
-    </div>`;
-  }).join('');
-}
-
-window.identifValiderCode = function() {
-  const code = document.getElementById('identif-modal-code').value.trim();
-  if(!code) { showToast('Entrez un code d\'abord'); return; }
-  if(!_identifCurrentKey) return;
-  set(ref(db, 'identification_p854/' + _identifCurrentKey + '/code'), code)
-    .then(() => { showToast('✓ Code enregistré !'); bipScan(); identifFermerModal(); })
-    .catch(() => showToast('Erreur Firebase'));
-};
-
-window.identifSupprimer = function(key) {
-  remove(ref(db, 'identification_p854/' + key))
-    .catch(() => showToast('Erreur suppression'));
-};
-
-// ── SYNC COMMANDE ──
-const cmdRef = ref(db, 'commande_p854');
-
-window.cmdFirebaseEnvoyer = (items) => set(cmdRef, items)
-  .then(() => showToast('Commande envoyée ✓'))
-  .catch(() => showToast('Erreur envoi commande'));
-
-window.cmdFirebaseVider = () => remove(cmdRef)
-  .catch(() => showToast('Erreur suppression commande'));
-
-onValue(cmdRef, snapshot => {
-  const data = snapshot.val();
-  if(window.cmdFirebaseUpdate) window.cmdFirebaseUpdate(data || []);
-  const dot = document.getElementById('cmd-sync-dot');
-  if(dot) dot.style.background = '#34c759';
-});
-
 </script>
 
 <script>
