@@ -116,6 +116,20 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-day.off { border-left-color:#c7c7cc; background:#f2f2f7; }
 .pl-day.today { box-shadow:0 0 0 2px #007aff; }
 .pl-legend { display:flex; gap:10px; flex-wrap:wrap; font-size:12px; margin:0 4px 8px; color:var(--text2); }
+
+/* Planning compact : tout visible sans défiler */
+.pl-wrap { overflow:visible; }
+.pl-table { table-layout:fixed; width:100%; font-size:10px; line-height:1.25; }
+.pl-table th, .pl-table td { padding:6px 1px; white-space:normal; }
+.pl-table th { font-size:9.5px; }
+.pl-table th:first-child, .pl-table td:first-child { position:static; width:17%; font-size:11px; padding-left:5px; text-align:left; overflow:hidden; text-overflow:ellipsis; }
+.pl-table td.work, .pl-table td.ecole { font-weight:600; }
+.pl-table td.off { font-size:9px; }
+.pl-mag { font-size:9px; }
+.pl-chips { margin-bottom:6px; }
+.pl-chip { padding:6px 2px; font-size:13px; }
+.pl-seg { margin-bottom:6px; }
+.pl-legend { margin-bottom:4px; }
 .pl-legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; vertical-align:-1px; }
 
 
@@ -2494,7 +2508,8 @@ function plRender() {
   const entete = data.dates ? `<div style="font-size:13px;color:var(--text2);margin:0 4px 8px;">${esc(data.dates)}</div>` : '';
   const isEco = h => h && typeof h === 'object';
   const isOff = h => !isEco(h) && (!h || /^(repos|off|-|—|congé|cp)$/i.test(String(h).trim()));
-  const ecoCell = h => `<b>École</b><br>${esc(h.e).replace(' / ','<br>')}` + (h.m ? `<br><span class="pl-mag">Magasin ${esc(h.m)}</span>` : '');
+  const fmt = t => esc(t).replace(/(\d+)h(?=-|\s|$)/g,'$1').replace(' / ','<br>');
+  const ecoCell = h => `<b>École</b><br>${fmt(h.e)}` + (h.m ? `<br><span class="pl-mag">Mag ${fmt(h.m)}</span>` : '');
   const ecoLine = h => `<b>École</b> ${esc(h.e)}` + (h.m ? `<br><span class="pl-mag">Magasin ${esc(h.m)}</span>` : '');
   const PC = ['#007aff','#ff9500','#af52de','#ff2d55','#30b0c7','#34c759','#5856d6','#a2845e','#ff3b30','#00c7be'];
   const now = new Date(); const JN = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'][now.getDay()];
@@ -2509,7 +2524,7 @@ function plRender() {
       ${data.personnes.map((p,pi)=>`<tr><td style="--pc:${PC[pi%PC.length]}">${esc(p.nom)}</td>${jours.map((jj,i)=>{
         const h=(p.horaires||[])[i]; const t=isToday(jj)?' today':'';
         if(isEco(h)) return `<td class="ecole${t}">${ecoCell(h)}</td>`;
-        return `<td class="${isOff(h)?'off':'work'}${t}">${isOff(h)?esc(h||'—'):esc(h).replace(' / ','<br>')}</td>`;
+        return `<td class="${isOff(h)?'off':'work'}${t}">${isOff(h)?esc(h||'—'):fmt(h)}</td>`;
       }).join('')}</tr>`).join('')}
     </table></div>`;
   } else {
