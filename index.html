@@ -96,6 +96,13 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-day { background:var(--card); border-radius:12px; padding:14px 16px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
 .pl-day b { font-size:15px; color:var(--text); }
 .pl-day span { font-size:16px; font-weight:700; color:var(--accent); }
+
+.pl-table td.ecole { background:#fff1e0; color:#c25e00; }
+.pl-table td.ecole b { font-weight:700; }
+.pl-mag { color:var(--accent); font-weight:700; }
+.pl-day.ecole { background:#fff1e0; border-left:4px solid #f79646; }
+.pl-day.ecole span { color:#c25e00; text-align:right; font-size:15px; }
+.pl-day.ecole span b { font-weight:700; }
 .pl-day span.off { color:var(--text3); font-weight:500; }
 
 /* ── SECTION HEADERS ── */
@@ -1967,8 +1974,477 @@ function rvnLancerScan() {}
 // Données ajoutées par Claude à partir des plannings envoyés.
 // Format : "44": { dates:"26 oct – 1 nov", jours:["Lun","Mar","Mer","Jeu","Ven","Sam"],
 //                  personnes:[ { nom:"Prénom", horaires:["9h-17h","Repos","9h-13h", ...] } ] }
-const PLANNING_DATA = {};
-const PLANNING_SEMAINES = [44, 45, 46, 47];
+const PLANNING_DATA = {
+ "43": {
+  "dates": "19 oct – 25 oct",
+  "jours": [
+   "Lun 19",
+   "Mar 20",
+   "Mer 21",
+   "Jeu 22",
+   "Ven 23",
+   "Sam 24",
+   "Dim 25"
+  ],
+  "personnes": [
+   {
+    "nom": "Aurore",
+    "horaires": [
+     "9h15-13h15 / 14h-19h45",
+     "Repos",
+     "9h15-14h30",
+     "9h15-13h30 / 14h-19h45",
+     "9h15-13h30 / 14h-19h45",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Henriette",
+    "horaires": [
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "13h15-19h45",
+     "9h15-13h / 14h-19h45",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Rebecca",
+    "horaires": [
+     "Repos",
+     "Repos",
+     "Repos",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "9h15-13h / 14h-19h45",
+     "9h45-13h / 14h-18h15"
+    ]
+   },
+   {
+    "nom": "Zoé",
+    "horaires": [
+     "9h15-13h30 / 14h-19h45",
+     "9h15-14h30 / 15h-19h45",
+     "Repos",
+     "Repos",
+     "7h-13h30 / 14h-17h30",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Maria",
+    "horaires": [
+     "12h15-14h / 15h-19h45",
+     "9h15-14h / 15h-18h",
+     "Repos",
+     "9h15-14h",
+     "7h-14h / 15h-17h30",
+     "12h15-14h / 15h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Mateo",
+    "horaires": [
+     "9h15-14h",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "9h15-14h / 15h-19h",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "9h15-14h / 15h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Loa",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "10h-14h / 15h-19h45",
+     "Repos",
+     "9h15-14h",
+     "9h15-14h",
+     "10h-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Leona",
+    "horaires": [
+     "14h-19h45",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "10h15-13h / 14h-19h45",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "10h-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Emilie",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-16h",
+      "m": null
+     },
+     "Repos",
+     "9h15-15h",
+     "15h-19h45",
+     "10h-13h / 14h-19h45",
+     "10h-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Ethan",
+    "horaires": [
+     "Repos",
+     "9h15-15h / 16h-19h45",
+     "13h15-19h45",
+     "9h15-13h / 14h-19h45",
+     "Repos",
+     "9h15-14h / 15h-19h45",
+     "Repos"
+    ]
+   }
+  ]
+ },
+ "44": {
+  "dates": "26 oct – 1 nov",
+  "jours": [
+   "Lun 26",
+   "Mar 27",
+   "Mer 28",
+   "Jeu 29",
+   "Ven 30",
+   "Sam 31",
+   "Dim 1"
+  ],
+  "personnes": [
+   {
+    "nom": "Aurore",
+    "horaires": [
+     "9h15-13h15 / 14h-19h45",
+     "Repos",
+     "9h15-14h30",
+     "9h15-13h30 / 14h-19h45",
+     "Repos",
+     "9h15-13h30 / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Henriette",
+    "horaires": [
+     "9h15-13h / 14h-19h45",
+     "9h15-13h / 14h-18h",
+     "Repos",
+     "10h-13h / 14h-19h45",
+     "7h-13h / 14h-17h",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Rebecca",
+    "horaires": [
+     "Repos",
+     "Repos",
+     "Repos",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "9h15-13h / 14h-19h45",
+     "9h45-13h / 14h-18h15"
+    ]
+   },
+   {
+    "nom": "Zoé",
+    "horaires": [
+     "10h-13h / 14h-19h45",
+     "11h-14h / 15h-19h45",
+     "10h15-13h / 14h-19h45",
+     "14h-19h",
+     "Repos",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Maria",
+    "horaires": [
+     "10h-14h / 15h-19h45",
+     "9h15-13h / 14h-19h45",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "Repos",
+     "10h-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Mateo",
+    "horaires": [
+     "9h15-14h / 15h-19h",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "9h15-13h / 14h-19h45",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "9h15-14h",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Loa",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "9h15-12h / 13h-19h45",
+     "10h45-13h / 14h-19h45",
+     "Repos",
+     "9h15-14h / 15h-19h45",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Leona",
+    "horaires": [
+     "14h-19h45",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "9h15-14h",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "12h-14h / 15h-19h45",
+     "14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Emilie",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "Repos",
+     "9h15-15h / 16h-19h45",
+     "10h45-13h / 14h-19h45",
+     "9h15-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Ethan",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": "18h-19h30"
+     },
+     "9h15-14h / 15h-18h",
+     "Repos",
+     "10h-14h / 15h-19h45",
+     "7h-12h / 13h-17h",
+     "Repos",
+     "Repos"
+    ]
+   }
+  ]
+ },
+ "45": {
+  "dates": "2 nov – 8 nov",
+  "jours": [
+   "Lun 2",
+   "Mar 3",
+   "Mer 4",
+   "Jeu 5",
+   "Ven 6",
+   "Sam 7",
+   "Dim 8"
+  ],
+  "personnes": [
+   {
+    "nom": "Aurore",
+    "horaires": [
+     "8h30-13h / 14h-19h45",
+     "Repos",
+     "9h15-14h30",
+     "9h15-14h / 15h-19h45",
+     "8h45-13h / 14h-19h45",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Henriette",
+    "horaires": [
+     "9h15-13h / 14h-19h45",
+     "9h15-13h / 14h-18h30",
+     "Repos",
+     "10h-14h / 15h-18h45",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Rebecca",
+    "horaires": [
+     "Repos",
+     "10h-13h / 14h-19h45",
+     "14h-19h45",
+     "11h-14h / 15h-19h45",
+     "Repos",
+     "11h-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Zoé",
+    "horaires": [
+     "8h45-13h / 14h-19h45",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "Repos",
+     "7h-13h / 14h-18h30",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Maria",
+    "horaires": [
+     "14h-19h45",
+     "9h15-14h / 15h-19h30",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "12h-18h",
+     "7h-13h",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Mateo",
+    "horaires": [
+     "8h30-13h / 14h-18h15",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "9h15-14h / 15h-19h45",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "9h15-14h",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Lola",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "9h15-13h / 14h-19h45",
+     "Repos",
+     "15h-19h30",
+     "14h-19h45",
+     "9h15-13h / 14h-17h30",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Leona",
+    "horaires": [
+     "13h-19h45",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "9h15-13h / 14h-19h45",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "8h45-14h / 15h-16h30",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Emilie",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "14h-19h45",
+     "9h15-15h",
+     "13h45-19h45",
+     "9h15-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Ethan",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": "18h-19h45"
+     },
+     "9h15-13h / 14h-18h30",
+     "Repos",
+     "10h-14h / 15h-18h45",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "Repos"
+    ]
+   }
+  ]
+ }
+};
+const PLANNING_SEMAINES = [43, 44, 45, 46, 47];
 let plSemaine = null, plView = 'all';
 
 function plSemaineCourante() {
@@ -2008,13 +2484,18 @@ function plRender() {
   }
   const jours = data.jours || [];
   const entete = data.dates ? `<div style="font-size:13px;color:var(--text2);margin:0 4px 8px;">${esc(data.dates)}</div>` : '';
-  const isOff = h => !h || /^(repos|off|-|—|congé|cp)$/i.test(String(h).trim());
+  const isEco = h => h && typeof h === 'object';
+  const isOff = h => !isEco(h) && (!h || /^(repos|off|-|—|congé|cp)$/i.test(String(h).trim()));
+  const ecoCell = h => `<b>École</b><br>${esc(h.e).replace(' / ','<br>')}` + (h.m ? `<br><span class="pl-mag">Magasin ${esc(h.m)}</span>` : '');
+  const ecoLine = h => `<b>École</b> ${esc(h.e)}` + (h.m ? `<br><span class="pl-mag">Magasin ${esc(h.m)}</span>` : '');
 
   if(plView === 'all') {
     box.innerHTML = entete + `<div class="pl-wrap"><table class="pl-table">
       <tr><th></th>${jours.map(j=>`<th>${esc(j)}</th>`).join('')}</tr>
       ${data.personnes.map(p=>`<tr><td>${esc(p.nom)}</td>${jours.map((_,i)=>{
-        const h=(p.horaires||[])[i]; return `<td class="${isOff(h)?'off':''}">${esc(isOff(h)?(h||'—'):h)}</td>`;
+        const h=(p.horaires||[])[i];
+        if(isEco(h)) return `<td class="ecole">${ecoCell(h)}</td>`;
+        return `<td class="${isOff(h)?'off':''}">${isOff(h)?esc(h||'—'):esc(h).replace(' / ','<br>')}</td>`;
       }).join('')}</tr>`).join('')}
     </table></div>`;
   } else {
@@ -2026,6 +2507,7 @@ function plRender() {
     const p = data.personnes.find(x=>x.nom===sel.value) || data.personnes[0];
     box.innerHTML = entete + jours.map((j,i)=>{
       const h=(p.horaires||[])[i];
+      if(isEco(h)) return `<div class="pl-day ecole"><b>${esc(j)}</b><span>${ecoLine(h)}</span></div>`;
       return `<div class="pl-day"><b>${esc(j)}</b><span class="${isOff(h)?'off':''}">${esc(isOff(h)?(h||'—'):h)}</span></div>`;
     }).join('');
   }
