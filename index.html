@@ -31,7 +31,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: var(--bg); color: var(--text); }
 
-.app { display: flex; flex-direction: column; height: 100dvh; }
+.app { display: flex; flex-direction: column; position: fixed; top:0; left:0; right:0; bottom:0; height:auto; }
+.tb-label { white-space:nowrap; }
 
 /* ── STATUS BAR SPACER ── */
 .status-bar { height: var(--safe-top); background: var(--card); flex-shrink: 0; }
@@ -127,6 +128,14 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-table td.off { font-size:9px; }
 .pl-mag { font-size:9px; }
 .pl-chips { margin-bottom:6px; }
+#page-planning.active { display:flex; flex-direction:column; padding:0; overflow:hidden; }
+.pl-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px 12px 8px; }
+.pl-bar { flex-shrink:0; padding:8px 12px 6px; background:var(--card); border-top:0.5px solid var(--sep); }
+.pl-bar .pl-seg { margin-bottom:0; }
+.pl-bar .pl-chips { margin-bottom:8px; }
+.pl-table td span.r { display:block; white-space:nowrap; }
+.pl-table th, .pl-table td { font-size:9.5px; }
+.pl-table td:first-child, .pl-table th:first-child { width:15%; font-size:10.5px; }
 .pl-chip { padding:6px 2px; font-size:13px; }
 .pl-seg { margin-bottom:6px; }
 .pl-legend { margin-bottom:4px; }
@@ -859,18 +868,22 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
     <!-- ══ PLANNING ══ -->
     <div class="page" id="page-planning">
-      <div class="pl-chips" id="pl-chips"></div>
-      <div class="pl-seg">
-        <button id="pl-v-all" class="active" onclick="plSetView('all')">Complet</button>
-        <button id="pl-v-one" onclick="plSetView('one')">Par personne</button>
+      <div class="pl-scroll" id="pl-scroll">
+        <div id="pl-person-wrap" style="display:none;margin-bottom:10px;">
+          <div class="form-card"><div class="form-field">
+            <label>Personne</label>
+            <select id="pl-person" onchange="plRender()" style="flex:1;border:none;outline:none;font-size:16px;font-weight:600;color:var(--accent);background:transparent;-webkit-appearance:none;text-align:right;"></select>
+          </div></div>
+        </div>
+        <div id="pl-content"></div>
       </div>
-      <div id="pl-person-wrap" style="display:none;margin-bottom:10px;">
-        <div class="form-card"><div class="form-field">
-          <label>Personne</label>
-          <select id="pl-person" onchange="plRender()" style="flex:1;border:none;outline:none;font-size:16px;font-weight:600;color:var(--accent);background:transparent;-webkit-appearance:none;text-align:right;"></select>
-        </div></div>
+      <div class="pl-bar">
+        <div class="pl-chips" id="pl-chips"></div>
+        <div class="pl-seg">
+          <button id="pl-v-all" class="active" onclick="plSetView('all')">Complet</button>
+          <button id="pl-v-one" onclick="plSetView('one')">Par personne</button>
+        </div>
       </div>
-      <div id="pl-content"></div>
     </div>
 
     <!-- ══ CAISSE ══ -->
@@ -2489,6 +2502,7 @@ function plSetView(v) {
 function plSetSemaine(n) { plSemaine = n; plRender(); }
 
 function plRender() {
+  const _pg=document.getElementById('pl-scroll'); if(_pg) _pg.scrollTop=0;
   const semaines = plSemainesListe();
   if(plSemaine === null) {
     const cur = plSemaineCourante();
@@ -2508,7 +2522,7 @@ function plRender() {
   const entete = data.dates ? `<div style="font-size:13px;color:var(--text2);margin:0 4px 8px;">${esc(data.dates)}</div>` : '';
   const isEco = h => h && typeof h === 'object';
   const isOff = h => !isEco(h) && (!h || /^(repos|off|-|—|congé|cp)$/i.test(String(h).trim()));
-  const fmt = t => esc(t).replace(/(\d+)h(?=-|\s|$)/g,'$1').replace(' / ','<br>');
+  const fmt = t => esc(t).replace(/(\d+)h(?=-|\s|$)/g,'$1').split(' / ').map(x=>`<span class="r">${x}</span>`).join('');
   const ecoCell = h => `<b>École</b><br>${fmt(h.e)}` + (h.m ? `<br><span class="pl-mag">Mag ${fmt(h.m)}</span>` : '');
   const ecoLine = h => `<b>École</b> ${esc(h.e)}` + (h.m ? `<br><span class="pl-mag">Magasin ${esc(h.m)}</span>` : '');
   const PC = ['#007aff','#ff9500','#af52de','#ff2d55','#30b0c7','#34c759','#5856d6','#a2845e','#ff3b30','#00c7be'];
