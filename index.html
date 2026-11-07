@@ -25,6 +25,8 @@
   --green: #34c759;
   --red: #ff3b30;
   --blue: #007aff;
+  --border: #e5e5ea;
+  --text1: #000000;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bot: env(safe-area-inset-bottom, 0px);
 }
@@ -118,6 +120,56 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-day.today { box-shadow:0 0 0 2px #007aff; }
 .pl-legend { display:flex; gap:10px; flex-wrap:wrap; font-size:12px; margin:0 4px 8px; color:var(--text2); }
 
+
+/* ── MODALE AJOUT LEXIQUE DEPUIS SAISIE ── */
+#lex-save-modal { position:fixed; inset:0; z-index:9997; background:rgba(0,0,0,.6); display:none; align-items:flex-end; justify-content:center; padding-bottom:var(--safe-bot); }
+#lex-save-modal.open { display:flex; }
+#lex-save-inner { background:var(--card); border-radius:20px 20px 0 0; padding:20px 20px calc(20px + var(--safe-bot)); width:100%; max-width:500px; display:flex; flex-direction:column; gap:12px; }
+#lex-save-inner h3 { font-size:17px; font-weight:700; color:var(--text1); margin:0; }
+#lex-save-inner .lex-info { font-size:13px; color:var(--text3); background:var(--bg); border-radius:10px; padding:10px 12px; }
+#lex-save-inner select, #lex-save-inner input { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:15px; color:var(--text1); width:100%; box-sizing:border-box; }
+.lex-save-btns { display:flex; gap:8px; }
+.lex-save-btns button { flex:1; padding:12px; border-radius:12px; border:none; font-size:15px; font-weight:700; cursor:pointer; }
+.lex-save-btns .btn-confirm { background:var(--accent); color:#fff; }
+.lex-save-btns .btn-skip { background:var(--bg); color:var(--text2); border:1.5px solid var(--border); }
+
+/* ── LEXIQUE ── */
+.lex-cats { display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; scrollbar-width:none; margin-bottom:14px; }
+.lex-cats::-webkit-scrollbar { display:none; }
+.lex-cat-btn { flex-shrink:0; padding:7px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--card); color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .18s; }
+.lex-cat-btn.active { background:var(--accent); color:var(--accent2); border-color:var(--accent); }
+.lex-subcats { display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:4px; scrollbar-width:none; margin-bottom:14px; }
+.lex-subcats::-webkit-scrollbar { display:none; }
+.lex-subcats.hidden { display:none; }
+.lex-subcat-btn { flex-shrink:0; padding:6px 13px; border-radius:16px; border:1.5px solid var(--border); background:var(--bg); color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .18s; }
+.lex-subcat-btn.active { background:var(--accent2); color:var(--accent); border-color:var(--accent2); }
+.lex-add-form { background:var(--card); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; flex-direction:column; gap:10px; }
+.lex-add-form input { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:10px 12px; font-size:15px; color:var(--text1); width:100%; box-sizing:border-box; }
+.lex-add-form input::placeholder { color:var(--text3); }
+.lex-add-row { display:flex; gap:8px; align-items:stretch; }
+.lex-add-row input { flex:1; }
+.lex-items { display:flex; flex-direction:column; gap:10px; }
+.lex-item { background:var(--card); border-radius:14px; padding:14px 44px 14px 14px; position:relative; cursor:pointer; active-opacity:.7; }
+.lex-item:active { opacity:.7; }
+.lex-item-label { font-size:16px; font-weight:700; color:var(--text1); margin-bottom:4px; }
+.lex-item-code { font-size:12px; color:var(--text3); font-weight:600; letter-spacing:.5px; font-family:monospace; }
+.lex-item-price { font-size:15px; font-weight:800; color:var(--accent); }
+.lex-item-del { position:absolute; top:10px; right:10px; width:26px; height:26px; border-radius:50%; background:var(--red,#e53e3e); color:#fff; border:none; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
+.lex-item-thumb { width:56px; height:56px; border-radius:9px; object-fit:cover; flex-shrink:0; }
+#lex-add-photo-preview { width:64px; height:64px; border-radius:10px; object-fit:cover; display:none; flex-shrink:0; }
+#lex-bc-modal-img { width:100%; max-height:200px; object-fit:contain; border-radius:12px; display:none; }
+.lex-sort-btn { flex:1; padding:7px 6px; border-radius:10px; border:1.5px solid var(--sep); background:var(--card); color:var(--text2); font-size:12px; font-weight:600; cursor:pointer; }
+.lex-sort-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+#lex-bc-modal { position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,.85); display:none; flex-direction:column; align-items:center; justify-content:center; padding:30px 20px; }
+#lex-bc-modal.open { display:flex; }
+#lex-bc-modal-inner { background:#fff; border-radius:20px; padding:28px 24px; display:flex; flex-direction:column; align-items:center; gap:16px; width:100%; max-width:340px; }
+#lex-bc-modal-svg { width:100%; }
+#lex-bc-modal-svg svg { width:100%; height:auto; display:block; }
+#lex-bc-modal-label { font-size:17px; font-weight:700; color:#1a2d5a; text-align:center; }
+#lex-bc-modal-code { font-size:13px; color:#888; font-family:monospace; letter-spacing:.5px; }
+#lex-bc-modal-close { margin-top:4px; padding:12px 40px; background:#1a2d5a; color:#f0c040; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
+.img-overlay { position:fixed; inset:0; z-index:1000; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.img-overlay-img-wrap { width:100%; background:#fff; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0; }
 /* Planning compact : tout visible sans défiler */
 .pl-wrap { overflow:visible; }
 .pl-table { table-layout:fixed; width:100%; font-size:10px; line-height:1.25; }
@@ -653,6 +705,75 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 
     </div>
 
+    <!-- ══ LEXIQUE ══ -->
+    <div class="page" id="page-lexique">
+
+      <!-- Statut sync -->
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+        <div id="lex-sync-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .4s;"></div>
+        <span style="font-size:12px;color:var(--text3);">Synchronisation cloud</span>
+      </div>
+
+      <!-- Catégories -->
+      <div class="lex-cats" id="lex-cats-bar">
+        <button class="lex-cat-btn active" data-cat="alimentation" onclick="lexiqueSelectCat('alimentation')">Alimentation</button>
+        <button class="lex-cat-btn" data-cat="dph" onclick="lexiqueSelectCat('dph')">DPH</button>
+        <button class="lex-cat-btn" data-cat="bazar" onclick="lexiqueSelectCat('bazar')">Bazar</button>
+        <button class="lex-cat-btn" data-cat="plantes" onclick="lexiqueSelectCat('plantes')">Plantes</button>
+        <button class="lex-cat-btn" data-cat="saisonnier" onclick="lexiqueSelectCat('saisonnier')">Saisonnier</button>
+        <button class="lex-cat-btn" data-cat="tdm" onclick="lexiqueSelectCat('tdm')">TDM</button>
+        <button class="lex-cat-btn" data-cat="textile" onclick="lexiqueSelectCat('textile')">Textile Futura</button>
+      </div>
+
+      <!-- Sous-catégories Alimentation -->
+      <div class="lex-subcats" id="lex-subcats-bar">
+        <button class="lex-subcat-btn active" data-sub="nourriture" onclick="lexiqueSelectSub('nourriture')">🍽 Nourriture</button>
+        <button class="lex-subcat-btn" data-sub="boisson" onclick="lexiqueSelectSub('boisson')">🥤 Boisson</button>
+        <button class="lex-subcat-btn" data-sub="surgeles" onclick="lexiqueSelectSub('surgeles')">❄️ Surgelés</button>
+      </div>
+
+      <!-- Recherche -->
+      <div style="position:relative;margin-bottom:10px;">
+        <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="var(--text3)" stroke-width="2"/>
+          <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="var(--text3)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="lex-search" type="search" placeholder="Rechercher un produit ou un code…"
+          autocomplete="off" oninput="lexiqueRendre()"
+          style="width:100%;background:var(--card);border:1.5px solid var(--sep);border-radius:12px;padding:10px 36px 10px 36px;font-size:15px;color:var(--text);"/>
+        <button id="lex-search-clear" onclick="lexiqueEffacerRecherche()"
+          style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;color:var(--text3);cursor:pointer;padding:0;width:24px;height:24px;">×</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="lex-sort-btn active" id="lex-sort-default" onclick="lexiqueSetTri('default')">Par défaut</button>
+        <button class="lex-sort-btn" id="lex-sort-az" onclick="lexiqueSetTri('az')">A → Z</button>
+        <button class="lex-sort-btn" id="lex-sort-price" onclick="lexiqueSetTri('price')">Prix ↑</button>
+      </div>
+
+      <!-- Formulaire ajout -->
+      <div class="lex-add-form">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button type="button" onclick="lexiqueOuvrirCameraAjout()" style="background:var(--bg);border:1.5px dashed var(--sep);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/></svg>
+            Photo
+          </button>
+          <img id="lex-add-photo-preview" src="" alt=""/>
+          <button type="button" id="lex-add-photo-del" onclick="lexiqueEffacerPhotoAjout()" style="display:none;background:var(--red,#e53e3e);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:5px 9px;cursor:pointer;">✕</button>
+        </div>
+        <input id="lex-inp-label" type="text" placeholder="Intitulé (nom du produit)" autocomplete="off"/>
+        <div class="lex-add-row">
+          <input id="lex-inp-code" type="text" inputmode="numeric" placeholder="Code article (EAN)" autocomplete="off"/>
+          <input id="lex-inp-price" type="text" inputmode="decimal" placeholder="Prix" autocomplete="off" style="max-width:90px;"/>
+        </div>
+        <button class="btn-ios" style="margin:0;" onclick="lexiqueAjouter()">+ Ajouter</button>
+      </div>
+
+      <!-- Liste articles -->
+      <div class="lex-items" id="lex-list">
+        <p class="empty-state">Aucun article dans cette catégorie</p>
+      </div>
+
+
     <!-- ══ SÉRIE ══ -->
     <div class="page" id="page-serie">
 
@@ -947,15 +1068,13 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
       </svg>
       <span class="tb-label">Saisie</span>
     </button>
-    <button class="tb-item" id="tb-serie" onclick="showTabById('serie')">
+    <button class="tb-item" id="tb-serie" onclick="showTabById('lexique')" style="display:none"></button>
+    <button class="tb-item" id="tb-lexique" onclick="showTabById('lexique')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
-        <circle cx="7" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-        <circle cx="13" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-        <circle cx="19" cy="13" r="2.5" stroke="currentColor" stroke-width="1.8"/>
-        <line x1="9.5" y1="13" x2="10.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
-        <line x1="15.5" y1="13" x2="16.5" y2="13" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M5 5.5h6.5a1.5 1.5 0 0 1 1.5 1.5v13a2.5 2.5 0 0 0-2.5-2.5H5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M21 5.5h-6.5A1.5 1.5 0 0 0 13 7v13a2.5 2.5 0 0 1 2.5-2.5H21z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
       </svg>
-      <span class="tb-label">Série</span>
+      <span class="tb-label">Lexique</span>
     </button>
     <button class="tb-item" id="tb-liste" onclick="showTabById('liste')">
       <svg class="tb-icon" viewBox="0 0 26 26" fill="none">
@@ -1021,12 +1140,49 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
   </div>
   <div class="scanner-status" id="scanner-status">Recherche d'un code-barres…</div>
   <div class="scanner-result-flash" id="scanner-flash"></div>
+  <button id="scanner-shutter" onclick="scannerShutterCapture()" style="display:none;position:absolute;bottom:calc(32px + var(--safe-bot,0px));left:50%;transform:translateX(-50%);width:76px;height:76px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.35);cursor:pointer;z-index:10;"></button>
   <button class="scanner-close-btn" onclick="fermerScanner()">Annuler</button>
 </div>
 
 <canvas id="render-canvas"></canvas>
 <div class="toast" id="toast"></div>
 
+
+<!-- ══ MODALE SAUVEGARDER DANS LEXIQUE ══ -->
+<div id="lex-save-modal" onclick="lexSaveIgnorer()">
+  <div id="lex-save-inner" onclick="event.stopPropagation()">
+    <h3>📚 Ajouter au Lexique</h3>
+    <div class="lex-info" id="lex-save-info"></div>
+    <input id="lex-save-label" type="text" placeholder="Désignation du produit" autocomplete="off"/>
+    <select id="lex-save-cat">
+      <option value="alimentation_nourriture">Alimentation — Nourriture</option>
+      <option value="alimentation_boisson">Alimentation — Boisson</option>
+      <option value="alimentation_surgeles">Alimentation — Surgelés</option>
+      <option value="dph">DPH</option>
+      <option value="bazar">Bazar</option>
+      <option value="plantes">Plantes</option>
+      <option value="saisonnier">Saisonnier</option>
+      <option value="tdm">TDM</option>
+      <option value="textile">Textile Futura</option>
+    </select>
+    <div class="lex-save-btns">
+      <button class="btn-skip" onclick="lexSaveIgnorer()">Ignorer</button>
+      <button class="btn-confirm" onclick="lexSaveConfirmer()">Ajouter ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALE CODE-BARRES LEXIQUE ══ -->
+<div id="lex-bc-modal" onclick="lexiqueFermerModal()">
+  <div id="lex-bc-modal-inner" onclick="event.stopPropagation()">
+    <img id="lex-bc-modal-img" src="" alt=""/>
+    <div id="lex-bc-modal-svg"><svg id="lex-bc-modal-barcode"></svg></div>
+    <div id="lex-bc-modal-label"></div>
+    <div id="lex-bc-modal-code"></div>
+    <div id="lex-bc-modal-price" style="font-size:22px;font-weight:800;color:var(--accent);display:none;"></div>
+    <button id="lex-bc-modal-close" onclick="lexiqueFermerModal()">Fermer</button>
+  </div>
+</div>
 
 <script>
 // ── PWA Service Worker ──
@@ -1053,8 +1209,9 @@ renderAll();
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
 
 // ── Navigation tabs ──
-const TAB_TITLES = { saisie:'Saisie', serie:'Série', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', planning:'Planning' };
+const TAB_TITLES = { saisie:'Saisie', serie:'Série', lexique:'Lexique', liste:'Articles & Aperçu', rvn:'Box Casse', comptage:'Comptage', calcul:'Calcul %', caisse:'Caisse', planning:'Planning' };
 
+if(typeof stopScanSaisie === 'undefined') { var stopScanSaisie = function(){}; }
 function showTabById(name) {
   // Couper la caméra si on quitte le scanner
   if(document.getElementById('page-scanner') && !document.getElementById('page-scanner').classList.contains('active') === false && name !== 'scanner') {
@@ -1067,6 +1224,7 @@ function showTabById(name) {
   document.getElementById('nav-title').textContent = TAB_TITLES[name] || name;
   if(name==='liste') renderPreview();
   if(name==='planning') plRender();
+  if(name==='lexique') lexiqueRendre();
   stopScan();
   stopScanSaisie();
 }
@@ -1767,6 +1925,7 @@ function scannerLoop() {
         const flash = document.getElementById('scanner-flash');
         flash.classList.add('flash');
         setTimeout(()=>flash.classList.remove('flash'), 200);
+        if(scannerTarget === 'photo-lexique') { return; }
         bipScan();
         fermerScanner();
 
@@ -1798,6 +1957,9 @@ function fermerScanner() {
   const video = document.getElementById('scanner-video');
   if(video) video.srcObject = null;
   document.getElementById('scanner-overlay').classList.remove('active');
+  const shutter = document.getElementById('scanner-shutter'); if(shutter) shutter.style.display = 'none';
+  const hint = document.querySelector('.scanner-hint'); if(hint) hint.textContent = 'Placez le code-barres dans le cadre';
+  const status = document.getElementById('scanner-status'); if(status) status.style.display = '';
 }
 
 
@@ -2561,6 +2723,309 @@ rvnInit();
 casseRender();
 
 
+
+// ── Lexique ──
+const LEX_KEY = 'noz-lexique-articles';
+const LEX_CATS = ['alimentation_nourriture','alimentation_boisson','alimentation_surgeles','dph','bazar','plantes','saisonnier','tdm','textile'];
+let _lexCatActive = 'alimentation';
+let _lexSubActive = 'nourriture';
+
+function lexiqueCleActif() {
+  return _lexCatActive === 'alimentation' ? 'alimentation_' + _lexSubActive : _lexCatActive;
+}
+
+let _lexData = (function(){
+  try { const d = JSON.parse(localStorage.getItem(LEX_KEY)||'{}'); LEX_CATS.forEach(c=>{ if(!d[c]) d[c]=[]; }); return d; } catch(e) { const d={}; LEX_CATS.forEach(c=>d[c]=[]); return d; }
+})();
+
+// ── SAUVEGARDER ARTICLE DANS LEXIQUE ──
+let _lexSaveCode = '';
+let _lexSavePrice = '';
+
+function lexSaveOuvrir(code, price) {
+  _lexSaveCode  = code;
+  _lexSavePrice = price;
+  const priceStr = (!isNaN(price) && price > 0) ? price.toFixed(2).replace('.',',') + ' €' : '—';
+  document.getElementById('lex-save-info').textContent = 'Code : ' + code + '   ·   Prix : ' + priceStr;
+  document.getElementById('lex-save-label').value = '';
+  document.getElementById('lex-save-modal').classList.add('open');
+  setTimeout(() => document.getElementById('lex-save-label').focus(), 200);
+}
+
+function lexSaveIgnorer() {
+  document.getElementById('lex-save-modal').classList.remove('open');
+}
+
+function lexSaveConfirmer() {
+  const label = document.getElementById('lex-save-label').value.trim();
+  const cle   = document.getElementById('lex-save-cat').value;
+  if(!label) { document.getElementById('lex-save-label').focus(); return; }
+  if(!_lexData[cle]) _lexData[cle] = [];
+  _lexData[cle].push({ label, code: _lexSaveCode, price: String(_lexSavePrice) });
+  lexiqueSauvegarder();
+  lexSaveIgnorer();
+  showToast('Ajouté au Lexique ✓');
+}
+
+function lexiqueSauvegarder() {
+  localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
+  if(window.lexiqueFirebaseSave) window.lexiqueFirebaseSave(_lexData);
+}
+
+window.lexiqueFirebaseUpdate = function(data) {
+  LEX_CATS.forEach(c => {
+    if(!data[c]) {
+      data[c] = [];
+    } else if(!Array.isArray(data[c])) {
+      // Firebase stocke les arrays en objets — on reconvertit
+      data[c] = Object.values(data[c]);
+    }
+  });
+  _lexData = data;
+  localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
+  if(document.getElementById('page-lexique').classList.contains('active')) lexiqueRendre();
+  const dot = document.getElementById('lex-sync-dot');
+  if(dot) { dot.style.background='#34c759'; dot.title='Synchronisé'; }
+};
+
+function lexiqueSelectCat(cat) {
+  _lexCatActive = cat;
+  document.querySelectorAll('.lex-cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  const subBar = document.getElementById('lex-subcats-bar');
+  if(cat === 'alimentation') { subBar.classList.remove('hidden'); } else { subBar.classList.add('hidden'); }
+  const s = document.getElementById('lex-search'); if(s) s.value = '';
+  lexiqueRendre();
+}
+
+function lexiqueSelectSub(sub) {
+  _lexSubActive = sub;
+  document.querySelectorAll('.lex-subcat-btn').forEach(b => b.classList.toggle('active', b.dataset.sub === sub));
+  const s = document.getElementById('lex-search'); if(s) s.value = '';
+  lexiqueRendre();
+}
+
+function lexiqueAjouter() {
+  const label = document.getElementById('lex-inp-label').value.trim();
+  const code  = document.getElementById('lex-inp-code').value.trim();
+  const price = document.getElementById('lex-inp-price').value.trim().replace(',','.');
+  if(!label && !code) { showToast('Remplis au moins l\'intitulé'); return; }
+  const cle   = lexiqueCleActif();
+  const entry = { label, code, price };
+  if(_lexPendingPhoto) entry.photo = _lexPendingPhoto;
+  if(!_lexData[cle]) _lexData[cle] = [];
+  _lexData[cle].push(entry);
+  lexiqueSauvegarder();
+  document.getElementById('lex-inp-label').value = '';
+  document.getElementById('lex-inp-code').value  = '';
+  document.getElementById('lex-inp-price').value = '';
+  lexiqueEffacerPhotoAjout();
+  lexiqueRendre();
+  showToast('Article ajouté');
+}
+
+function lexiqueSupprimer(cle, idx) {
+  _lexData[cle].splice(idx, 1);
+  lexiqueSauvegarder();
+  lexiqueRendre();
+}
+
+let _lexSort = 'default';
+function lexiqueSetTri(tri) {
+  _lexSort = tri;
+  document.querySelectorAll('.lex-sort-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('lex-sort-' + tri);
+  if(btn) btn.classList.add('active');
+  lexiqueRendre();
+}
+function lexiqueAppliquerTri(items) {
+  if(_lexSort === 'az') return [...items].sort((a,b) => (a.label||'').localeCompare(b.label||'','fr',{sensitivity:'base'}));
+  if(_lexSort === 'price') return [...items].sort((a,b) => {
+    const pa = parseFloat((a.price||'0').replace(',','.')) || 0;
+    const pb = parseFloat((b.price||'0').replace(',','.')) || 0;
+    return pa - pb;
+  });
+  return items;
+}
+
+function lexiqueRendre() {
+  const list      = document.getElementById('lex-list');
+  const searchEl  = document.getElementById('lex-search');
+  const clearBtn  = document.getElementById('lex-search-clear');
+  const q         = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
+  if(clearBtn) clearBtn.style.display = q ? '' : 'none';
+
+  if(q) {
+    const CAT_LABELS = {
+      alimentation_nourriture:'Alimentation · Nourriture', alimentation_boisson:'Alimentation · Boisson',
+      alimentation_surgeles:'Alimentation · Surgelés', dph:'DPH', bazar:'Bazar',
+      plantes:'Plantes', saisonnier:'Saisonnier', tdm:'TDM', textile:'Textile Futura'
+    };
+    let html = '';
+    let total = 0;
+    LEX_CATS.forEach(cle => {
+      const items = lexiqueAppliquerTri((_lexData[cle] || []).filter(it => {
+        return (it.label||'').toLowerCase().includes(q) || (it.code||'').toLowerCase().includes(q);
+      }));
+      if(!items.length) return;
+      html += `<div style="font-size:11px;font-weight:700;letter-spacing:.7px;color:var(--text3);text-transform:uppercase;margin:10px 0 6px;">${CAT_LABELS[cle]||cle}</div>`;
+      items.forEach(it => {
+        const realIdx = (_lexData[cle]||[]).indexOf(it);
+        const labelEsc = (it.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+        const codeEsc  = (it.code||'').replace(/&/g,'&amp;');
+        const priceNum = parseFloat((it.price||'').replace(',','.'));
+        const priceTxt = !isNaN(priceNum) ? priceNum.toFixed(2).replace('.',',') + ' €' : '';
+        const cleEsc   = cle.replace(/'/g,"\\'");
+        const hl = (str) => str.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'), '<mark style="background:var(--accent2);border-radius:2px;padding:0 1px;">$1</mark>');
+        html += `<div class="lex-item" onclick="lexiqueOuvrirModalByCle('${cleEsc}',${realIdx})">
+          <button class="lex-item-del" onclick="event.stopPropagation();lexiqueSupprimer('${cleEsc}',${realIdx});lexiqueRendre();" title="Supprimer">×</button>
+          ${it.label ? `<div class="lex-item-label">${hl(labelEsc)}</div>` : ''}
+          <div style="display:flex;gap:12px;align-items:center;margin-top:3px;">
+            ${it.code  ? `<div class="lex-item-code">${hl(codeEsc)}</div>` : ''}
+            ${priceTxt ? `<div class="lex-item-price">${priceTxt}</div>` : ''}
+          </div>
+        </div>`;
+        total++;
+      });
+    });
+    list.innerHTML = html || `<p class="empty-state">Aucun résultat pour « ${esc(q)} »</p>`;
+    return;
+  }
+
+  const cle   = lexiqueCleActif();
+  const items = lexiqueAppliquerTri(_lexData[cle] || []);
+  if(!items.length) { list.innerHTML = '<p class="empty-state">Aucun article dans cette catégorie</p>'; return; }
+  const cleEsc = cle.replace(/'/g,"\\'");
+  list.innerHTML = items.map((it, i) => {
+    const realIdx  = (_lexData[cle]||[]).indexOf(it);
+    const labelEsc = (it.label||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const codeEsc  = (it.code||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const priceNum = parseFloat((it.price||'').replace(',','.'));
+    const priceTxt = !isNaN(priceNum) ? priceNum.toFixed(2).replace('.',',') + ' €' : '';
+    const photoSrc = it.photoUrl || it.photo || '';
+    return `<div class="lex-item" onclick="lexiqueOuvrirModal(${realIdx})" style="${photoSrc ? 'display:flex;gap:10px;align-items:center;padding:10px 44px 10px 10px;' : ''}">
+      <button class="lex-item-del" onclick="event.stopPropagation();lexiqueSupprimer('${cleEsc}',${realIdx})" title="Supprimer">×</button>
+      ${photoSrc ? `<img class="lex-item-thumb" src="${photoSrc}" alt=""/>` : ''}
+      <div style="flex:1;min-width:0;">
+        ${it.label ? `<div class="lex-item-label">${labelEsc}</div>` : ''}
+        <div style="display:flex;gap:12px;align-items:center;margin-top:3px;">
+          ${it.code  ? `<div class="lex-item-code">${codeEsc}</div>` : ''}
+          ${priceTxt ? `<div class="lex-item-price">${priceTxt}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function lexiqueEffacerRecherche() {
+  const el = document.getElementById('lex-search');
+  if(el) { el.value = ''; el.focus(); }
+  lexiqueRendre();
+}
+
+function lexiqueOuvrirModalByCle(cle, idx) {
+  const it = (_lexData[cle] || [])[idx];
+  if(!it) return;
+  const imgEl = document.getElementById('lex-bc-modal-img');
+  const _ps = it.photoUrl || it.photo || ''; if(imgEl) { if(_ps) { imgEl.src = _ps; imgEl.style.display = 'block'; } else { imgEl.src=''; imgEl.style.display='none'; } }
+  document.getElementById('lex-bc-modal-label').textContent = it.label || '';
+  document.getElementById('lex-bc-modal-code').textContent  = '';
+  const priceEl  = document.getElementById('lex-bc-modal-price');
+  const priceNum = parseFloat((it.price||'').replace(',','.'));
+  if(!isNaN(priceNum)) { priceEl.textContent = priceNum.toFixed(2).replace('.',',') + ' €'; priceEl.style.display = ''; }
+  else { priceEl.style.display = 'none'; }
+  const svgEl = document.getElementById('lex-bc-modal-barcode');
+  svgEl.removeAttribute('data-jbarcode-done');
+  if(it.code && it.code.trim()) {
+    try {
+      let fmt, val = it.code.trim();
+      if(/^\d{13}$/.test(val)) fmt='EAN13'; else if(/^\d{8}$/.test(val)) fmt='EAN8'; else fmt='CODE128';
+      JsBarcode(svgEl, val, { format:fmt, width:2.2, height:90, displayValue:true, margin:8, fontSize:14, textMargin:6 });
+      svgEl.parentElement.style.display = '';
+    } catch(e) { svgEl.parentElement.style.display='none'; }
+  } else { svgEl.parentElement.style.display='none'; }
+  document.getElementById('lex-bc-modal').classList.add('open');
+}
+
+function lexiqueOuvrirModal(idx) {
+  const it = (_lexData[lexiqueCleActif()] || [])[idx];
+  if(!it) return;
+  const imgEl = document.getElementById('lex-bc-modal-img');
+  const _ps = it.photoUrl || it.photo || ''; if(imgEl) { if(_ps) { imgEl.src = _ps; imgEl.style.display = 'block'; } else { imgEl.src=''; imgEl.style.display='none'; } }
+  document.getElementById('lex-bc-modal-label').textContent = it.label || '';
+  document.getElementById('lex-bc-modal-code').textContent  = '';
+  const priceEl = document.getElementById('lex-bc-modal-price');
+  const priceNum = parseFloat((it.price||'').replace(',','.'));
+  if(!isNaN(priceNum)) {
+    priceEl.textContent = priceNum.toFixed(2).replace('.',',') + ' €';
+    priceEl.style.display = '';
+  } else {
+    priceEl.style.display = 'none';
+  }
+  const svgEl = document.getElementById('lex-bc-modal-barcode');
+  svgEl.removeAttribute('data-jbarcode-done');
+  if(it.code && it.code.trim()) {
+    try {
+      let fmt, val = it.code.trim();
+      if(/^\d{13}$/.test(val))      fmt = 'EAN13';
+      else if(/^\d{8}$/.test(val))  fmt = 'EAN8';
+      else                           fmt = 'CODE128';
+      JsBarcode(svgEl, val, { format: fmt, width: 2.2, height: 90, displayValue: true, margin: 8, fontSize: 14, textMargin: 6 });
+      svgEl.parentElement.style.display = '';
+    } catch(e) {
+      svgEl.parentElement.style.display = 'none';
+      document.getElementById('lex-bc-modal-code').textContent = it.code;
+    }
+  } else {
+    svgEl.parentElement.style.display = 'none';
+  }
+  document.getElementById('lex-bc-modal').classList.add('open');
+}
+
+function lexiqueFermerModal() {
+  document.getElementById('lex-bc-modal').classList.remove('open');
+}
+
+
+// ── Lexique : photo article ──
+let _lexPendingPhoto = null;
+
+function lexiqueOuvrirCameraAjout() {
+  const shutter = document.getElementById('scanner-shutter');
+  if(shutter) shutter.style.display = 'block';
+  const hint = document.querySelector('.scanner-hint');
+  if(hint) hint.textContent = 'Cadrez l\'article puis appuyez sur ⚪';
+  const status = document.getElementById('scanner-status');
+  if(status) status.style.display = 'none';
+  ouvrirScanner('photo-lexique');
+}
+
+function lexiqueCapturePhoto() {
+  const video = document.getElementById('scanner-video');
+  const MAX = 200;
+  const canvas = document.createElement('canvas');
+  let w = video.videoWidth, h = video.videoHeight;
+  if(w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+  _lexPendingPhoto = canvas.toDataURL('image/jpeg', 0.4);
+  fermerScanner();
+  const prev = document.getElementById('lex-add-photo-preview');
+  const del  = document.getElementById('lex-add-photo-del');
+  if(prev) { prev.src = _lexPendingPhoto; prev.style.display = 'block'; }
+  if(del)  { del.style.display = ''; }
+}
+
+function lexiqueEffacerPhotoAjout() {
+  _lexPendingPhoto = null;
+  const prev = document.getElementById('lex-add-photo-preview');
+  const del  = document.getElementById('lex-add-photo-del');
+  if(prev) { prev.src = ''; prev.style.display = 'none'; }
+  if(del)  { del.style.display = 'none'; }
+}
+
+function scannerShutterCapture() { if(scannerTarget === 'photo-lexique') lexiqueCapturePhoto(); }
+
 // ── Calcul % ──
 const REMISES_COURANTES = [10,20,25,30,40,50,60,70,75,80,85,90];
 
@@ -2609,7 +3074,7 @@ document.getElementById('caisse-code-input').addEventListener('keydown', e => { 
 <!-- ══ FIREBASE CAISSE ══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, push, onValue, remove, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getDatabase, ref, push, onValue, remove, get, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 const firebaseConfig = {
   databaseURL: 'https://noz-etiquettes-default-rtdb.europe-west1.firebasedatabase.app'
@@ -2619,6 +3084,14 @@ const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 const caisseRef = ref(db, 'caisse');
 const casseRef2 = ref(db, 'casse');
+const lexiqueRef = ref(db, 'lexique');
+
+// ── SYNC LEXIQUE ──
+window.lexiqueFirebaseSave = (data) => set(lexiqueRef, data);
+onValue(lexiqueRef, snapshot => {
+  const data = snapshot.val();
+  if(data && window.lexiqueFirebaseUpdate) window.lexiqueFirebaseUpdate(data);
+});
 
 // ══ FIREBASE CASSE ══
 onValue(casseRef2, snapshot => {
