@@ -2767,6 +2767,22 @@ function lexSaveConfirmer() {
   showToast('Ajouté au Lexique ✓');
 }
 
+// Import unique de l'ancien lexique (fichier lexique-import.json) si le cloud et l'appareil sont vides
+let _lexImportFait = false;
+window.lexiqueImportSiVide = async function() {
+  if(_lexImportFait) return; _lexImportFait = true;
+  if(LEX_CATS.some(c => (_lexData[c]||[]).length)) return;
+  try {
+    const r = await fetch('lexique-import.json', {cache:'no-store'});
+    if(!r.ok) return;
+    const d = await r.json();
+    LEX_CATS.forEach(c => { _lexData[c] = Array.isArray(d[c]) ? d[c] : (d[c] ? Object.values(d[c]) : []); });
+    lexiqueSauvegarder();
+    lexiqueRendre();
+    showToast('Ancien lexique importé ✓');
+  } catch(e) {}
+};
+
 function lexiqueSauvegarder() {
   localStorage.setItem(LEX_KEY, JSON.stringify(_lexData));
   if(window.lexiqueFirebaseSave) window.lexiqueFirebaseSave(_lexData);
@@ -3091,6 +3107,7 @@ window.lexiqueFirebaseSave = (data) => set(lexiqueRef, data);
 onValue(lexiqueRef, snapshot => {
   const data = snapshot.val();
   if(data && window.lexiqueFirebaseUpdate) window.lexiqueFirebaseUpdate(data);
+  else if(!data && window.lexiqueImportSiVide) window.lexiqueImportSiVide();
 });
 
 // ══ FIREBASE CASSE ══
