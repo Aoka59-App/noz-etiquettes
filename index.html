@@ -170,6 +170,21 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 #lex-bc-modal-close { margin-top:4px; padding:12px 40px; background:#1a2d5a; color:#f0c040; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
 .img-overlay { position:fixed; inset:0; z-index:1000; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; -webkit-overflow-scrolling:touch; }
 .img-overlay-img-wrap { width:100%; background:#fff; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0; }
+
+/* Planning : couleurs par type d'horaire */
+.pl-table td.k-coupe, .pl-day.k-coupe { background:#0a84ff; color:#fff; }
+.pl-table td.k-matin, .pl-day.k-matin { background:#25b05a; color:#fff; }
+.pl-table td.k-aprem, .pl-day.k-aprem { background:#9b51e0; color:#fff; }
+.pl-table td.k-ecole, .pl-day.k-ecole { background:#ff8a1f; color:#fff; }
+.pl-table td.k-repos, .pl-day.k-repos { background:#ffe1e4; color:#d64550; }
+.pl-table td.k-coupe, .pl-table td.k-matin, .pl-table td.k-aprem, .pl-table td.k-ecole { font-weight:700; text-shadow:0 1px 1px rgba(0,0,0,.18); }
+.pl-table td.k-ecole .pl-mag, .pl-day.k-ecole .pl-mag { color:#fff; background:rgba(0,0,0,.25); border-radius:4px; padding:0 3px; }
+.pl-day.k-coupe b, .pl-day.k-coupe span, .pl-day.k-matin b, .pl-day.k-matin span, .pl-day.k-aprem b, .pl-day.k-aprem span, .pl-day.k-ecole b, .pl-day.k-ecole span { color:#fff; }
+.pl-day.k-repos b { color:#d64550; } .pl-day.k-repos span { color:#d64550; }
+.pl-day { border-left:none; }
+.pl-table td { border:1px solid #fff; }
+.pl-legend i { width:12px; height:12px; }
+
 /* Planning compact : tout visible sans défiler */
 .pl-wrap { overflow:visible; }
 .pl-table { table-layout:fixed; width:100%; font-size:10px; line-height:1.25; }
@@ -847,25 +862,6 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
         <p class="preview-empty">Aucune étiquette article</p>
       </div>
 
-      <!-- Série chaussures -->
-      <div class="section-hdr">Imprimer — Série chaussures</div>
-
-      <button class="btn-ios green" id="btn-save-serie" onclick="sauvegarderDansPhotos('serie')" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
-        Enregistrer dans Photos
-      </button>
-
-      <div class="result-card" id="img-wrap-serie" style="display:none;">
-        <div class="result-title">Image générée · 300 DPI · Série</div>
-        <img id="img-out-serie" src="" alt=""/>
-        <div class="result-info" id="img-info-serie"></div>
-        <button class="btn-ios sm gold" id="img-dl-serie" style="margin-top:10px;margin-bottom:0;">↓ Enregistrer le PNG</button>
-      </div>
-
-      <div class="preview-grid" id="preview-serie">
-        <p class="preview-empty">Aucune étiquette série</p>
-      </div>
-
     </div>
 
     <!-- ══ BOX CASSE ══ -->
@@ -1203,7 +1199,7 @@ function installPWA() {
 }
 
 // ── Stockage local ──
-let articles = JSON.parse(localStorage.getItem('noz-articles') || '[]');
+let articles = JSON.parse(localStorage.getItem('noz-articles') || '[]').filter(a=>!a.isSerie);
 renderAll();
 
 function save() { localStorage.setItem('noz-articles', JSON.stringify(articles)); }
@@ -1319,7 +1315,7 @@ function clearAll(){
   if(!confirm('Effacer tous les articles ?')) return;
   articles=[]; save(); renderAll();
   document.getElementById('img-wrap-normal').style.display='none';
-  document.getElementById('img-wrap-serie').style.display='none';
+  const _ws=document.getElementById('img-wrap-serie'); if(_ws) _ws.style.display='none';
 }
 
 // ── Rendu global ──
@@ -1356,7 +1352,7 @@ const PREV_H = Math.round(14*PREV_PX);
 
 function renderPreview() {
   const gridN=document.getElementById('preview-normal');
-  const gridS=document.getElementById('preview-serie');
+  const gridS=document.getElementById('preview-serie') || document.createElement('div');
   const normaux=articles.filter(a=>!a.isSerie);
   const serie=articles.filter(a=>a.isSerie);
 
@@ -2692,15 +2688,24 @@ function plRender() {
   const curW = plSemaine === plSemaineCourante();
   const isToday = j => curW && String(j).toLowerCase().startsWith(JN.slice(0,3));
   const isWE = j => /^(sam|dim)/i.test(String(j).trim());
-  const legend = `<div class="pl-legend"><span><i style="background:#34c759"></i>Travail</span><span><i style="background:#f79646"></i>École</span><span><i style="background:#c7c7cc"></i>Repos</span></div>`;
+  const legend = `<div class="pl-legend"><span><i style="background:#0a84ff"></i>Journée</span><span><i style="background:#25b05a"></i>Matin</span><span><i style="background:#9b51e0"></i>Après-midi</span><span><i style="background:#ff8a1f"></i>École</span><span><i style="background:#ffb3ba"></i>Repos</span></div>`;
+  const kind = h => {
+    if(isEco(h)) return 'k-ecole';
+    if(isOff(h)) return 'k-repos';
+    const t = String(h);
+    if(t.includes(' / ')) return 'k-coupe';
+    const m = t.match(/^(\d+)h?(\d+)?/);
+    const st = m ? (+m[1] + (m[2] ? +m[2]/60 : 0)) : 9;
+    return st >= 11 ? 'k-aprem' : 'k-matin';
+  };
 
   if(plView === 'all') {
     box.innerHTML = entete + legend + `<div class="pl-wrap"><table class="pl-table">
       <tr><th></th>${jours.map(j=>`<th class="${isWE(j)?'we':''} ${isToday(j)?'today':''}">${esc(j)}</th>`).join('')}</tr>
       ${data.personnes.map((p,pi)=>`<tr><td style="--pc:${PC[pi%PC.length]}">${esc(p.nom)}</td>${jours.map((jj,i)=>{
         const h=(p.horaires||[])[i]; const t=isToday(jj)?' today':'';
-        if(isEco(h)) return `<td class="ecole${t}">${ecoCell(h)}</td>`;
-        return `<td class="${isOff(h)?'off':'work'}${t}">${isOff(h)?esc(h||'—'):fmt(h)}</td>`;
+        if(isEco(h)) return `<td class="ecole k-ecole${t}">${ecoCell(h)}</td>`;
+        return `<td class="${isOff(h)?'off':'work'} ${kind(h)}${t}">${isOff(h)?esc(h||'—'):fmt(h)}</td>`;
       }).join('')}</tr>`).join('')}
     </table></div>`;
   } else {
@@ -2712,9 +2717,9 @@ function plRender() {
     const p = data.personnes.find(x=>x.nom===sel.value) || data.personnes[0];
     box.innerHTML = entete + legend + jours.map((j,i)=>{
       const h=(p.horaires||[])[i]; const t=isToday(j)?' today':'';
-      if(isEco(h)) return `<div class="pl-day ecole${t}"><b>${esc(j)}</b><span>${ecoLine(h)}</span></div>`;
+      if(isEco(h)) return `<div class="pl-day ecole k-ecole${t}"><b>${esc(j)}</b><span>${ecoLine(h)}</span></div>`;
       const off=isOff(h);
-      return `<div class="pl-day${off?' off':''}${t}"><b>${esc(j)}</b><span class="${off?'off':''}">${esc(off?(h||'—'):h)}</span></div>`;
+      return `<div class="pl-day${off?' off':''} ${kind(h)}${t}"><b>${esc(j)}</b><span class="${off?'off':''}">${esc(off?(h||'—'):h)}</span></div>`;
     }).join('');
   }
 }
