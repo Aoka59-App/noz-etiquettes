@@ -111,7 +111,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-table th.we { background:#ffe8ec; color:#c0173a; }
 .pl-table th.today { background:#007aff; color:#fff; }
 .pl-table td.work { background:#e8f8ee; color:#1a7a3c; font-weight:600; }
-.pl-table td.off { background:#f2f2f7; color:#a0a0a8; }
+.pl-table td.off { color:#fff; }
 .pl-table td.today { box-shadow:inset 0 0 0 2px #007aff; }
 .pl-table td:first-child { background:var(--card); border-left:5px solid var(--pc,#007aff); }
 .pl-day { border-left:4px solid #34c759; background:#e8f8ee; }
@@ -176,11 +176,11 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-table td.k-matin, .pl-day.k-matin { background:#25b05a; color:#fff; }
 .pl-table td.k-aprem, .pl-day.k-aprem { background:#9b51e0; color:#fff; }
 .pl-table td.k-ecole, .pl-day.k-ecole { background:#ff8a1f; color:#fff; }
-.pl-table td.k-repos, .pl-day.k-repos { background:#ffe1e4; color:#d64550; }
+.pl-table td.k-repos, .pl-day.k-repos { background:#111; color:#fff; }
 .pl-table td.k-coupe, .pl-table td.k-matin, .pl-table td.k-aprem, .pl-table td.k-ecole { font-weight:700; text-shadow:0 1px 1px rgba(0,0,0,.18); }
 .pl-table td.k-ecole .pl-mag, .pl-day.k-ecole .pl-mag { color:#fff; background:rgba(0,0,0,.25); border-radius:4px; padding:0 3px; }
 .pl-day.k-coupe b, .pl-day.k-coupe span, .pl-day.k-matin b, .pl-day.k-matin span, .pl-day.k-aprem b, .pl-day.k-aprem span, .pl-day.k-ecole b, .pl-day.k-ecole span { color:#fff; }
-.pl-day.k-repos b { color:#d64550; } .pl-day.k-repos span { color:#d64550; }
+.pl-day.k-repos b, .pl-day.k-repos span { color:#fff; }
 .pl-day { border-left:none; }
 .pl-table td { border:1px solid #fff; }
 .pl-legend i { width:12px; height:12px; }
@@ -201,7 +201,7 @@ html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMa
 .pl-table th { font-size:9.5px; }
 .pl-table th:first-child, .pl-table td:first-child { position:static; width:17%; font-size:11px; padding-left:5px; text-align:left; overflow:hidden; text-overflow:ellipsis; }
 .pl-table td.work, .pl-table td.ecole { font-weight:600; }
-.pl-table td.off { font-size:9px; }
+.pl-table td.off { font-size:9px; color:#fff; }
 .pl-mag { font-size:9px; }
 .pl-chips { margin-bottom:6px; }
 #page-planning.active { display:flex; flex-direction:column; padding:0; overflow:hidden; }
@@ -2697,7 +2697,7 @@ function plRender() {
   const curW = plSemaine === plSemaineCourante();
   const isToday = j => curW && String(j).toLowerCase().startsWith(JN.slice(0,3));
   const isWE = j => /^(sam|dim)/i.test(String(j).trim());
-  const legend = `<div class="pl-legend"><span><i style="background:#0a84ff"></i>Journée</span><span><i style="background:#25b05a"></i>Matin</span><span><i style="background:#9b51e0"></i>Après-midi</span><span><i style="background:#ff8a1f"></i>École</span><span><i style="background:#ffb3ba"></i>Repos</span></div>`;
+  const legend = `<div class="pl-legend"><span><i style="background:#0a84ff"></i>Journée</span><span><i style="background:#25b05a"></i>Matin</span><span><i style="background:#9b51e0"></i>Après-midi</span><span><i style="background:#ff8a1f"></i>École</span><span><i style="background:#111"></i>Repos</span></div>`;
   const kind = h => {
     if(isEco(h)) return 'k-ecole';
     if(isOff(h)) return 'k-repos';
