@@ -2177,161 +2177,6 @@ function rvnLancerScan() {}
 // Format : "44": { dates:"26 oct – 1 nov", jours:["Lun","Mar","Mer","Jeu","Ven","Sam"],
 //                  personnes:[ { nom:"Prénom", horaires:["9h-17h","Repos","9h-13h", ...] } ] }
 const PLANNING_DATA = {
- "46": {
-  "dates": "9 nov – 15 nov",
-  "jours": [
-   "Lun 9",
-   "Mar 10",
-   "Mer 11",
-   "Jeu 12",
-   "Ven 13",
-   "Sam 14",
-   "Dim 15"
-  ],
-  "personnes": [
-   {
-    "nom": "Aurore",
-    "horaires": [
-     "8h30-13h / 14h-19h45",
-     "Repos",
-     "8h45-14h30",
-     "9h15-14h / 15h-19h45",
-     "Repos",
-     "9h15-14h / 15h-19h45",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Henriette",
-    "horaires": [
-     "9h15-13h / 14h-19h45",
-     "9h15-13h / 14h-18h30",
-     "Repos",
-     "10h-14h / 15h-18h45",
-     "7h-12h / 13h-17h30",
-     "Repos",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Rebecca",
-    "horaires": [
-     "Repos",
-     "10h-13h / 14h-19h45",
-     "Repos",
-     "11h-14h / 15h-19h45",
-     "13h45-19h45",
-     "Repos",
-     "9h45-12h / 13h-18h15"
-    ]
-   },
-   {
-    "nom": "Zoé",
-    "horaires": [
-     "8h45-13h / 14h-19h45",
-     "10h-15h45",
-     "8h45-13h / 14h-18h15",
-     "Repos",
-     "Repos",
-     "14h-19h45",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Maria",
-    "horaires": [
-     "14h-19h45",
-     "9h15-14h / 15h-19h30",
-     "Repos",
-     "12h-18h",
-     "7h-11h / 12h-16h",
-     "13h45-19h45",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Mateo",
-    "horaires": [
-     "8h30-13h / 14h-18h15",
-     {
-      "e": "13h-17h",
-      "m": null
-     },
-     "8h45-14h / 15h-18h15",
-     {
-      "e": "8h-12h / 13h-17h",
-      "m": null
-     },
-     "Repos",
-     "9h15-15h",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Lola",
-    "horaires": [
-     {
-      "e": "8h-12h / 13h-17h",
-      "m": null
-     },
-     "9h15-13h / 14h-19h45",
-     "Repos",
-     "15h-19h30",
-     "14h-19h45",
-     "9h15-13h / 14h-17h30",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Leona",
-    "horaires": [
-     "13h-19h45",
-     {
-      "e": "13h-17h",
-      "m": null
-     },
-     "8h45-13h / 14h-18h15",
-     {
-      "e": "8h-12h / 13h-17h",
-      "m": null
-     },
-     "8h45-14h / 15h-17h30",
-     "Repos",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Emilie",
-    "horaires": [
-     {
-      "e": "8h-12h / 13h-17h",
-      "m": null
-     },
-     "Repos",
-     "Repos",
-     "9h15-14h / 15h-18h15",
-     "9h15-13h / 14h-19h45",
-     "9h15-13h / 14h-19h45",
-     "Repos"
-    ]
-   },
-   {
-    "nom": "Ethan",
-    "horaires": [
-     {
-      "e": "8h-12h / 13h-17h",
-      "m": "18h-19h45"
-     },
-     "9h15-14h / 15h-18h30",
-     "Repos",
-     "10h-14h / 15h-18h30",
-     "7h-13h / 14h-17h30",
-     "Repos",
-     "Repos"
-    ]
-   }
-  ]
- },
  "47": {
   "dates": "16 nov – 22 nov",
   "jours": [
@@ -2507,20 +2352,20 @@ const PLANNING_DATA = {
     "horaires": [
      "8h30-13h / 13h30-19h15",
      "Repos",
-     "8h15-14h",
-     "9h15-14h / 15h-19h45",
+     "9h15-14h30",
+     "9h15-14h / 14h30-19h15",
      "Repos",
-     "8h45-14h30 / 15h-18h45",
+     "9h15-14h30 / 15h-19h45",
      "Repos"
     ]
    },
    {
     "nom": "Henriette",
     "horaires": [
-     "8h15-13h / 13h30-16h45",
-     "8h15-13h / 14h-18h15",
+     "8h30-13h / 13h30-17h",
+     "7h-13h / 14h-17h",
      "Repos",
-     "8h15-14h / 15h-17h45",
+     "9h15-14h / 15h-18h45",
      "7h-12h / 13h-17h30",
      "Repos",
      "Repos"
@@ -2530,10 +2375,10 @@ const PLANNING_DATA = {
     "nom": "Rebecca",
     "horaires": [
      "Repos",
-     "10h30-13h / 14h-20h15",
+     "9h30-13h / 14h-19h45",
      "Repos",
-     "11h30-14h / 15h-20h15",
-     "14h15-20h15",
+     "11h-14h / 15h-19h45",
+     "14h15-19h45",
      "Repos",
      "9h45-12h / 13h-18h15"
     ]
@@ -2541,22 +2386,22 @@ const PLANNING_DATA = {
    {
     "nom": "Zoé",
     "horaires": [
-     "9h15-14h / 15h-20h15",
-     "10h-15h45",
-     "10h45-13h / 14h-20h15",
+     "10h-14h / 15h-19h45",
      "Repos",
+     "10h45-13h / 14h-19h45",
+     "10h-14h / 15h-19h",
      "Repos",
-     "14h30-20h15",
+     "14h30-19h45",
      "Repos"
     ]
    },
    {
     "nom": "Maria",
     "horaires": [
-     "13h15-19h",
-     "9h15-14h / 15h-19h30",
+     "13h-19h",
+     "9h15-14h / 15h-19h45",
      "Repos",
-     "12h-18h",
+     "14h15-19h45",
      "7h30-11h / 12h-16h30",
      "13h45-19h45",
      "Repos"
@@ -2570,13 +2415,13 @@ const PLANNING_DATA = {
       "e": "13h-17h",
       "m": null
      },
-     "8h15-14h / 15h-17h45",
+     "9h15-14h / 15h-17h45",
      {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
      "Repos",
-     "8h45-14h30",
+     "9h15-13h / 14h-17h",
      "Repos"
     ]
    },
@@ -2589,8 +2434,8 @@ const PLANNING_DATA = {
      },
      "Repos",
      "9h30-13h / 14h-19h",
-     "14h45-20h15",
-     "14h30-20h15",
+     "13h45-19h45",
+     "14h30-19h45",
      "9h15-13h / 14h-17h30",
      "Repos"
     ]
@@ -2598,17 +2443,17 @@ const PLANNING_DATA = {
    {
     "nom": "Leona",
     "horaires": [
-     "13h-20h15",
+     "13h-19h45",
      {
       "e": "13h-17h",
       "m": null
      },
-     "9h30-14h / 15h-20h15",
+     "9h30-14h / 15h-19h45",
      {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "10h30-14h / 15h-17h30",
+     "9h30-14h / 15h-17h30",
      "Repos",
      "Repos"
     ]
@@ -2620,7 +2465,7 @@ const PLANNING_DATA = {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "11h15-14h / 15h-20h15",
+     "9h45-13h / 14h-18h45",
      "Repos",
      "Repos",
      "9h15-13h / 14h-19h45",
@@ -2635,9 +2480,9 @@ const PLANNING_DATA = {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "8h15-14h / 15h-18h15",
+     "7h-14h / 15h-17h",
      "Repos",
-     "8h15-14h / 15h-17h45",
+     "9h15-14h / 15h-18h45",
      "7h-13h / 14h-17h30",
      "Repos",
      "Repos"
@@ -2662,9 +2507,9 @@ const PLANNING_DATA = {
     "horaires": [
      "8h30-13h / 13h30-19h15",
      "Repos",
-     "8h15-14h",
-     "9h15-14h / 15h-19h45",
-     "7h-12h / 12h30-17h",
+     "9h15-14h30",
+     "9h15-14h / 14h30-19h15",
+     "7h-13h / 14h-18h",
      "Repos",
      "Repos"
     ]
@@ -2672,12 +2517,12 @@ const PLANNING_DATA = {
    {
     "nom": "Henriette",
     "horaires": [
-     "8h15-13h / 13h30-16h45",
-     "8h15-13h / 14h-18h15",
+     "8h30-13h / 13h30-17h",
+     "7h-13h / 14h-17h",
      "Repos",
-     "8h15-14h / 15h-17h45",
+     "9h15-14h / 15h-18h45",
      "Repos",
-     "9h45-13h / 14h-20h15",
+     "9h15-14h / 15h-19h45",
      "Repos"
     ]
    },
@@ -2685,22 +2530,22 @@ const PLANNING_DATA = {
     "nom": "Rebecca",
     "horaires": [
      "Repos",
-     "10h30-13h / 14h-20h15",
+     "9h30-13h / 14h-19h45",
      "Repos",
-     "11h30-14h / 15h-20h15",
+     "11h-14h / 15h-19h45",
      "Repos",
-     "8h15-13h45",
-     "9h45-13h / 14h-18h45"
+     "9h15-14h45",
+     "9h45-12h / 13h-18h15"
     ]
    },
    {
     "nom": "Zoé",
     "horaires": [
-     "9h15-14h / 15h-20h15",
-     "10h-15h45",
-     "10h45-13h / 14h-20h15",
+     "10h-14h / 15h-19h45",
      "Repos",
-     "14h30-20h15",
+     "10h45-13h / 14h-19h45",
+     "10h-14h / 15h-19h",
+     "14h30-19h45",
      "Repos",
      "Repos"
     ]
@@ -2708,10 +2553,10 @@ const PLANNING_DATA = {
    {
     "nom": "Maria",
     "horaires": [
-     "13h15-19h",
-     "9h15-14h / 15h-19h30",
+     "13h-19h",
+     "9h15-14h / 15h-19h45",
      "Repos",
-     "12h-18h",
+     "14h15-19h45",
      "7h30-11h / 12h-16h30",
      "13h45-19h45",
      "Repos"
@@ -2725,12 +2570,12 @@ const PLANNING_DATA = {
       "e": "13h-17h",
       "m": null
      },
-     "8h15-14h / 15h-17h45",
+     "9h15-14h / 15h-17h45",
      {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "7h-12h45",
+     "7h-13h45",
      "Repos",
      "Repos"
     ]
@@ -2744,27 +2589,27 @@ const PLANNING_DATA = {
      },
      "Repos",
      "9h30-13h / 14h-19h",
-     "14h45-20h15",
-     "14h30-20h15",
-     "9h15-13h / 14h-17h30",
+     "13h45-19h45",
+     "14h30-19h45",
+     "9h15-14h / 15h-17h30",
      "Repos"
     ]
    },
    {
     "nom": "Leona",
     "horaires": [
-     "13h-20h15",
+     "13h-19h45",
      {
       "e": "13h-17h",
       "m": null
      },
-     "9h30-14h / 15h-20h15",
+     "Repos",
      {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "10h30-14h / 15h-17h30",
-     "Repos",
+     "9h30-14h / 15h-17h30",
+     "9h30-13h / 14h-19h45",
      "Repos"
     ]
    },
@@ -2775,11 +2620,11 @@ const PLANNING_DATA = {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "11h15-14h / 15h-20h15",
-     "Repos",
+     "9h45-13h / 14h-18h45",
+     "9h15-13h / 14h-19h45",
      "Repos",
      "9h15-13h / 14h-19h45",
-     "9h45-14h / 15h-20h15",
+     "Repos",
      "Repos"
     ]
    },
@@ -2790,18 +2635,173 @@ const PLANNING_DATA = {
       "e": "8h-12h / 13h-17h",
       "m": null
      },
-     "8h15-14h / 15h-18h15",
+     "7h-14h / 15h-17h",
      "Repos",
-     "8h15-14h / 15h-17h45",
+     "9h15-14h / 15h-18h45",
      "Repos",
-     "9h45-14h / 15h-20h15",
+     "9h15-14h / 15h-19h45",
+     "Repos"
+    ]
+   }
+  ]
+ },
+ "50": {
+  "dates": "7 déc – 13 déc",
+  "jours": [
+   "Lun 7",
+   "Mar 8",
+   "Mer 9",
+   "Jeu 10",
+   "Ven 11",
+   "Sam 12",
+   "Dim 13"
+  ],
+  "personnes": [
+   {
+    "nom": "Aurore",
+    "horaires": [
+     "8h30-13h / 13h30-19h15",
+     "Repos",
+     "9h15-14h30",
+     "9h15-14h / 14h30-19h15",
+     "Repos",
+     "9h15-14h30 / 15h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Henriette",
+    "horaires": [
+     "8h30-13h / 13h30-17h",
+     "7h-13h / 14h-17h",
+     "Repos",
+     "9h15-14h / 15h-18h45",
+     "7h-12h / 13h-17h30",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Rebecca",
+    "horaires": [
+     "Repos",
+     "9h30-13h / 14h-19h45",
+     "Repos",
+     "11h-14h / 15h-19h45",
+     "14h15-19h45",
+     "Repos",
+     "9h45-12h / 13h-18h15"
+    ]
+   },
+   {
+    "nom": "Zoé",
+    "horaires": [
+     "10h-14h / 15h-19h45",
+     "Repos",
+     "10h45-13h / 14h-19h45",
+     "10h-14h / 15h-19h",
+     "Repos",
+     "14h30-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Maria",
+    "horaires": [
+     "13h-19h",
+     "9h15-14h / 15h-19h45",
+     "13h45-19h45",
+     "14h15-19h45",
+     "7h30-11h / 12h-16h30",
+     "Repos",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Mateo",
+    "horaires": [
+     "8h15-13h / 14h-18h",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "9h15-14h / 15h-17h45",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "9h15-13h / 14h-17h",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Lola",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "Repos",
+     "9h30-13h / 14h-19h",
+     "13h45-19h45",
+     "14h30-19h45",
+     "9h45-12h / 13h-18h",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Leona",
+    "horaires": [
+     "13h-19h45",
+     {
+      "e": "13h-17h",
+      "m": null
+     },
+     "Repos",
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "9h30-14h / 15h-17h30",
+     "9h30-13h / 14h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Emilie",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "9h45-13h / 14h-18h45",
+     "Repos",
+     "Repos",
+     "9h15-13h / 14h-19h45",
+     "9h15-14h / 15h-19h45",
+     "Repos"
+    ]
+   },
+   {
+    "nom": "Ethan",
+    "horaires": [
+     {
+      "e": "8h-12h / 13h-17h",
+      "m": null
+     },
+     "7h-14h / 15h-17h",
+     "Repos",
+     "9h15-14h / 15h-18h45",
+     "7h-13h / 14h-17h30",
+     "Repos",
      "Repos"
     ]
    }
   ]
  }
 };
-const PLANNING_SEMAINES = [46, 47, 48, 49];
+const PLANNING_SEMAINES = [47, 48, 49, 50];
 let plSemaine = null, plView = 'all';
 
 function plSemaineCourante() {
