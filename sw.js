@@ -1,4 +1,4 @@
-const CACHE = 'noz-etiq-v54';
+const CACHE = 'noz-etiq-v55';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
